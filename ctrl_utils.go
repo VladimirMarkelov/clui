@@ -111,7 +111,7 @@ func CreateButton(parent Window, posX, posY, width, height int, text string, pro
 	return btn
 }
 
-func CreateCheckbox(parent Window, posX, posY, width, height int, text string, props Props) *CheckBox {
+func CreateCheckBox(parent Window, posX, posY, width, height int, text string, props Props) *CheckBox {
 	id := parent.GetNextControlId()
 	chk := NewCheckBox(parent, id, posX, posY, width, height, text, props)
 	parent.AddControl(chk)

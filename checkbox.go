@@ -4,9 +4,13 @@ import (
 	"github.com/VladimirMarkelov/termbox-go"
 )
 
-// CheckBox control. It can be two-state one(on and off) - it is default mode - or tree-state.
-// State values are 0=off, 1=on, 2=third state
-// Minimal width of a checkbox cannot be less than 3
+/*
+CheckBox control. It can be two-state one(on and off) - it is default mode - or tree-state.
+State values are 0=off, 1=on, 2=third state
+Minimal width of a checkbox cannot be less than 3
+Own methods:
+Get3State, Set3State, GetState, SetState
+*/
 type CheckBox struct {
 	posX, posY    int
 	width, height int
@@ -237,4 +241,40 @@ func (c *CheckBox) GetScale() int {
 
 func (c *CheckBox) SetScale(scale int) {
 	c.scale = scale
+}
+
+// Sets the current state of CheckBox
+// Value must be 0/1 if 3State is off
+// or 0/1/2 if 3State is on
+func (c *CheckBox) SetState(val int) {
+	if val < 0 {
+		val = 0
+	}
+	if val > 1 && !c.allow3state {
+		val = 1
+	}
+	if val > 2 {
+		val = 2
+	}
+
+	c.state = val
+}
+
+func (c *CheckBox) GetState() int {
+	return c.state
+}
+
+// Set3State - sets if ComboBox should use 3 states. If the current
+// state is unknown and one disables 3State option then the current
+// value resets to off
+func (c *CheckBox) Set3State(enable bool) {
+	if !enable && c.state == 2 {
+		c.state = 0
+	}
+	c.allow3state = enable
+}
+
+// Get3State - return true if ComboBox uses 3 states (on/off/unknown)
+func (c *CheckBox) Get3State() bool {
+	return c.allow3state
 }
