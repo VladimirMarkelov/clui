@@ -47,6 +47,7 @@ func NewCheckBox(parent Window, id WinId, x, y, width, height int, title string,
 	c.visible = true
 	c.tabStop = true
 	c.id = id
+	c.align = props.Alignment
 
 	c.minW, c.minH = 3, 1
 

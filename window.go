@@ -359,10 +359,23 @@ func (d *view) DrawAlignedText(x, y, w int, text string, fg, bg Color, align Ali
 	}
 	length := xs.Len(text)
 	if length < w {
-		d.DrawText(x+int((w-length)/2), y, w, text, fg, bg)
+		if align == AlignCenter {
+			d.DrawText(x+int((w-length)/2), y, w, text, fg, bg)
+		} else if align == AlignLeft {
+			d.DrawText(x, y, w, text, fg, bg)
+		} else {
+			d.DrawText(x+w-length, y, length, text, fg, bg)
+		}
 	} else {
-		dx := int((length - w) / 2)
-		str := xs.Slice(text, dx, w)
+		str := ""
+		if align == AlignCenter {
+			dx := int((length - w) / 2)
+			str = xs.Slice(text, dx, dx+w)
+		} else if align == AlignLeft {
+			str = xs.Slice(text, 0, w)
+		} else {
+			str = xs.Slice(text, length-w, -1)
+		}
 		d.DrawText(x, y, w, str, fg, bg)
 	}
 }
