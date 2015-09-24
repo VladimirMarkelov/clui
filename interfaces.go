@@ -264,6 +264,8 @@ type Packer interface {
 	GetBorderStyle() BorderStyle
 	// Returns parent window
 	View() Window
+	// Sets Packer title
+	SetText(string)
 
 	/*
 	   shorthands to create a standard control and add it to a packer at the same time
