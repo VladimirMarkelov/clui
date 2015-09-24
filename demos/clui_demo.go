@@ -37,9 +37,11 @@ func createDynamicView(c *ui.Composer) {
 	packMain := wnd.AddPack(ui.PackHorizontal)
 	packLeft := packMain.AddPack(ui.PackVertical, 1)
 	packLeft.SetBorderStyle(ui.BorderSingle)
+	packLeft.SetText("Task Progress")
 
 	packRight := packMain.AddPack(ui.PackVertical, ui.DoNotScale)
 	packRight.SetBorderStyle(ui.BorderDouble)
+	packRight.SetText("Event List")
 	ts := packRight.PackTextScroll(30, 10, 1, ui.Props{})
 
 	// Here are a lot of additional Packers because it is not possible to mix
@@ -62,14 +64,14 @@ func createDynamicView(c *ui.Composer) {
 		ts.AddItem(fmt.Sprintf("New ProgressBar value: %v", v))
 		updateProgress(v, pb)
 	})
-	packBtn.PackFrame(2, 1, "", 1, emptyProp)
-	btnStep := packBtn.PackButton(6, 3, "Step", ui.DoNotScale, emptyProp)
+	packBtn.PackFrame(1, 1, "", 1, emptyProp)
+	btnStep := packBtn.PackButton(7, 3, "Step", ui.DoNotScale, emptyProp)
 	btnStep.OnClick(func(ev ui.Event) {
 		go pb.Step()
 		ts.AddItem("ProgressBar step")
 	})
-	packBtn.PackFrame(2, 1, "", 1, emptyProp)
-	btnQuit := packBtn.PackButton(6, 3, "Quit", ui.DoNotScale, emptyProp)
+	packBtn.PackFrame(1, 1, "", 1, emptyProp)
+	btnQuit := packBtn.PackButton(7, 3, "Quit", ui.DoNotScale, emptyProp)
 	btnQuit.OnClick(func(ev ui.Event) {
 		go c.Stop()
 	})
@@ -106,12 +108,12 @@ func createManualView(c *ui.Composer) {
 		updateProgress(v, pb)
 	})
 
-	btnStep := ui.CreateButton(wnd, 1+11+2, 6, 6, 3, "Step", ui.Props{Anchors: ui.AnchorBottom})
+	btnStep := ui.CreateButton(wnd, 1+11+1, 6, 7, 3, "Step", ui.Props{Anchors: ui.AnchorBottom})
 	btnStep.OnClick(func(ev ui.Event) {
 		go pb.Step()
 		ts.AddItem("ProgressBar step")
 	})
-	btnQuit := ui.CreateButton(wnd, 1+11+2+6+2, 6, 6, 3, "Quit", ui.Props{Anchors: ui.AnchorBottom | ui.AnchorRight})
+	btnQuit := ui.CreateButton(wnd, 1+11+1+7+1, 6, 7, 3, "Quit", ui.Props{Anchors: ui.AnchorBottom | ui.AnchorRight})
 	btnQuit.OnClick(func(ev ui.Event) {
 		go c.Stop()
 	})

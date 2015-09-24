@@ -35,8 +35,11 @@ func NewButton(parent Window, id WinId, x, y, width, height int, title string, p
 	b := new(Button)
 	b.SetEnabled(true)
 	b.SetPos(x, y)
-	if height < 1 {
-		height = 3
+	if height < 4 {
+		height = 4
+	}
+	if width < 6 {
+		width = 6
 	}
 	b.SetSize(width, height)
 	b.anchor = props.Anchors
@@ -47,7 +50,7 @@ func NewButton(parent Window, id WinId, x, y, width, height int, title string, p
 	b.visible = true
 	b.tabStop = true
 	b.id = id
-	b.minW, b.minH = 5, 3
+	b.minW, b.minH = 6, 4
 
 	return b
 }
@@ -73,10 +76,10 @@ func (b *Button) GetConstraints() (int, int) {
 }
 
 func (b *Button) SetConstraints(minW, minH int) {
-	if minW >= 5 {
+	if minW >= 6 {
 		b.minW = minW
 	}
-	if minH >= 3 {
+	if minH >= 4 {
 		b.minH = minH
 	}
 }
@@ -123,14 +126,14 @@ func (b *Button) Redraw(canvas Canvas) {
 		shadow = tm.GetSysColor(ColorControlShadow)
 	}
 
-	dy := int(h / 2)
+	dy := int((h - 1) / 2)
 	if !b.pressed {
-		canvas.ClearRect(x+1, y+1, w, h, shadow)
-		canvas.ClearRect(x, y, w, h, bg)
-		canvas.DrawAlignedText(x, y+dy, w, b.title, fg, bg, AlignCenter)
+		canvas.ClearRect(x+1, y+1, w-1, h-1, shadow)
+		canvas.ClearRect(x, y, w-1, h-1, bg)
+		canvas.DrawAlignedText(x, y+dy, w-1, b.title, fg, bg, AlignCenter)
 	} else {
-		canvas.ClearRect(x+1, y+1, w, h, bg)
-		canvas.DrawAlignedText(x+1, y+1+dy, w, b.title, fg, bg, AlignCenter)
+		canvas.ClearRect(x+1, y+1, w-1, h-1, bg)
+		canvas.DrawAlignedText(x+1, y+1+dy, w-1, b.title, fg, bg, AlignCenter)
 	}
 }
 
