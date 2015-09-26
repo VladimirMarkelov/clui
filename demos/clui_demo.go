@@ -46,17 +46,20 @@ func createDynamicView(c *ui.Composer) {
 
 	// Here are a lot of additional Packers because it is not possible to mix
 	// Packers and Controls inside one Packer
+
 	packPb := packLeft.AddPack(ui.PackHorizontal, ui.DoNotScale)
 	packPb.SetPaddings(ui.DoNotChange, 1, ui.DoNotChange, ui.DoNotChange)
 	pb := packPb.PackProgressBar(10, 1, 0, 10, 1, emptyProp)
+
 	packCb := packLeft.AddPack(ui.PackHorizontal, ui.DoNotScale)
 	packCb.PackLabel(22, "Set ProgressBar Value", ui.DoNotScale, emptyProp)
 	cb := packCb.PackComboBox(5, "0", 1, ui.Props{Text: "0|1|2|3|4|5|6|7|8|9|10"})
 	cb.OnChange(func(ev ui.Event) {
 		ts.AddItem(fmt.Sprintf("ComboBox changed to %v", ev.Msg))
 	})
-	packFiller := packLeft.AddPack(ui.PackHorizontal, 1)
-	packFiller.PackFrame(1, 1, "", 1, emptyProp)
+
+	packLeft.PackFrame(1, 1, "", 1, emptyProp)
+
 	packBtn := packLeft.AddPack(ui.PackHorizontal, ui.DoNotScale)
 	btnSet := packBtn.PackButton(11, 3, "Set Value", ui.DoNotScale, emptyProp)
 	btnSet.OnClick(func(ev ui.Event) {

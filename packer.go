@@ -482,7 +482,14 @@ func (f *Container) PackLabel(width int, text string, scale int, props Props) *L
 	id := f.view.GetNextControlId()
 	lbl := NewLabel(f.view, id, -1, -1, width, text, props)
 	f.view.AddControl(lbl)
-	f.PackControl(lbl, scale)
+
+	if len(f.packers) > 0 {
+		pack := f.AddPack(f.GetPackType(), 1)
+		pack.PackControl(lbl, scale)
+	} else {
+		f.PackControl(lbl, scale)
+	}
+
 	return lbl
 }
 
@@ -490,7 +497,14 @@ func (f *Container) PackEditField(width int, text string, scale int, props Props
 	id := f.view.GetNextControlId()
 	edit := NewEditField(f.view, id, -1, -1, width, text, props)
 	f.view.AddControl(edit)
-	f.PackControl(edit, scale)
+
+	if len(f.packers) > 0 {
+		pack := f.AddPack(f.GetPackType(), 1)
+		pack.PackControl(edit, scale)
+	} else {
+		f.PackControl(edit, scale)
+	}
+
 	return edit
 }
 
@@ -498,7 +512,14 @@ func (f *Container) PackListBox(width, height int, scale int, props Props) *List
 	id := f.view.GetNextControlId()
 	lbox := NewListBox(f.view, id, -1, -1, width, height, props)
 	f.view.AddControl(lbox)
-	f.PackControl(lbox, scale)
+
+	if len(f.packers) > 0 {
+		pack := f.AddPack(f.GetPackType(), 1)
+		pack.PackControl(lbox, scale)
+	} else {
+		f.PackControl(lbox, scale)
+	}
+
 	return lbox
 }
 
@@ -509,7 +530,14 @@ func (f *Container) PackFrame(width, height int, title string, scale int, props 
 		frm.SetText(title)
 	}
 	f.view.AddControl(frm)
-	f.PackControl(frm, scale)
+
+	if len(f.packers) > 0 {
+		pack := f.AddPack(f.GetPackType(), 1)
+		pack.PackControl(frm, scale)
+	} else {
+		f.PackControl(frm, scale)
+	}
+
 	return frm
 }
 
@@ -517,7 +545,13 @@ func (f *Container) PackButton(width, height int, text string, scale int, props 
 	id := f.view.GetNextControlId()
 	btn := NewButton(f.view, id, -1, -1, width, height, text, props)
 	f.view.AddControl(btn)
-	f.PackControl(btn, scale)
+
+	if len(f.packers) > 0 {
+		pack := f.AddPack(f.GetPackType(), 1)
+		pack.PackControl(btn, scale)
+	} else {
+		f.PackControl(btn, scale)
+	}
 	return btn
 }
 
@@ -525,7 +559,13 @@ func (f *Container) PackCheckBox(width int, text string, scale int, props Props)
 	id := f.view.GetNextControlId()
 	chk := NewCheckBox(f.view, id, -1, -1, width, 1, text, props)
 	f.view.AddControl(chk)
-	f.PackControl(chk, scale)
+
+	if len(f.packers) > 0 {
+		pack := f.AddPack(f.GetPackType(), 1)
+		pack.PackControl(chk, scale)
+	} else {
+		f.PackControl(chk, scale)
+	}
 	return chk
 }
 
@@ -533,7 +573,14 @@ func (f *Container) PackRadioGroup(width, height int, text string, scale int, pr
 	id := f.view.GetNextControlId()
 	rg := NewRadio(f.view, id, -1, -1, width, height, text, props)
 	f.view.AddControl(rg)
-	f.PackControl(rg, scale)
+
+	if len(f.packers) > 0 {
+		pack := f.AddPack(f.GetPackType(), 1)
+		pack.PackControl(rg, scale)
+	} else {
+		f.PackControl(rg, scale)
+	}
+
 	return rg
 }
 
@@ -541,7 +588,14 @@ func (f *Container) PackComboBox(width int, text string, scale int, props Props)
 	id := f.view.GetNextControlId()
 	cbox := NewComboBox(f.view, id, -1, -1, width, text, props)
 	f.view.AddControl(cbox)
-	f.PackControl(cbox, scale)
+
+	if len(f.packers) > 0 {
+		pack := f.AddPack(f.GetPackType(), 1)
+		pack.PackControl(cbox, scale)
+	} else {
+		f.PackControl(cbox, scale)
+	}
+
 	return cbox
 }
 
@@ -549,7 +603,14 @@ func (f *Container) PackProgressBar(width, height, min, max int, scale int, prop
 	id := f.view.GetNextControlId()
 	pb := NewProgressBar(f.view, id, -1, -1, width, height, min, max, props)
 	f.view.AddControl(pb)
-	f.PackControl(pb, scale)
+
+	if len(f.packers) > 0 {
+		pack := f.AddPack(f.GetPackType(), 1)
+		pack.PackControl(pb, scale)
+	} else {
+		f.PackControl(pb, scale)
+	}
+
 	return pb
 }
 
@@ -557,7 +618,14 @@ func (f *Container) PackTextScroll(width, height int, scale int, props Props) *T
 	id := f.view.GetNextControlId()
 	scr := NewTextScroll(f.view, id, -1, -1, width, height, props)
 	f.view.AddControl(scr)
-	f.PackControl(scr, scale)
+
+	if len(f.packers) > 0 {
+		pack := f.AddPack(f.GetPackType(), 1)
+		pack.PackControl(scr, scale)
+	} else {
+		f.PackControl(scr, scale)
+	}
+
 	return scr
 }
 
