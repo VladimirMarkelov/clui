@@ -204,7 +204,6 @@ func (c *Composer) resizeTopView(ev termbox.Event) bool {
 
 	w, h := view.Size()
 	wm, hm := view.Constraints()
-	c.Logger().Printf("Resizing window from %v, %v (%v, %v)", w, h, wm, hm)
 	w1, h1 := w, h
 	minW, minH := view.Constraints()
 	if ev.Key == termbox.KeyArrowUp && minH < h {
@@ -218,7 +217,6 @@ func (c *Composer) resizeTopView(ev termbox.Event) bool {
 	}
 
 	if w1 != w || h1 != h {
-		c.Logger().Printf("Resizing window to %v, %v", w, h)
 		view.SetSize(w, h)
 		// event := Event{Type: EventResize, X: w, Y: h}
 		// c.sendEventToActiveView(event)
