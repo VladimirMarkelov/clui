@@ -6,176 +6,120 @@ Frame can be used as spacer element in dynamic layout - set border to BorderNone
 that control in any place where a spacer is required
 */
 type Frame struct {
-	posX, posY    int
-	width, height int
-	title         string
-	anchor        Anchor
-	id            WinId
-	enabled       bool
-	align         Align
-	active        bool
-	border        BorderStyle
-	visible       bool
-	textColor     Color
-	backColor     Color
-	scale         int
-
-	minW, minH int
+	ControlBase
+	border          BorderStyle
+	children        []Control
+	padSide, padTop int
+	padX, padY      int
+	pack            PackType
 }
 
-func NewFrame(parent Window, id WinId, x, y, width, height int, props Props) *Frame {
+func NewFrame(view View, parent Control, width, height int, bs BorderStyle, scale int) *Frame {
 	f := new(Frame)
-	f.id = id
-	f.SetEnabled(true)
-	f.SetPos(x, y)
 	f.SetSize(width, height)
-	f.border = props.Border
-	f.anchor = props.Anchors
-	f.visible = true
-	f.minW, f.minH = 1, 1
+	f.SetConstraints(width, height)
+	f.border = bs
+	f.view = view
+	f.parent = parent
+	f.SetTabStop(false)
+
+	f.padX, f.padY = 0, 0
+	if bs != BorderNone {
+		f.padSide, f.padTop = 1, 1
+	} else {
+		f.padSide, f.padTop = 0, 0
+	}
+
+	if parent != nil {
+		parent.AddChild(f, scale)
+	}
 
 	return f
 }
 
-func (f *Frame) SetText(title string) {
-	f.title = title
+func (f *Frame) Paddings() (int, int, int, int) {
+	return f.padSide, f.padTop, f.padX, f.padY
 }
 
-func (f *Frame) GetText() string {
-	return f.title
+func (f *Frame) SetPaddings(side, top, dx, dy int) {
+	f.padSide, f.padTop, f.padX, f.padY = side, top, dx, dy
 }
 
-func (f *Frame) GetId() WinId {
-	return f.id
-}
-
-func (f *Frame) GetSize() (int, int) {
-	return f.width, f.height
-}
-
-func (f *Frame) GetConstraints() (int, int) {
-	return f.minW, f.minH
-}
-
-func (f *Frame) SetConstraints(minW, minH int) {
-	if minW >= 1 {
-		f.minW = minW
-	}
-	if minH >= 1 {
-		f.minH = minH
+func (f *Frame) repaintChildren() {
+	for _, ctrl := range f.children {
+		ctrl.Repaint()
 	}
 }
 
-func (f *Frame) SetSize(width, height int) {
-	width, height = ApplyConstraints(f, width, height)
-	f.width = width
-	f.height = height
-}
+func (f *Frame) Repaint() {
+	f.repaintChildren()
 
-func (f *Frame) GetPos() (int, int) {
-	return f.posX, f.posY
-}
-
-func (f *Frame) SetPos(x, y int) {
-	f.posX = x
-	f.posY = y
-}
-
-func (f *Frame) Redraw(canvas Canvas) {
-	tm := canvas.Theme()
-
-	x, y := f.GetPos()
-	w, h := f.GetSize()
-
-	fg, bg := f.textColor, f.backColor
-
-	if fg == ColorDefault {
-		fg = tm.GetSysColor(ColorActiveText)
-	}
-	if bg == ColorDefault {
-		bg = tm.GetSysColor(ColorViewBack)
+	if f.border == BorderNone {
+		return
 	}
 
-	canvas.DrawFrame(x, y, w, h, f.border, fg, bg)
+	tm := f.view.Screen().Theme()
+	canvas := f.view.Canvas()
+
+	x, y := f.Pos()
+	w, h := f.Size()
+
+	fg, bg := RealColor(tm, f.fg, ColorViewText), RealColor(tm, f.bg, ColorViewBack)
+	var chars string = ""
+	if f.border == BorderDouble {
+		chars = tm.SysObject(ObjDoubleBorder)
+	} else {
+		chars = tm.SysObject(ObjSingleBorder)
+	}
+
+	canvas.DrawFrame(x, y, w, h, fg, bg, chars)
 
 	if f.title != "" {
 		text := Ellipsize(f.title, w-2)
-		canvas.DrawText(x+1, y, w-2, text, fg, bg)
+		canvas.PutText(x+1, y, text, fg, bg)
 	}
 }
 
-func (f *Frame) GetEnabled() bool {
-	return f.enabled
+func (f *Frame) RecalculateConstraints() {
+	width, height := f.Constraints()
+	minW, minH := CalculateMinimalSize(f)
+
+	newW, newH := width, height
+	if minW > newW {
+		newW = minW
+	}
+	if minH > newH {
+		newH = minH
+	}
+
+	if newW != width || newH != height {
+		f.SetConstraints(newW, newH)
+	}
 }
 
-func (f *Frame) SetEnabled(active bool) {
-	// nothing to do
+func (f *Frame) AddChild(c Control, scale int) {
+	if f.view.ChildExists(c) {
+		panic("Frame: Cannot add the same control twice")
+	}
+
+	c.SetScale(scale)
+	f.children = append(f.children, c)
+	f.RecalculateConstraints()
+	f.view.RegisterControl(c)
 }
 
-func (f *Frame) SetAlign(align Align) {
-	// nothing
+func (f *Frame) Children() []Control {
+	return f.children
 }
 
-func (f *Frame) GetAlign() Align {
-	return f.align
+func (f *Frame) SetPack(pk PackType) {
+	if len(f.children) > 0 {
+		panic("Control already has children")
+	}
+
+	f.pack = pk
 }
 
-func (f *Frame) SetAnchors(anchor Anchor) {
-	f.anchor = anchor
-}
-
-func (f *Frame) GetAnchors() Anchor {
-	return f.anchor
-}
-
-func (f *Frame) GetActive() bool {
-	return f.active
-}
-
-func (f *Frame) SetActive(active bool) {
-	f.active = active
-}
-
-func (f *Frame) GetTabStop() bool {
-	return false
-}
-
-func (f *Frame) SetTabStop(tab bool) {
-	// nothing
-}
-
-func (f *Frame) ProcessEvent(event Event) bool {
-	return false
-}
-
-func (f *Frame) SetVisible(visible bool) {
-	f.visible = visible
-}
-
-func (f *Frame) GetVisible() bool {
-	return f.visible
-}
-
-func (f *Frame) GetColors() (Color, Color) {
-	return f.textColor, f.backColor
-}
-
-func (f *Frame) SetTextColor(clr Color) {
-	f.textColor = clr
-}
-
-func (f *Frame) SetBackColor(clr Color) {
-	f.backColor = clr
-}
-
-func (f *Frame) HideChildren() {
-	// nothing to do
-}
-
-func (f *Frame) GetScale() int {
-	return f.scale
-}
-
-func (f *Frame) SetScale(scale int) {
-	f.scale = scale
+func (f *Frame) Pack() PackType {
+	return f.pack
 }

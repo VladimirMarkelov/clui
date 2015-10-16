@@ -1,7 +1,7 @@
 package clui
 
 import (
-	"github.com/VladimirMarkelov/termbox-go"
+	term "github.com/nsf/termbox-go"
 	"strings"
 )
 
@@ -20,121 +20,59 @@ ListBox provides a few own methods to manipulate its items:
 AddItem, SelectItem, FindItem, GetSelectedItem, RemoveItem, Clear
 */
 type ListBox struct {
-	posX, posY    int
-	width, height int
-	title         string
-	anchor        Anchor
-	id            WinId
-	enabled       bool
-	align         Align
-	active        bool
-	parent        Window
-	visible       bool
-	tabStop       bool
-	textColor     Color
-	backColor     Color
-	scale         int
-
+	ControlBase
 	// own listbox members
 	items         []string
 	currSelection int
 	topLine       int
-	pressY        int
+	maxItems      int
+	bgSel, fgSel  term.Attribute
 	buttonPos     int
-
-	minW, minH int
 
 	onSelectItem func(Event)
 }
 
-func NewListBox(parent Window, id WinId, x, y, width, height int, props Props) *ListBox {
+func NewListBox(view View, parent Control, width, height int, scale int) *ListBox {
 	l := new(ListBox)
-	l.SetEnabled(true)
-	l.SetPos(x, y)
 	l.SetSize(width, height)
+	l.SetConstraints(width, height)
 	l.currSelection = -1
 	l.items = make([]string, 0)
 	l.topLine = 0
-	l.pressY = -1
-	l.buttonPos = -1
 	l.parent = parent
-	l.visible = true
-	l.tabStop = true
-	l.id = id
-	l.minW, l.minH = 3, 5
+	l.view = view
+	l.maxItems = 0
+	l.buttonPos = -1
+
+	l.fg = ColorBlack
+	l.bg = ColorWhite
+	l.fgSel = ColorYellow
+	l.bgSel = ColorBlue
+	l.SetTabStop(true)
 
 	l.onSelectItem = nil
+
+	if parent != nil {
+		parent.AddChild(l, scale)
+	}
 
 	return l
 }
 
-func (l *ListBox) SetText(title string) {
-	l.title = title
-}
+func (l *ListBox) redrawScroll(canvas Canvas, tm Theme) {
+	parts := []rune(tm.SysObject(ObjScrollBar))
 
-func (l *ListBox) GetText() string {
-	return l.title
-}
+	chLine, chCursor, chUp, chDown := parts[0], parts[1], parts[2], parts[3]
 
-func (l *ListBox) GetId() WinId {
-	return l.id
-}
+	fg, bg := RealColor(tm, l.fg, ColorScrollText), RealColor(tm, l.bg, ColorScrollBack)
+	fgThumb, bgThumb := RealColor(tm, l.fg, ColorThumbText), RealColor(tm, l.bg, ColorThumbBack)
 
-func (l *ListBox) GetSize() (int, int) {
-	return l.width, l.height
-}
-
-func (l *ListBox) GetConstraints() (int, int) {
-	return l.minW, l.minH
-}
-
-func (l *ListBox) SetConstraints(minW, minH int) {
-	if minW >= 3 {
-		l.minW = minW
-	}
-	if minH >= 5 {
-		l.minH = minH
-	}
-}
-
-func (l *ListBox) SetSize(width, height int) {
-	width, height = ApplyConstraints(l, width, height)
-	l.width = width
-	l.height = height
-}
-
-func (l *ListBox) GetPos() (int, int) {
-	return l.posX, l.posY
-}
-
-func (l *ListBox) SetPos(x, y int) {
-	l.posX = x
-	l.posY = y
-}
-
-func (l *ListBox) redrawScroll(canvas Canvas, tm *ThemeManager) {
-	chLine := tm.GetSysObject(ObjScrollBar)
-	chCursor := tm.GetSysObject(ObjScrollThumb)
-	chUp := tm.GetSysObject(ObjScrollUpArrow)
-	chDown := tm.GetSysObject(ObjScrollDownArrow)
-
-	fg, bg, fgThumb := ColorDefault, ColorDefault, ColorDefault
-	if fg == ColorDefault {
-		fg = tm.GetSysColor(ColorScroll)
-	}
-	if bg == ColorDefault {
-		bg = tm.GetSysColor(ColorScrollBack)
-	}
-	if fgThumb == ColorDefault {
-		fgThumb = tm.GetSysColor(ColorScrollThumb)
-	}
-
-	canvas.DrawRune(l.posX+l.width-1, l.posY, chUp, fg, bg)
-	canvas.DrawRune(l.posX+l.width-1, l.posY+l.height-1, chDown, fg, bg)
+	canvas.PutSymbol(l.x+l.width-1, l.y, term.Cell{Ch: chUp, Fg: fg, Bg: bg})
+	canvas.PutSymbol(l.x+l.width-1, l.y+l.height-1, term.Cell{Ch: chDown, Fg: fg, Bg: bg})
 
 	if l.height > 2 {
 		for yy := 1; yy < l.height-1; yy++ {
-			canvas.DrawRune(l.posX+l.width-1, l.posY+yy, chLine, fg, bg)
+			canvas.PutSymbol(l.x+l.width-1, l.y+yy, term.Cell{Ch: chLine, Fg: fg, Bg: bg})
 		}
 	}
 
@@ -143,104 +81,52 @@ func (l *ListBox) redrawScroll(canvas Canvas, tm *ThemeManager) {
 	}
 
 	if l.height == 3 || l.currSelection <= 0 {
-		canvas.DrawRune(l.posX+l.width-1, l.posY+1, chCursor, fgThumb, bg)
+		canvas.PutSymbol(l.x+l.width-1, l.y+1, term.Cell{Ch: chCursor, Fg: fgThumb, Bg: bgThumb})
 		return
 	}
 
-	if l.pressY == -1 {
-		ydiff := int(float32(l.currSelection) / float32(len(l.items)-1.0) * float32(l.height-3))
-		l.buttonPos = ydiff + 1
-	}
-	canvas.DrawRune(l.posX+l.width-1, l.posY+l.buttonPos, chCursor, fgThumb, bg)
+	// if l.pressY == -1 {
+	ydiff := int(float32(l.currSelection) / float32(len(l.items)-1.0) * float32(l.height-3))
+	l.buttonPos = ydiff + 1
+	// }
+	canvas.PutSymbol(l.x+l.width-1, l.y+l.buttonPos, term.Cell{Ch: chCursor, Fg: fgThumb, Bg: bgThumb})
 }
 
-func (l *ListBox) redrawItems(canvas Canvas, tm *ThemeManager) {
+func (l *ListBox) redrawItems(canvas Canvas, tm Theme) {
 	maxCurr := len(l.items) - 1
 	curr := l.topLine
 	dy := 0
 	maxDy := l.height - 1
 	maxWidth := l.width - 1
 
-	fg, bg := l.textColor, l.backColor
-	fgSel, bgSel := ColorDefault, ColorDefault
-	if fg == ColorDefault {
-		fg = tm.GetSysColor(ColorEditText)
-	}
-	if bg == ColorDefault {
-		bg = tm.GetSysColor(ColorEditBack)
-	}
-	if fgSel == ColorDefault {
-		fgSel = tm.GetSysColor(ColorSelectionText)
-	}
-	if bgSel == ColorDefault {
-		bgSel = tm.GetSysColor(ColorSelectionBack)
-	}
+	fg, bg := RealColor(tm, l.fg, ColorEditText), RealColor(tm, l.bg, ColorEditBack)
+	fgSel, bgSel := RealColor(tm, l.fgSel, ColorSelectionText), RealColor(tm, l.bgSel, ColorSelectionBack)
 
 	for curr <= maxCurr && dy <= maxDy {
 		f, b := fg, bg
 		if curr == l.currSelection {
 			f, b = fgSel, bgSel
 		}
-		canvas.DrawText(l.posX, l.posY+dy, maxWidth, l.items[curr], f, b)
+
+		_, text := AlignText(l.items[curr], maxWidth, AlignLeft)
+		canvas.PutText(l.x, l.y+dy, text, f, b)
 
 		curr++
 		dy++
 	}
 }
 
-func (l *ListBox) Redraw(canvas Canvas) {
-	x, y := l.GetPos()
-	w, h := l.GetSize()
+func (l *ListBox) Repaint() {
+	canvas := l.view.Canvas()
+	tm := l.view.Screen().Theme()
 
-	tm := canvas.Theme()
-	bg := ColorDefault
-	if bg == ColorDefault {
-		bg = tm.GetSysColor(ColorEditBack)
-	}
+	x, y := l.Pos()
+	w, h := l.Size()
 
-	canvas.ClearRect(x, y, w, h, bg)
+	bg := RealColor(tm, l.bg, ColorEditText)
+	canvas.FillRect(x, y, w, h, term.Cell{Bg: bg, Ch: ' '})
 	l.redrawItems(canvas, tm)
 	l.redrawScroll(canvas, tm)
-}
-
-func (l *ListBox) GetEnabled() bool {
-	return l.enabled
-}
-
-func (l *ListBox) SetEnabled(active bool) {
-	l.enabled = active
-}
-
-func (l *ListBox) SetAlign(align Align) {
-	l.align = align
-}
-
-func (l *ListBox) GetAlign() Align {
-	return l.align
-}
-
-func (l *ListBox) SetAnchors(anchor Anchor) {
-	l.anchor = anchor
-}
-
-func (l *ListBox) GetAnchors() Anchor {
-	return l.anchor
-}
-
-func (l *ListBox) GetActive() bool {
-	return l.active
-}
-
-func (l *ListBox) SetActive(active bool) {
-	l.active = active
-}
-
-func (l *ListBox) GetTabStop() bool {
-	return l.tabStop
-}
-
-func (l *ListBox) SetTabStop(tab bool) {
-	l.tabStop = tab
 }
 
 func (l *ListBox) home() {
@@ -322,12 +208,12 @@ func (l *ListBox) Clear() {
 }
 
 func (l *ListBox) processMouseClick(ev Event) bool {
-	if ev.Key != termbox.MouseLeft {
+	if ev.Key != term.MouseLeft {
 		return false
 	}
 
-	dx := ev.X - l.posX
-	dy := ev.Y - l.posY
+	dx := ev.X - l.x
+	dy := ev.Y - l.y
 
 	if dx == l.width-1 {
 		if dy < 0 || dy >= l.height || len(l.items) < 2 {
@@ -365,31 +251,6 @@ func (l *ListBox) processMouseClick(ev Event) bool {
 	return true
 }
 
-func (l *ListBox) processMousePress(ev Event) bool {
-	if ev.Key != termbox.MouseLeft {
-		return false
-	}
-
-	dx := ev.X - l.posX
-	dy := ev.Y - l.posY
-
-	if dx != l.width-1 || len(l.items) < 2 || dy != l.buttonPos {
-		return true
-	}
-
-	l.pressY = ev.Y
-	return true
-}
-
-func (l *ListBox) processMouseRelease(ev Event) bool {
-	if ev.Key == termbox.MouseLeft {
-		l.pressY = -1
-		return true
-	}
-
-	return false
-}
-
 func (l *ListBox) recalcPositionByScroll() {
 	if len(l.items) < 2 {
 		return
@@ -407,58 +268,27 @@ func (l *ListBox) recalcPositionByScroll() {
 	l.ensureVisible()
 }
 
-func (l *ListBox) processMouseMove(ev Event) bool {
-	if l.pressY == -1 {
-		return false
-	}
-
-	length := len(l.items)
-	if length < 2 {
-		return true
-	}
-
-	dy := ev.Y - l.pressY
-	l.pressY = ev.Y
-
-	if dy > 0 && l.buttonPos == l.height-2 {
-		return true
-	}
-	if dy < 0 && l.buttonPos == 1 {
-		return true
-	}
-
-	l.buttonPos += dy
-	if l.buttonPos < 1 {
-		l.buttonPos = 1
-	} else if l.buttonPos >= l.height-1 {
-		l.buttonPos = l.height - 2
-	}
-	l.recalcPositionByScroll()
-
-	return true
-}
-
 func (l *ListBox) ProcessEvent(event Event) bool {
-	if !l.active || !l.enabled {
+	if !l.Active() || !l.Enabled() {
 		return false
 	}
 
 	switch event.Type {
 	case EventKey:
 		switch event.Key {
-		case termbox.KeyHome:
+		case term.KeyHome:
 			l.home()
 			return true
-		case termbox.KeyEnd:
+		case term.KeyEnd:
 			l.end()
 			return true
-		case termbox.KeyArrowUp:
+		case term.KeyArrowUp:
 			l.moveUp()
 			return true
-		case termbox.KeyArrowDown:
+		case term.KeyArrowDown:
 			l.moveDown()
 			return true
-		case termbox.KeyCtrlM:
+		case term.KeyCtrlM:
 			if l.currSelection != -1 && l.onSelectItem != nil {
 				ev := Event{Y: l.currSelection, Msg: l.GetSelectedItem()}
 				go l.onSelectItem(ev)
@@ -466,33 +296,11 @@ func (l *ListBox) ProcessEvent(event Event) bool {
 		default:
 			return false
 		}
-	case EventMouseScroll:
-		if event.Y > 0 {
-			l.moveDown()
-			return true
-		} else if event.Y < 0 {
-			l.moveUp()
-			return true
-		}
-	case EventMouseClick, EventMouse:
+	case EventMouse:
 		return l.processMouseClick(event)
-	case EventMousePress:
-		return l.processMousePress(event)
-	case EventMouseRelease:
-		return l.processMouseRelease(event)
-	case EventMouseMove:
-		return l.processMouseMove(event)
 	}
 
 	return false
-}
-
-func (l *ListBox) SetVisible(visible bool) {
-	l.visible = visible
-}
-
-func (l *ListBox) GetVisible() bool {
-	return l.visible
 }
 
 // own methods
@@ -500,6 +308,10 @@ func (l *ListBox) GetVisible() bool {
 // Adds a new item to item list
 // Returns true if the operation is successful
 func (l *ListBox) AddItem(item string) bool {
+	if l.maxItems > 0 && len(l.items) > l.maxItems {
+		l.RemoveItem(0)
+	}
+
 	l.items = append(l.items, item)
 	return true
 }
@@ -555,26 +367,10 @@ func (l *ListBox) OnSelectItem(fn func(Event)) {
 	l.onSelectItem = fn
 }
 
-func (l *ListBox) GetColors() (Color, Color) {
-	return l.textColor, l.backColor
+func (l *ListBox) MaxItems() int {
+	return l.maxItems
 }
 
-func (l *ListBox) SetTextColor(clr Color) {
-	l.textColor = clr
-}
-
-func (l *ListBox) SetBackColor(clr Color) {
-	l.backColor = clr
-}
-
-func (l *ListBox) HideChildren() {
-	// nothing to do
-}
-
-func (l *ListBox) GetScale() int {
-	return l.scale
-}
-
-func (l *ListBox) SetScale(scale int) {
-	l.scale = scale
+func (l *ListBox) SetMaxItems(max int) {
+	l.maxItems = max
 }

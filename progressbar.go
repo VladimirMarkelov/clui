@@ -1,6 +1,7 @@
 package clui
 
 import (
+	term "github.com/nsf/termbox-go"
 	"strings"
 )
 
@@ -15,112 +16,49 @@ In addition to standard Control methods it has its own ones:
 SetLimits, SetValue, Step
 */
 type ProgressBar struct {
-	posX, posY     int
-	width, height  int
-	title          string
-	anchor         Anchor
-	align          Align
-	id             WinId
-	enabled        bool
-	active         bool
-	direction      Direction
-	min, max       int
-	value          int
-	visible        bool
-	textColor      Color
-	backColor      Color
-	textEmptyColor Color
-	backEmptyColor Color
-	scale          int
-	parent         Window
-
-	minW, minH int
+	ControlBase
+	direction        Direction
+	min, max         int
+	value            int
+	emptyFg, emptyBg term.Attribute
 }
 
-func NewProgressBar(parent Window, id WinId, x, y, width, height int, min, max int, props Props) *ProgressBar {
+func NewProgressBar(view View, parent Control, width, height int, scale int) *ProgressBar {
 	b := new(ProgressBar)
-	b.SetEnabled(true)
-	b.SetPos(x, y)
 	b.SetSize(width, height)
-	b.anchor = props.Anchors
-	b.min = min
-	b.max = max
-	b.direction = props.Dir
-	b.visible = true
-	b.minW, b.minH = 1, 1
+	b.SetConstraints(width, height)
+	b.SetTabStop(false)
+	b.min = 0
+	b.max = 10
+	b.direction = Horizontal
 	b.parent = parent
+	b.view = view
+
+	b.bg = ColorBlack
+	b.fg = ColorBlueBold
+	b.emptyBg = ColorBlack
+	b.emptyFg = ColorBlue
+
+	if parent != nil {
+		parent.AddChild(b, scale)
+	}
 
 	return b
 }
 
-func (b *ProgressBar) SetText(title string) {
-	// nothing to do
-}
-
-func (b *ProgressBar) GetText() string {
-	return b.title
-}
-
-func (b *ProgressBar) GetId() WinId {
-	return b.id
-}
-
-func (b *ProgressBar) GetSize() (int, int) {
-	return b.width, b.height
-}
-
-func (b *ProgressBar) GetConstraints() (int, int) {
-	return b.minW, b.minH
-}
-
-func (b *ProgressBar) SetConstraints(minW, minH int) {
-	if minW >= 1 {
-		b.minW = minW
-	}
-	if minH >= 1 {
-		b.minH = minH
-	}
-}
-
-func (b *ProgressBar) SetSize(width, height int) {
-	width, height = ApplyConstraints(b, width, height)
-	b.width = width
-	b.height = height
-}
-
-func (b *ProgressBar) GetPos() (int, int) {
-	return b.posX, b.posY
-}
-
-func (b *ProgressBar) SetPos(x, y int) {
-	b.posX = x
-	b.posY = y
-}
-
-func (b *ProgressBar) Redraw(canvas Canvas) {
+func (b *ProgressBar) Repaint() {
 	if b.max <= b.min {
 		return
 	}
 
-	tm := canvas.Theme()
+	canvas := b.view.Canvas()
+	tm := b.view.Screen().Theme()
 
-	fgOff, fgOn, bgOff, bgOn := b.textEmptyColor, b.textColor, b.backEmptyColor, b.backColor
+	fgOff, fgOn := RealColor(tm, b.emptyFg, ColorProgressEmptyText), RealColor(tm, b.fg, ColorProgressText)
+	bgOff, bgOn := RealColor(tm, b.emptyBg, ColorProgressEmptyBack), RealColor(tm, b.bg, ColorProgressBack)
 
-	if fgOff == ColorDefault {
-		fgOff = tm.GetSysColor(ColorProgressOff)
-	}
-	if fgOn == ColorDefault {
-		fgOn = tm.GetSysColor(ColorProgressOn)
-	}
-	if bgOff == ColorDefault {
-		bgOff = tm.GetSysColor(ColorProgressOffBack)
-	}
-	if bgOn == ColorDefault {
-		bgOn = tm.GetSysColor(ColorProgressOnBack)
-	}
-
-	cFilled := tm.GetSysObject(ObjProgressBarFull)
-	cEmpty := tm.GetSysObject(ObjProgressBarEmpty)
+	parts := []rune(tm.SysObject(ObjProgressBar))
+	cFilled, cEmpty := parts[0], parts[1]
 
 	prc := 0
 	if b.value >= b.max {
@@ -129,81 +67,29 @@ func (b *ProgressBar) Redraw(canvas Canvas) {
 		prc = (100 * (b.value - b.min)) / (b.max - b.min)
 	}
 
-	x, y := b.GetPos()
-	w, h := b.GetSize()
+	x, y := b.Pos()
+	w, h := b.Size()
 
-	if b.direction == DirHorizontal {
+	if b.direction == Horizontal {
 		filled := prc * w / 100
 		sFilled := strings.Repeat(string(cFilled), filled)
 		sEmpty := strings.Repeat(string(cEmpty), w-filled)
 
 		for yy := y; yy < y+h; yy++ {
-			canvas.DrawText(x, yy, filled, sFilled, fgOn, bgOn)
-			canvas.DrawText(x+filled, yy, w-filled, sEmpty, fgOff, bgOff)
+			canvas.PutText(x, yy, sFilled, fgOn, bgOn)
+			canvas.PutText(x+filled, yy, sEmpty, fgOff, bgOff)
 		}
 	} else {
 		filled := prc * h / 100
 		sFilled := strings.Repeat(string(cFilled), w)
 		sEmpty := strings.Repeat(string(cEmpty), w)
 		for yy := y; yy < y+h-filled; yy++ {
-			canvas.DrawText(x, yy, w, sEmpty, fgOff, bgOff)
+			canvas.PutText(x, yy, sEmpty, fgOff, bgOff)
 		}
 		for yy := y + h - filled; yy < y+h; yy++ {
-			canvas.DrawText(x, yy, w, sFilled, fgOn, bgOn)
+			canvas.PutText(x, yy, sFilled, fgOn, bgOn)
 		}
 	}
-}
-
-func (b *ProgressBar) GetEnabled() bool {
-	return b.enabled
-}
-
-func (b *ProgressBar) SetEnabled(active bool) {
-	// nothing to do
-}
-
-func (b *ProgressBar) SetAlign(align Align) {
-	// nothing
-}
-
-func (b *ProgressBar) GetAlign() Align {
-	return b.align
-}
-
-func (b *ProgressBar) SetAnchors(anchor Anchor) {
-	b.anchor = anchor
-}
-
-func (b *ProgressBar) GetAnchors() Anchor {
-	return b.anchor
-}
-
-func (b *ProgressBar) GetActive() bool {
-	return b.active
-}
-
-func (b *ProgressBar) SetActive(active bool) {
-	b.active = active
-}
-
-func (b *ProgressBar) GetTabStop() bool {
-	return false
-}
-
-func (b *ProgressBar) SetTabStop(tab bool) {
-	// nothing
-}
-
-func (b *ProgressBar) ProcessEvent(event Event) bool {
-	return false
-}
-
-func (b *ProgressBar) SetVisible(visible bool) {
-	b.visible = visible
-}
-
-func (b *ProgressBar) GetVisible() bool {
-	return b.visible
 }
 
 //----------------- own methods -------------------------
@@ -218,6 +104,14 @@ func (b *ProgressBar) SetValue(pos int) {
 	} else {
 		b.value = pos
 	}
+}
+
+func (b *ProgressBar) Value() int {
+	return b.value
+}
+
+func (b *ProgressBar) Limits() (int, int) {
+	return b.min, b.max
 }
 
 // Set new ProgressBar limits. The current value is adjusted
@@ -246,34 +140,10 @@ func (b *ProgressBar) Step() int {
 	return b.value
 }
 
-func (b *ProgressBar) GetColors() (Color, Color) {
-	return b.textColor, b.backColor
+func (b *ProgressBar) SecondaryColors() (term.Attribute, term.Attribute) {
+	return b.emptyFg, b.emptyBg
 }
 
-func (b *ProgressBar) GetSecondColors() (Color, Color) {
-	return b.textEmptyColor, b.backEmptyColor
-}
-
-func (b *ProgressBar) SetSecondColors(fg, bg Color) {
-	b.textEmptyColor, b.backEmptyColor = fg, bg
-}
-
-func (b *ProgressBar) SetTextColor(clr Color) {
-	b.textColor = clr
-}
-
-func (b *ProgressBar) SetBackColor(clr Color) {
-	b.backColor = clr
-}
-
-func (b *ProgressBar) HideChildren() {
-	// nothing to do
-}
-
-func (b *ProgressBar) GetScale() int {
-	return b.scale
-}
-
-func (b *ProgressBar) SetScale(scale int) {
-	b.scale = scale
+func (b *ProgressBar) SetSecondaryColors(fg, bg term.Attribute) {
+	b.emptyFg, b.emptyBg = fg, bg
 }

@@ -1,92 +1,78 @@
 package clui
 
 import (
-	"github.com/VladimirMarkelov/termbox-go"
+	"github.com/nsf/termbox-go"
 	"log"
 	"os"
 )
 
-// An service object that manages Windows and console, processes events, and provides service methods
+// An service object that manages Views and console, processes events, and provides service methods
 // One application must have only one object of this type
 type Composer struct {
-	// list of visible Windows
-	windows map[WinId]Window
+	// list of visible Views
+	views []View
 	// console width and height
 	width, height int
 	// console canvas
-	screen *FrameBuffer
-	// Window draw order. The last Window is active Window
-	windowOrder []WinId
-	// ID assigned to the last created Window
-	lastWindowId WinId
-	// a channel to communicate with Windows(e.g, Windows send redraw event to this channel)
-	channel chan InternalEvent
-	// What kind of dragging is active: nothing is dragged, something is being moved, something is being resized
-	dragging DragAction
-	// Window ID that is currently dragged. NullWindow if no Window is dragged
-	dragObject WinId
-	// Console position where mouse button was pressed and drag action started
-	dragStartX, dragStartY int
-	// which part of dragged Window is active, it determines whether Window is resizing or dragging and what size is changing
-	dragHit HitResult
+	canvas Canvas
+	// a channel to communicate with View(e.g, Views send redraw event to this channel)
+	channel chan Event
 
 	// current color scheme
 	themeManager *ThemeManager
 
 	// multi key sequences support. The flag below are true if the last keyboard combination was Ctrl+S or Ctrl+W respectively
-	ctrlSpressed bool
-	ctrlWpressed bool
-	// last pressed key - to make repeatable actions simpler, e.g, at first one presses Ctrl+S and then just repeatedly presses arrow lest to resize Window
+	ctrlKey termbox.Key
+	// last pressed key - to make repeatable actions simpler, e.g, at first one presses Ctrl+S and then just repeatedly presses arrow lest to resize View
 	lastKey termbox.Key
 
 	//debug
 	logger *log.Logger
 }
 
-func (c *Composer) initBuffer(w, h int) *FrameBuffer {
-	bf := NewFrameBuffer(w, h)
-	bf.Clear(ColorBlack)
-	return bf
+func (c *Composer) initBuffer() {
+	c.canvas = NewFrameBuffer(c.width, c.height)
+	c.canvas.Clear(ColorBlack)
 }
 
 // Initialize library and starts console management
-func (c *Composer) Init() {
+func InitLibrary() *Composer {
 	err := termbox.Init()
 	if err != nil {
 		panic(err)
 	}
 
+	c := new(Composer)
+	c.ctrlKey = termbox.KeyEsc
+
 	termbox.HideCursor()
 
-	file, _ := os.OpenFile("debug.txt", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+	file, _ := os.OpenFile("debugui.txt", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
 	c.logger = log.New(file, "", log.Ldate|log.Ltime|log.Lshortfile)
 	c.logger.Printf("----------------------------------")
 
-	c.lastWindowId = 0
-	c.channel = make(chan InternalEvent)
+	c.channel = make(chan Event)
 
-	c.windows = make(map[WinId]Window)
-	c.windowOrder = make([]WinId, 0)
+	c.views = make([]View, 0)
 
 	c.width, c.height = termbox.Size()
-	c.screen = c.initBuffer(c.width, c.height)
+	c.initBuffer()
 
 	c.themeManager = NewThemeManager()
 
-	c.ctrlSpressed = false
-	c.ctrlWpressed = false
-
-	termbox.SetInputMode(termbox.InputEsc | termbox.InputMouse)
+	termbox.SetInputMode(termbox.InputAlt | termbox.InputMouse)
 
 	c.redrawAll()
+
+	return c
 }
 
 func (c *Composer) redrawAll() {
 	for j := 0; j < c.height; j++ {
 		for i := 0; i < c.width; i++ {
-			sym, ok := c.screen.GetSymbol(i, j)
+			sym, ok := c.canvas.Symbol(i, j)
 			if ok {
-				termbox.SetCell(i, j, sym.ch, termbox.Attribute(sym.fg), termbox.Attribute(sym.bg))
+				termbox.SetCell(i, j, sym.Ch, termbox.Attribute(sym.Fg), termbox.Attribute(sym.Bg))
 			}
 		}
 	}
@@ -94,142 +80,96 @@ func (c *Composer) redrawAll() {
 	termbox.Flush()
 }
 
-// Repaints all Windows on the screen. Now the method is not efficient: at first clears a console and then draws all Windows starting from the bottom
-func (c *Composer) RefreshScreen() {
-	// TODO: make more intelligent (for each Cell ask starting from the top most if it is its Cell and write it)
-	for yy := 0; yy < c.height; yy++ {
-		for xx := 0; xx < c.width; xx++ {
-			c.screen.rawRuneOut(xx, yy, ' ', ColorWhite, ColorBlack)
+// Repaints all View on the screen. Now the method is not efficient: at first clears a console and then draws all Views starting from the bottom
+func (c *Composer) RefreshScreen(invalidate bool) {
+	c.canvas.Clear(ColorBlack)
+
+	for _, wnd := range c.views {
+		if invalidate {
+			wnd.Repaint()
 		}
+		wnd.Draw(c.canvas)
 	}
 
-	for _, winId := range c.windowOrder {
-		wnd, ok := c.windows[winId]
-		if !ok {
-			continue
-		}
-
-		wnd.Redraw()
-
-		posx, posy := wnd.GetPos()
-		w, h := wnd.GetSize()
-		for y := posy; y < posy+h; y++ {
-			for x := posx; x < posx+w; x++ {
-				if x < c.width && y < c.height {
-					sym, ok := wnd.GetScreenSymbol(x, y)
-					if ok {
-						c.screen.rawRuneOut(x, y, sym.ch, sym.fg, sym.bg)
-					}
-				}
-			}
-		}
-	}
 	c.redrawAll()
 }
 
-func (c *Composer) makeTopViewActive() {
-	for i := 0; i < len(c.windowOrder)-1; i++ {
-		window, ok := c.windows[c.windowOrder[i]]
-		if ok {
-			window.SetActive(false)
-		}
-	}
+func (c *Composer) CreateView(posX, posY, width, height int, title string) View {
+	view := NewWindow(c, posX, posY, width, height, title)
 
-	window, ok := c.windows[c.windowOrder[len(c.windowOrder)-1]]
-	if ok {
-		window.SetActive(true)
-	}
-}
+	c.views = append(c.views, view)
+	view.Repaint()
 
-func (c *Composer) CreateWindow(posX, posY, width, height int, title string, props Props) Window {
-	c.lastWindowId++
-	id := c.lastWindowId
-	view := NewView(c, id, posX, posY, width, height, title)
-	view.SetBorderIcons(IconClose | IconBottom)
+	c.activateView(view)
 
-	c.windows[id] = view
-	view.Redraw()
-	c.windowOrder = append(c.windowOrder, id)
-
-	c.makeTopViewActive()
-
-	c.RefreshScreen()
+	c.RefreshScreen(false)
 
 	return view
 }
 
-func (c *Composer) DestroyControl(parent Window, control Control) {
-	parent.RemoveControl(control)
-}
-
-func (c *Composer) checkWindowUnderMouse(screenX, screenY int) (WinId, HitResult) {
-	if len(c.windowOrder) == 0 {
-		return NullWindow, HitOutside
+func (c *Composer) checkWindowUnderMouse(screenX, screenY int) (View, HitResult) {
+	if len(c.views) == 0 {
+		return nil, HitOutside
 	}
 
-	for i := len(c.windowOrder) - 1; i >= 0; i-- {
-		window, ok := c.windows[c.windowOrder[i]]
-		if ok {
-			hit := window.HitTest(screenX, screenY)
-			if hit != HitOutside {
-				return c.windowOrder[i], hit
-			}
+	for i := len(c.views) - 1; i >= 0; i-- {
+		window := c.views[i]
+		hit := window.HitTest(screenX, screenY)
+		if hit != HitOutside {
+			return window, hit
 		}
 	}
 
-	return NullWindow, HitOutside
+	return nil, HitOutside
 }
 
-func (c *Composer) getWindow(id WinId) Window {
-	wnd, ok := c.windows[id]
-
-	if !ok {
-		return nil
+func (c *Composer) activateView(view View) {
+	if c.topView() == view {
+		for _, v := range c.views {
+			v.SetActive(false)
+		}
+		view.SetActive(true)
+		return
 	}
 
-	return wnd
-}
+	wList := make([]View, 0)
+	found := false
 
-func (c *Composer) getTopWindow() WinId {
-	if len(c.windowOrder) == 0 {
-		return NullWindow
-	}
-
-	return c.windowOrder[len(c.windowOrder)-1]
-}
-
-func (c *Composer) makeWindowTop(wid WinId) {
-	for i := 0; i < len(c.windowOrder); i++ {
-		if c.windowOrder[i] == wid {
-			c.windowOrder = append(c.windowOrder[:i], c.windowOrder[i+1:]...)
-			break
+	for _, v := range c.views {
+		if v != view {
+			v.SetActive(false)
+			wList = append(wList, v)
 		}
 	}
 
-	c.windowOrder = append(c.windowOrder, wid)
-	c.makeTopViewActive()
+	if !found {
+		panic("Invalid view to activate")
+	}
+
+	view.SetActive(true)
+	c.views = append(wList, view)
 }
 
 func (c *Composer) moveActiveWindowToBottom() bool {
-	if len(c.windowOrder) < 2 {
+	if len(c.views) < 2 {
 		return false
 	}
 
 	event := Event{Type: EventActivate, X: 0} // send deactivated
 	c.sendEventToActiveView(event)
 
-	last := c.windowOrder[len(c.windowOrder)-1]
+	last := c.topView()
 
-	for i := len(c.windowOrder) - 1; i > 0; i-- {
-		c.windowOrder[i] = c.windowOrder[i-1]
+	for i := len(c.views) - 1; i > 0; i-- {
+		c.views[i] = c.views[i-1]
 	}
 
-	c.windowOrder[0] = last
-	c.makeTopViewActive()
+	c.views[0] = last
+	c.activateView(c.topView())
 
 	event = Event{Type: EventActivate, X: 1} // send 'activated'
 	c.sendEventToActiveView(event)
-	c.RefreshScreen()
+	c.RefreshScreen(true)
 
 	return true
 }
@@ -240,51 +180,60 @@ func (c *Composer) termboxEventToLocal(ev termbox.Event) Event {
 }
 
 func (c *Composer) sendEventToActiveView(ev Event) bool {
-	winid := c.getTopWindow()
-	if winid != NullWindow {
-		window := c.getWindow(winid)
-		if window != nil {
-			return window.ProcessEvent(ev)
-		}
+	view := c.topView()
+	if view != nil {
+		return view.ProcessEvent(ev)
 	}
 
 	return false
 }
 
-func (c *Composer) resizeTopWindow(ev termbox.Event) bool {
-	if len(c.windowOrder) > 0 {
-		if ev.Mod&termbox.ModControl != 0 {
-			window := c.getWindow(c.getTopWindow())
-			if window != nil {
-				w, h := window.GetSize()
-				w1, h1 := w, h
-				minW, minH := window.GetConstraints()
-				if ev.Key == termbox.KeyArrowUp && (minH == -1 || minH < h) {
-					h--
-				} else if ev.Key == termbox.KeyArrowLeft && (minW < w || minW == -1) {
-					w--
-				}
-
-				if w1 != w || h1 != h {
-					window.SetSize(w, h)
-					event := Event{Type: EventResize, X: w, Y: h}
-					c.sendEventToActiveView(event)
-					c.RefreshScreen()
-				}
-			}
-		}
-		return true
-	} else {
-		return false
+func (c *Composer) topView() View {
+	if len(c.views) == 0 {
+		return nil
 	}
+
+	return c.views[len(c.views)-1]
 }
 
-func (c *Composer) moveTopWindow(ev termbox.Event) bool {
-	if len(c.windowOrder) > 0 {
-		window := c.getWindow(c.getTopWindow())
-		if window != nil {
-			x, y := window.GetPos()
-			w, h := window.GetSize()
+func (c *Composer) resizeTopView(ev termbox.Event) bool {
+	view := c.topView()
+	if view == nil {
+		return false
+	}
+
+	w, h := view.Size()
+	wm, hm := view.Constraints()
+	c.Logger().Printf("Resizing window from %v, %v (%v, %v)", w, h, wm, hm)
+	w1, h1 := w, h
+	minW, minH := view.Constraints()
+	if ev.Key == termbox.KeyArrowUp && minH < h {
+		h--
+	} else if ev.Key == termbox.KeyArrowLeft && minW < w {
+		w--
+	} else if ev.Key == termbox.KeyArrowDown {
+		h++
+	} else if ev.Key == termbox.KeyArrowRight {
+		w++
+	}
+
+	if w1 != w || h1 != h {
+		c.Logger().Printf("Resizing window to %v, %v", w, h)
+		view.SetSize(w, h)
+		// event := Event{Type: EventResize, X: w, Y: h}
+		// c.sendEventToActiveView(event)
+		c.RefreshScreen(true)
+	}
+
+	return true
+}
+
+func (c *Composer) moveTopView(ev termbox.Event) bool {
+	if len(c.views) > 0 {
+		view := c.topView()
+		if view != nil {
+			x, y := view.Pos()
+			w, h := view.Size()
 			x1, y1 := x, y
 			cx, cy := termbox.Size()
 			if ev.Key == termbox.KeyArrowUp && y > 0 {
@@ -298,10 +247,10 @@ func (c *Composer) moveTopWindow(ev termbox.Event) bool {
 			}
 
 			if x1 != x || y1 != y {
-				window.SetPos(x, y)
-				event := Event{Type: EventMove, X: x, Y: y}
-				c.sendEventToActiveView(event)
-				c.RefreshScreen()
+				view.SetPos(x, y)
+				// event := Event{Type: EventMove, X: x, Y: y}
+				// c.sendEventToActiveView(event)
+				c.RefreshScreen(true)
 			}
 		}
 		return true
@@ -311,82 +260,67 @@ func (c *Composer) moveTopWindow(ev termbox.Event) bool {
 }
 
 func (c *Composer) isDeadKey(ev termbox.Event) bool {
-	if ev.Key == termbox.KeyCtrlS {
-		c.ctrlSpressed = true
-		c.lastKey = termbox.KeyEsc
-		return true
-	}
-	if ev.Key == termbox.KeyCtrlW {
-		c.ctrlWpressed = true
+	if ev.Key == termbox.KeyCtrlS || ev.Key == termbox.KeyCtrlW {
+		c.ctrlKey = ev.Key
 		c.lastKey = termbox.KeyEsc
 		return true
 	}
 
-	c.ctrlSpressed = false
-	c.ctrlWpressed = false
-
+	c.ctrlKey = termbox.KeyEsc
 	return false
 }
 
 func (c *Composer) processKeySeq(ev termbox.Event) bool {
-	if !c.ctrlSpressed && !c.ctrlWpressed {
+	if c.ctrlKey == termbox.KeyEsc {
 		return false
 	}
 
-	if c.ctrlSpressed {
-		c.ctrlWpressed = false
-
+	if c.ctrlKey == termbox.KeyCtrlS {
 		if c.lastKey == termbox.KeyEsc {
 			c.lastKey = ev.Key
 		} else if c.lastKey != ev.Key {
-			c.ctrlSpressed = false
+			c.ctrlKey = termbox.KeyEsc
 			return false
 		}
 
 		switch ev.Key {
 		case termbox.KeyArrowUp, termbox.KeyArrowDown, termbox.KeyArrowLeft, termbox.KeyArrowRight:
 			evCopy := ev
-			evCopy.Mod = termbox.ModControl
-			c.resizeTopWindow(evCopy)
+			c.resizeTopView(evCopy)
 			return true
 		}
 
 		return false
 	}
-	if c.ctrlWpressed {
-		c.ctrlSpressed = false
 
+	if c.ctrlKey == termbox.KeyCtrlW {
 		if c.lastKey == termbox.KeyEsc {
 			c.lastKey = ev.Key
 		} else if c.lastKey != ev.Key {
-			c.ctrlWpressed = false
+			c.ctrlKey = termbox.KeyEsc
 			return false
 		}
 
 		switch ev.Key {
 		case termbox.KeyArrowUp, termbox.KeyArrowDown, termbox.KeyArrowLeft, termbox.KeyArrowRight:
 			evCopy := ev
-			evCopy.Mod = termbox.ModAlt
-			c.moveTopWindow(evCopy)
+			c.moveTopView(evCopy)
 			return true
 		case termbox.KeyCtrlH:
-			if len(c.windowOrder) > 1 && ev.Mod&termbox.ModControl != 0 {
-				c.moveActiveWindowToBottom()
-			}
+			// if len(c.windowOrder) > 1 && ev.Mod&termbox.ModControl != 0 {
+			//  c.moveActiveWindowToBottom()
+			// }
 			return true
 		}
 
 		return false
 	}
 
-	c.ctrlSpressed = false
-	c.ctrlWpressed = false
+	c.ctrlKey = termbox.KeyEsc
 	return true
 }
 
 func (c *Composer) processKey(ev termbox.Event) bool {
-	processed := false
-
 	if c.processKeySeq(ev) {
 		return false
 	}
@@ -397,32 +331,18 @@ func (c *Composer) processKey(ev termbox.Event) bool {
 	switch ev.Key {
 	case termbox.KeyCtrlQ:
 		return true
-	case termbox.KeyArrowUp, termbox.KeyArrowDown, termbox.KeyArrowLeft, termbox.KeyArrowRight:
-		if ev.Mod&termbox.ModControl != 0 {
-			processed = processed || c.resizeTopWindow(ev)
-		}
-
-		if ev.Mod&termbox.ModAlt != 0 {
-			processed = processed || c.moveTopWindow(ev)
-		}
-
-		if !processed {
-			if c.sendEventToActiveView(c.termboxEventToLocal(ev)) {
-				c.RefreshScreen()
-			}
-		}
-	case termbox.KeyEnd:
-		if len(c.windowOrder) > 1 && ev.Mod&termbox.ModControl != 0 {
-			processed = c.moveActiveWindowToBottom()
-		}
-		if !processed {
-			if c.sendEventToActiveView(c.termboxEventToLocal(ev)) {
-				c.RefreshScreen()
-			}
-		}
+	// case termbox.KeyArrowUp, termbox.KeyArrowDown, termbox.KeyArrowLeft, termbox.KeyArrowRight:
+	//  if c.sendEventToActiveView(c.termboxEventToLocal(ev)) {
+	//      c.RefreshScreen()
+	//  }
+	// case termbox.KeyEnd:
+	//  if c.sendEventToActiveView(c.termboxEventToLocal(ev)) {
+	//      c.RefreshScreen()
+	//  }
 	default:
 		if c.sendEventToActiveView(c.termboxEventToLocal(ev)) {
-			c.RefreshScreen()
+			c.topView().Repaint()
+			c.RefreshScreen(false)
 		}
 	}
 
@@ -430,180 +350,101 @@ func (c *Composer) processKey(ev termbox.Event) bool {
 }
 
 func (c *Composer) processMouseClick(ev termbox.Event) {
-	winId, hit := c.checkWindowUnderMouse(ev.MouseX, ev.MouseY)
-	if c.getTopWindow() != winId {
+	view, hit := c.checkWindowUnderMouse(ev.MouseX, ev.MouseY)
+
+	if view == nil {
+		return
+	}
+
+	if c.topView() != view {
 		event := Event{Type: EventActivate, X: 0} // send 'deactivated'
 		c.sendEventToActiveView(event)
-		c.makeWindowTop(winId)
+		c.activateView(view)
 		event = Event{Type: EventActivate, X: 1} // send 'activated'
 		c.sendEventToActiveView(event)
-		c.RefreshScreen()
+		c.RefreshScreen(true)
 	} else if hit == HitInside {
-		// c.logger.Printf("Clicked inside window %v", int(winId))
 		c.sendEventToActiveView(c.termboxEventToLocal(ev))
-		c.RefreshScreen()
+		c.RefreshScreen(true)
 	} else if hit == HitButtonClose {
-		if len(c.windowOrder) > 1 {
+		if len(c.views) > 1 {
 			event := Event{Type: EventClose}
 			c.sendEventToActiveView(event)
 
-			c.DestroyWindow(winId)
-			activate := c.windowOrder[len(c.windowOrder)-1]
-			c.makeWindowTop(activate)
+			c.DestroyWindow(view)
+			activate := c.topView()
+			c.activateView(activate)
 			event = Event{Type: EventActivate, X: 1} // send 'activated'
 			c.sendEventToActiveView(event)
 
-			c.RefreshScreen()
+			c.RefreshScreen(true)
 		}
 	} else if hit == HitButtonBottom {
 		c.moveActiveWindowToBottom()
 	}
 }
 
-func (c *Composer) stopDragging() {
-	c.dragging = DragNone
-	c.dragStartX, c.dragStartY = -1, -1
-	c.dragObject = NullWindow
-}
-
-func (c *Composer) processMouseRelease(ev termbox.Event) {
-	if c.dragging == DragNone {
-		c.sendEventToActiveView(c.termboxEventToLocal(ev))
-	}
-	c.stopDragging()
-}
-
-func (c *Composer) processMousePress(ev termbox.Event) {
-	winId, hit := c.checkWindowUnderMouse(ev.MouseX, ev.MouseY)
-	if c.getTopWindow() != winId {
-		event := Event{Type: EventActivate, X: 0} // send 'deactivated'
-		c.sendEventToActiveView(event)
-		c.makeWindowTop(winId)
-		event = Event{Type: EventActivate, X: 1} // send 'activated'
-		c.sendEventToActiveView(event)
-		c.RefreshScreen()
-	} else {
-		if hit == HitHeader {
-			c.dragging = DragMove
-			c.dragObject = winId
-			c.dragStartX, c.dragStartY = ev.MouseX, ev.MouseY
-		} else if hit == HitLeftBorder || hit == HitRightBorder || hit == HitBottomBorder || hit == HitBottomLeft || hit == HitBottomRight || hit == HitTopLeft || hit == HitTopRight {
-			c.dragging = DragResize
-			c.dragObject = winId
-			c.dragStartX, c.dragStartY = ev.MouseX, ev.MouseY
-			c.dragHit = hit
-		} else if hit == HitInside {
-			c.sendEventToActiveView(c.termboxEventToLocal(ev))
-		}
-	}
-}
-
-func (c *Composer) moveAndResize(dx, dy int, wnd Window) bool {
-	if dx == 0 && dy == 0 {
-		return false
-	}
-
-	posX, posY := wnd.GetPos()
-	w, h := wnd.GetSize()
-	mnX, mnY := wnd.GetConstraints()
-	newW, newH := w, h
-	newX, newY := posX, posY
-
-	if c.dragHit == HitLeftBorder {
-		newX = posX + dx
-		newW = w - dx
-	} else if c.dragHit == HitRightBorder {
-		newW = w + dx
-	} else if c.dragHit == HitBottomBorder {
-		newH = h + dy
-	} else if c.dragHit == HitTopLeft {
-		newX, newY = posX+dx, posY+dy
-		newW, newH = w-dx, h-dy
-	} else if c.dragHit == HitBottomLeft {
-		newX = posX + dx
-		newW, newH = w-dx, h+dy
-	} else if c.dragHit == HitTopRight {
-		newY = posY + dy
-		newW, newH = w+dx, h-dy
-	} else if c.dragHit == HitBottomRight {
-		newW, newH = w+dx, h+dy
-	}
-
-	if (mnX != -1 && newW < mnX) || (mnY != -1 && newH < mnY) {
-		return false
-	}
-
-	wnd.SetPos(newX, newY)
-	wnd.SetSize(newW, newH)
-
-	if posX != newX || posY != newY {
-		event := Event{Type: EventMove, X: newX, Y: newY}
-		c.sendEventToActiveView(event)
-	}
-	if newW != w || newH != h {
-		event := Event{Type: EventResize, X: w, Y: h}
-		c.sendEventToActiveView(event)
-	}
-
-	wnd.Redraw()
-
-	return true
-}
-
-func (c *Composer) processMouseMove(ev termbox.Event) {
-	if c.dragging == DragNone {
-		c.sendEventToActiveView(c.termboxEventToLocal(ev))
-		c.RefreshScreen()
-		return
-	}
-
-	wnd, ok := c.windows[c.dragObject]
-	if !ok || c.dragObject == NullWindow {
-		c.stopDragging()
-		return
-	}
-
-	if c.dragging == DragMove {
-		dx, dy := ev.MouseX-c.dragStartX, ev.MouseY-c.dragStartY
-		if dx != 0 || dy != 0 {
-			c.dragStartY = ev.MouseY
-			c.dragStartX = ev.MouseX
-			posX, posY := wnd.GetPos()
-			wnd.SetPos(posX+dx, posY+dy)
-			event := Event{Type: EventMove, X: posX + dx, Y: posY + dy}
-			c.sendEventToActiveView(event)
-			c.RefreshScreen()
-		}
-	} else if c.dragging == DragResize && c.dragHit != HitOutside {
-
-		dx, dy := 0, 0
-		if c.dragHit == HitLeftBorder || c.dragHit == HitRightBorder {
-			dx = ev.MouseX - c.dragStartX
-		} else if c.dragHit == HitBottomBorder {
-			dy = ev.MouseY - c.dragStartY
-		} else if c.dragHit == HitTopLeft || c.dragHit == HitTopRight || c.dragHit == HitBottomLeft || c.dragHit == HitBottomRight {
-			dx = ev.MouseX - c.dragStartX
-			dy = ev.MouseY - c.dragStartY
-		}
-
-		if c.moveAndResize(dx, dy, wnd) {
-			c.dragStartX = ev.MouseX
-			c.dragStartY = ev.MouseY
-
-			c.RefreshScreen()
-		}
-	}
-}
+// func (c *Composer) moveAndResize(dx, dy int, wnd Window) bool {
+//  if dx == 0 && dy == 0 {
+//      return false
+//  }
+//
+//  posX, posY := wnd.GetPos()
+//  w, h := wnd.GetSize()
+//  mnX, mnY := wnd.GetConstraints()
+//  newW, newH := w, h
+//  newX, newY := posX, posY
+//
+//  if c.dragHit == HitLeftBorder {
+//      newX = posX + dx
+//      newW = w - dx
+//  } else if c.dragHit == HitRightBorder {
+//      newW = w + dx
+//  } else if c.dragHit == HitBottomBorder {
+//      newH = h + dy
+//  } else if c.dragHit == HitTopLeft {
+//      newX, newY = posX+dx, posY+dy
+//      newW, newH = w-dx, h-dy
+//  } else if c.dragHit == HitBottomLeft {
+//      newX = posX + dx
+//      newW, newH = w-dx, h+dy
+//  } else if c.dragHit == HitTopRight {
+//      newY = posY + dy
+//      newW, newH = w+dx, h-dy
+//  } else if c.dragHit == HitBottomRight {
+//      newW, newH = w+dx, h+dy
+//  }
+//
+//  if (mnX != -1 && newW < mnX) || (mnY != -1 && newH < mnY) {
+//      return false
+//  }
+//
+//  wnd.SetPos(newX, newY)
+//  wnd.SetSize(newW, newH)
+//
+//  if posX != newX || posY != newY {
+//      event := Event{Type: EventMove, X: newX, Y: newY}
+//      c.sendEventToActiveView(event)
+//  }
+//  if newW != w || newH != h {
+//      event := Event{Type: EventResize, X: w, Y: h}
+//      c.sendEventToActiveView(event)
+//  }
+//
+//  wnd.Redraw()
+//
+//  return true
+// }
 
 // Asks a Composer to stops console management and quit application
-func (c *Composer) Stop() {
-	ev := InternalEvent{act: EventQuit}
-	go c.SendEvent(ev)
-}
+// func (c *Composer) Stop() {
+//  ev := InternalEvent{act: EventQuit}
+//  go c.SendEvent(ev)
+// }
 
 // Main event loop
 func (c *Composer) MainLoop() {
-	c.redrawAll()
+	// c.redrawAll()
 
 	eventQueue := make(chan termbox.Event)
 	go func() {
@@ -616,34 +457,24 @@ func (c *Composer) MainLoop() {
 		select {
 		case ev := <-eventQueue:
 			switch ev.Type {
-			case termbox.EventMouseScroll:
-				if c.sendEventToActiveView(c.termboxEventToLocal(ev)) {
-					c.RefreshScreen()
-				}
 			case termbox.EventKey:
 				if c.processKey(ev) {
 					return
 				}
-			case termbox.EventMouse, termbox.EventMouseClick:
+			case termbox.EventMouse:
 				c.processMouseClick(ev)
-			case termbox.EventMouseRelease:
-				c.processMouseRelease(ev)
-			case termbox.EventMousePress:
-				c.processMousePress(ev)
-			case termbox.EventMouseMove:
-				c.processMouseMove(ev)
 			case termbox.EventError:
 				panic(ev.Err)
-			case termbox.EventResize:
-				termbox.Clear(termbox.ColorDefault, termbox.ColorDefault)
-				c.width, c.height = termbox.Size()
-				c.screen = c.initBuffer(c.width, c.height)
-				c.RefreshScreen()
+				// case termbox.EventResize:
+				//  termbox.Clear(termbox.ColorDefault, termbox.ColorDefault)
+				//  c.width, c.height = termbox.Size()
+				//  c.screen = c.initBuffer(c.width, c.height)
+				//  c.RefreshScreen()
 			}
 		case cmd := <-c.channel:
-			if cmd.act == EventRedraw {
-				c.RefreshScreen()
-			} else if cmd.act == EventQuit {
+			if cmd.Type == EventRedraw {
+				c.RefreshScreen(true)
+			} else if cmd.Type == EventQuit {
 				return
 			}
 		}
@@ -651,7 +482,7 @@ func (c *Composer) MainLoop() {
 }
 
 // Send event to a Composer. Used by Windows to ask for repainting or for quitting the application
-func (c *Composer) SendEvent(ev InternalEvent) {
+func (c *Composer) PutEvent(ev Event) {
 	c.channel <- ev
 }
 
@@ -666,21 +497,23 @@ func (c *Composer) SetCursorPos(x, y int) {
 	termbox.SetCursor(x, y)
 }
 
-// Returns thememanager to get current theme colors etc
-func (c *Composer) GetThemeManager() *ThemeManager {
-	return c.themeManager
-}
-
-func (c *Composer) DestroyWindow(winId WinId) {
+func (c *Composer) DestroyWindow(view View) {
 	ev := Event{Type: EventClose}
 	c.sendEventToActiveView(ev)
 
-	newOrder := make([]WinId, 0)
-	for i := 0; i < len(c.windowOrder); i++ {
-		if c.windowOrder[i] != winId {
-			newOrder = append(newOrder, c.windowOrder[i])
+	newOrder := make([]View, 0)
+	for i := 0; i < len(c.views); i++ {
+		if c.views[i] != view {
+			newOrder = append(newOrder, c.views[i])
 		}
 	}
-	c.windowOrder = newOrder
-	delete(c.windows, winId)
+	c.views = newOrder
+}
+
+func (c *Composer) Theme() Theme {
+	return c.themeManager
+}
+
+func (c *Composer) Logger() *log.Logger {
+	return c.logger
 }
