@@ -9,20 +9,19 @@ The current list of controls:
 * Label
 * Button
 * EditFiled
-* ComboBox
 * ListBox
-* TextScroll: simple control to display scrolling text (e.g, for tail output)
 * ProgressBar
 * Frame
 * CheckBox
-* Radio: RadioGroup
+* Radio
+* RadioGroup
 
 Built-in theme support. Now it is very basic: no way to load any theme from file, only one predefined theme
 
-A set of global hotkeys. Windows version has more features and hotkeys - it is current limitation of 'termbox' library: https://github.com/VladimirMarkelov/termbox-go
+A set of global hotkeys
 
 ## Screenshots
-The screencast of demo included in the library:
+The screencast of demo (based on custom termbox-go Window build) included in the library:
 
 <img src="./demos/demo.gif" alt="Library Demo">
 
