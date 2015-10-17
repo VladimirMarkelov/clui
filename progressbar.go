@@ -36,7 +36,7 @@ func NewProgressBar(view View, parent Control, width, height int, scale int) *Pr
 
 	b.bg = ColorBlack
 	b.fg = ColorBlueBold
-	b.emptyBg = ColorBlack
+	b.emptyBg = ColorBlackBold
 	b.emptyFg = ColorBlue
 
 	if parent != nil {
