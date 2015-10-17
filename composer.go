@@ -434,10 +434,10 @@ func (c *Composer) processMouseClick(ev termbox.Event) {
 // }
 
 // Asks a Composer to stops console management and quit application
-// func (c *Composer) Stop() {
-//  ev := InternalEvent{act: EventQuit}
-//  go c.SendEvent(ev)
-// }
+func (c *Composer) Stop() {
+	ev := Event{Type: EventQuit}
+	go c.PutEvent(ev)
+}
 
 // Main event loop
 func (c *Composer) MainLoop() {

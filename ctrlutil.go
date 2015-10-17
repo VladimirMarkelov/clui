@@ -71,8 +71,6 @@ func RepositionControls(dx, dy int, c Control) {
 	pk := c.Pack()
 	top, side, xx, yy := c.Paddings()
 
-	// log := c.Logger()
-	// log.Printf("Start reposition %v (%v - %v)", c.Title(), xDiff, yDiff)
 	currX, currY := top, side
 	if pk == Vertical {
 		delta := float64(yDiff) / float64(scale)
@@ -91,13 +89,11 @@ func RepositionControls(dx, dy int, c Control) {
 				}
 				scale -= cs
 				ch += dh
-				// log.Printf("Child height %v: %v", child.Title(), ch)
 				yDiff -= dh
 			}
 			cw = width - 2*side
 			child.SetSize(cw, ch)
 			child.SetPos(currX+dx, currY+dy)
-			// log.Printf("Child %v pos %v:%v height: %v", child.Title(), currX+dx, currY+dy, ch)
 			currY += ch + yy
 		}
 	} else {

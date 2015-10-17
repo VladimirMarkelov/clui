@@ -292,13 +292,10 @@ func (w *Window) ProcessEvent(ev Event) bool {
 				return true
 			}
 
-			ctrl := w.ActiveControl()
-			ctrl.ProcessEvent(Event{Type: EventActivate, X: 0})
 			w.ActivateControl(cunder)
 		}
 		ctrl := w.ActiveControl()
 		if ctrl != nil {
-			// w.Logger().Printf("Active control %v -- %v", ctrl.Title(), ctrl)
 			cx, cy := ctrl.Pos()
 			cw, ch := ctrl.Size()
 			ctrlX, ctrlY := ev.X-w.x, ev.Y-w.y
@@ -402,6 +399,7 @@ func (w *Window) ActivateControl(ctrl Control) {
 		return
 	}
 	if active != nil {
+		active.ProcessEvent(Event{Type: EventActivate, X: 0})
 		active.SetActive(false)
 	}
 	ctrl.SetActive(true)
