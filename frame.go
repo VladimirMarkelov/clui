@@ -95,6 +95,12 @@ func (f *Frame) RecalculateConstraints() {
 	if newW != width || newH != height {
 		f.SetConstraints(newW, newH)
 	}
+
+	if f.parent != nil {
+		f.parent.RecalculateConstraints()
+	} else if f.view != nil {
+		f.view.RecalculateConstraints()
+	}
 }
 
 func (f *Frame) AddChild(c Control, scale int) {

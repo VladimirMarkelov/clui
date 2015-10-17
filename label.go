@@ -23,7 +23,7 @@ func NewLabel(view View, parent Control, w, h int, title string, scale int) *Lab
 	c.tabSkip = true
 
 	c.fg = ColorWhite
-	c.bg = ColorBlack
+	c.bg = ColorBlackBold
 
 	if parent != nil {
 		parent.AddChild(c, scale)

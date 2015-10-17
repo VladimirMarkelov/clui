@@ -276,7 +276,9 @@ func (w *Window) ProcessEvent(ev Event) bool {
 		if ev.Type == EventKey && (ev.Key == term.KeyTab || (ev.Mod&term.ModAlt != 0 && (ev.Key == term.KeyPgup || ev.Key == term.KeyPgdn))) {
 			forward := ev.Key != term.KeyPgup
 			ctrl := w.ActiveControl()
-			ctrl.ProcessEvent(Event{Type: EventActivate, X: 0})
+			if ctrl != nil {
+				ctrl.ProcessEvent(Event{Type: EventActivate, X: 0})
+			}
 			ctrl = w.NextControl(ctrl, forward)
 			if ctrl != nil {
 				// w.Logger().Printf("Activate control: %v", ctrl)

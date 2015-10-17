@@ -171,6 +171,9 @@ func (c *ControlBase) Parent() Control {
 	return c.parent
 }
 
+func (c *ControlBase) RecalculateConstraints() {
+}
+
 //---------- debug ----------------
 func (c *ControlBase) Logger() *log.Logger {
 	if c.parent == nil {

@@ -59,6 +59,7 @@ type View interface {
 	SetScale(int)
 	TabStop() bool
 	Colors() (term.Attribute, term.Attribute)
+	RecalculateConstraints()
 
 	Logger() *log.Logger
 }
@@ -85,6 +86,8 @@ type Control interface {
 	TabStop() bool
 	Parent() Control
 	Colors() (term.Attribute, term.Attribute)
+
+	RecalculateConstraints()
 
 	Logger() *log.Logger
 }

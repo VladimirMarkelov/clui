@@ -203,7 +203,6 @@ func (c *Composer) resizeTopView(ev termbox.Event) bool {
 	}
 
 	w, h := view.Size()
-	wm, hm := view.Constraints()
 	w1, h1 := w, h
 	minW, minH := view.Constraints()
 	if ev.Key == termbox.KeyArrowUp && minH < h {
