@@ -162,7 +162,7 @@ func (l *ListBox) moveUp() {
 	}
 
 	l.currSelection--
-	l.ensureVisible()
+	l.EnsureVisible()
 }
 
 func (l *ListBox) moveDown() {
@@ -173,10 +173,10 @@ func (l *ListBox) moveDown() {
 	}
 
 	l.currSelection++
-	l.ensureVisible()
+	l.EnsureVisible()
 }
 
-func (l *ListBox) ensureVisible() {
+func (l *ListBox) EnsureVisible() {
 	length := len(l.items)
 
 	if length <= l.height {
@@ -265,7 +265,7 @@ func (l *ListBox) recalcPositionByScroll() {
 	}
 
 	l.currSelection = newPos
-	l.ensureVisible()
+	l.EnsureVisible()
 }
 
 func (l *ListBox) ProcessEvent(event Event) bool {
@@ -325,7 +325,7 @@ func (l *ListBox) SelectItem(id int) bool {
 	}
 
 	l.currSelection = id
-	l.ensureVisible()
+	l.EnsureVisible()
 	return true
 }
 
@@ -373,4 +373,8 @@ func (l *ListBox) MaxItems() int {
 
 func (l *ListBox) SetMaxItems(max int) {
 	l.maxItems = max
+}
+
+func (l *ListBox) ItemCount() int {
+	return len(l.items)
 }
