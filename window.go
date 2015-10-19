@@ -185,6 +185,10 @@ func (w *Window) Paddings() (int, int, int, int) {
 	return w.padSide, w.padTop, w.padX, w.padY
 }
 
+func (w *Window) SetPaddings(side, top, dx, dy int) {
+	w.padSide, w.padTop, w.padX, w.padY = side, top, dx, dy
+}
+
 func (w *Window) Canvas() Canvas {
 	return w.canvas
 }

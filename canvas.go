@@ -129,6 +129,29 @@ func (fb *FrameBuffer) PutText(x, y int, text string, fg, bg term.Attribute) {
 }
 
 // Draws vertical text line on buffer
+func (fb *FrameBuffer) PutVerticalText(x, y int, text string, fg, bg term.Attribute) {
+	height := fb.h
+
+	if (y < 0 && xs.Len(text) <= -y) || x < 0 || y < 0 || x >= fb.w {
+		return
+	}
+
+	if y < 0 {
+		yy := -y
+		y = 0
+		text = xs.Slice(text, yy, -1)
+	}
+	text = CutText(text, height)
+
+	dy := 0
+	for _, char := range text {
+		s := term.Cell{Ch: char, Fg: fg, Bg: bg}
+		fb.buffer[y+dy][x] = s
+		dy++
+	}
+}
+
+// Draws vertical text line on buffer
 func (fb *FrameBuffer) PutTextVertical(x, y int, text string, fg, bg term.Attribute) {
 	height := fb.h
 

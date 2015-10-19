@@ -17,6 +17,7 @@ type Canvas interface {
 	Size() (int, int)
 	PutSymbol(int, int, term.Cell) bool
 	PutText(int, int, string, term.Attribute, term.Attribute)
+	PutVerticalText(int, int, string, term.Attribute, term.Attribute)
 	Symbol(int, int) (term.Cell, bool)
 	Clear(term.Attribute)
 	FillRect(int, int, int, int, term.Cell)
@@ -50,6 +51,7 @@ type View interface {
 	HitTest(int, int) HitResult
 
 	Paddings() (int, int, int, int)
+	SetPaddings(int, int, int, int)
 	AddChild(Control, int)
 	SetPack(PackType)
 	Pack() PackType
@@ -80,6 +82,7 @@ type Control interface {
 	SetScale(int)
 	Constraints() (int, int)
 	Paddings() (int, int, int, int)
+	SetPaddings(int, int, int, int)
 	Repaint()
 	AddChild(Control, int)
 	SetPack(PackType)
