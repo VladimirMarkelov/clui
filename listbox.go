@@ -26,7 +26,6 @@ type ListBox struct {
 	currSelection int
 	topLine       int
 	maxItems      int
-	bgSel, fgSel  term.Attribute
 	buttonPos     int
 
 	onSelectItem func(Event)
@@ -44,10 +43,6 @@ func NewListBox(view View, parent Control, width, height int, scale int) *ListBo
 	l.maxItems = 0
 	l.buttonPos = -1
 
-	l.fg = ColorBlack
-	l.bg = ColorWhite
-	l.fgSel = ColorYellow
-	l.bgSel = ColorBlue
 	l.SetTabStop(true)
 
 	l.onSelectItem = nil
@@ -100,7 +95,10 @@ func (l *ListBox) redrawItems(canvas Canvas, tm Theme) {
 	maxWidth := l.width - 1
 
 	fg, bg := RealColor(tm, l.fg, ColorEditText), RealColor(tm, l.bg, ColorEditBack)
-	fgSel, bgSel := RealColor(tm, l.fgSel, ColorSelectionText), RealColor(tm, l.bgSel, ColorSelectionBack)
+	if l.Active() {
+		fg, bg = RealColor(tm, l.fg, ColorEditActiveText), RealColor(tm, l.bg, ColorEditActiveBack)
+	}
+	fgSel, bgSel := RealColor(tm, l.fgActive, ColorSelectionText), RealColor(tm, l.bgActive, ColorSelectionBack)
 
 	for curr <= maxCurr && dy <= maxDy {
 		f, b := fg, bg
@@ -108,6 +106,7 @@ func (l *ListBox) redrawItems(canvas Canvas, tm Theme) {
 			f, b = fgSel, bgSel
 		}
 
+		canvas.FillRect(l.x, l.y+dy, l.width-1, 1, term.Cell{Bg: b, Ch: ' ', Fg: f})
 		_, text := AlignText(l.items[curr], maxWidth, AlignLeft)
 		canvas.PutText(l.x, l.y+dy, text, f, b)
 
@@ -123,7 +122,10 @@ func (l *ListBox) Repaint() {
 	x, y := l.Pos()
 	w, h := l.Size()
 
-	bg := RealColor(tm, l.bg, ColorEditText)
+	bg := RealColor(tm, l.bg, ColorEditBack)
+	if l.Active() {
+		bg = RealColor(tm, l.bg, ColorEditActiveBack)
+	}
 	canvas.FillRect(x, y, w, h, term.Cell{Bg: bg, Ch: ' '})
 	l.redrawItems(canvas, tm)
 	l.redrawScroll(canvas, tm)

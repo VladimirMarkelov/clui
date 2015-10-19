@@ -42,8 +42,6 @@ func NewEditField(view View, parent Control, width int, text string, scale int) 
 
 	e.SetConstraints(width, 1)
 
-	e.bg, e.fg = ColorWhite, ColorBlack
-
 	e.end()
 
 	if parent != nil {
@@ -101,6 +99,12 @@ func (e *EditField) Repaint() {
 	}
 
 	fg, bg := RealColor(tm, e.fg, ColorEditText), RealColor(tm, e.bg, ColorEditBack)
+	if !e.Enabled() {
+		fg, bg = RealColor(tm, e.fg, ColorDisabledText), RealColor(tm, e.fg, ColorDisabledBack)
+	} else if e.Active() {
+		fg, bg = RealColor(tm, e.fg, ColorEditActiveText), RealColor(tm, e.bg, ColorEditActiveBack)
+
+	}
 
 	canvas.FillRect(x, y, w, 1, term.Cell{Ch: ' ', Bg: bg})
 	canvas.PutText(x, y, textOut, fg, bg)

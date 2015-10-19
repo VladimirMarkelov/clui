@@ -22,9 +22,6 @@ func NewLabel(view View, parent Control, w, h int, title string, scale int) *Lab
 	c.SetConstraints(w, h)
 	c.tabSkip = true
 
-	c.fg = ColorWhite
-	c.bg = ColorBlackBold
-
 	if parent != nil {
 		parent.AddChild(c, scale)
 	}
@@ -35,7 +32,11 @@ func NewLabel(view View, parent Control, w, h int, title string, scale int) *Lab
 func (l *Label) Repaint() {
 	canvas := l.view.Canvas()
 	tm := l.view.Screen().Theme()
+
 	fg, bg := RealColor(tm, l.fg, ColorText), RealColor(tm, l.bg, ColorBack)
+	if !l.Enabled() {
+		fg = RealColor(tm, l.fg, ColorDisabledText)
+	}
 
 	canvas.FillRect(l.x, l.y, l.width, l.height, term.Cell{Ch: ' ', Fg: fg, Bg: bg})
 

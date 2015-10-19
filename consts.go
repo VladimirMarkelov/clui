@@ -143,9 +143,10 @@ const (
 	ColorViewText = "ViewText"
 
 	// general colors
-	ColorBack     = "Back"
-	ColorText     = "Text"
-	ColorDisabled = "Gray"
+	ColorBack         = "Back"
+	ColorText         = "Text"
+	ColorDisabledText = "Gray"
+	ColorDisabledBack = "GrayBack"
 
 	// editable & listbox-like controls
 	ColorEditBack       = "EditBack"
@@ -171,10 +172,10 @@ const (
 	ColorControlShadow       = "ControlShadow"
 
 	// progressbar colors
-	ColorProgressBack      = "ProgressBack"
-	ColorProgressText      = "ProgressText"
-	ColorProgressEmptyBack = "ProgressEmptyBack"
-	ColorProgressEmptyText = "ProgressEmptyText"
+	ColorProgressBack       = "ProgressBack"
+	ColorProgressText       = "ProgressText"
+	ColorProgressActiveBack = "ProgressActiveBack"
+	ColorProgressActiveText = "ProgressActiveText"
 )
 
 // EventType

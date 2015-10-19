@@ -13,6 +13,8 @@ type ControlBase struct {
 	minW, minH    int
 	scale         int
 	fg, bg        term.Attribute
+	fgActive      term.Attribute
+	bgActive      term.Attribute
 	tabSkip       bool
 	disabled      bool
 	align         Align
@@ -123,11 +125,23 @@ func (c *ControlBase) Colors() (term.Attribute, term.Attribute) {
 	return c.fg, c.bg
 }
 
-func (c *ControlBase) SetForegroundColor(clr term.Attribute) {
+func (c *ControlBase) SetTextColor(clr term.Attribute) {
 	c.fg = clr
 }
 
-func (c *ControlBase) SetBackgroundColor(clr term.Attribute) {
+func (c *ControlBase) SetBackColor(clr term.Attribute) {
+	c.bg = clr
+}
+
+func (c *ControlBase) ActiveColors() (term.Attribute, term.Attribute) {
+	return c.fg, c.bg
+}
+
+func (c *ControlBase) SetActiveTextColor(clr term.Attribute) {
+	c.fg = clr
+}
+
+func (c *ControlBase) SetActiveBackColor(clr term.Attribute) {
 	c.bg = clr
 }
 

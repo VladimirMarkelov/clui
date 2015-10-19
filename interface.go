@@ -59,6 +59,11 @@ type View interface {
 	SetScale(int)
 	TabStop() bool
 	Colors() (term.Attribute, term.Attribute)
+	ActiveColors() (term.Attribute, term.Attribute)
+	SetBackColor(term.Attribute)
+	SetActiveBackColor(term.Attribute)
+	SetTextColor(term.Attribute)
+	SetActiveTextColor(term.Attribute)
 	RecalculateConstraints()
 
 	Logger() *log.Logger
@@ -86,6 +91,11 @@ type Control interface {
 	TabStop() bool
 	Parent() Control
 	Colors() (term.Attribute, term.Attribute)
+	ActiveColors() (term.Attribute, term.Attribute)
+	SetBackColor(term.Attribute)
+	SetActiveBackColor(term.Attribute)
+	SetTextColor(term.Attribute)
+	SetActiveTextColor(term.Attribute)
 
 	RecalculateConstraints()
 

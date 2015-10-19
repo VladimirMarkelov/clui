@@ -29,9 +29,6 @@ func NewCheckBox(view View, parent Control, width int, title string, scale int) 
 	c.SetTabStop(true)
 	c.allow3state = false
 
-	c.bg = ColorBlack
-	c.fg = ColorWhite
-
 	if parent != nil {
 		parent.AddChild(c, scale)
 	}
@@ -48,6 +45,8 @@ func (c *CheckBox) Repaint() {
 	fg, bg := RealColor(tm, c.fg, ColorControlText), RealColor(tm, c.bg, ColorControlBack)
 	if !c.Enabled() {
 		fg, bg = RealColor(tm, c.fg, ColorControlDisabledText), RealColor(tm, c.bg, ColorControlDisabledBack)
+	} else if c.Active() {
+		fg, bg = RealColor(tm, c.fg, ColorControlActiveText), RealColor(tm, c.bg, ColorControlActiveBack)
 	}
 
 	parts := []rune(tm.SysObject(ObjCheckBox))

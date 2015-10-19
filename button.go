@@ -35,10 +35,6 @@ func NewButton(view View, parent Control, width, height int, title string, scale
 	b.SetSize(width, height)
 	b.SetConstraints(width, height)
 
-	b.fg = ColorBlue
-	b.bg = ColorYellow
-	b.shadowColor = ColorBlue
-
 	if parent != nil {
 		parent.AddChild(b, scale)
 	}
@@ -57,7 +53,7 @@ func (b *Button) Repaint() {
 	if !b.Enabled() {
 		fg, bg = RealColor(tm, fg, ColorControlDisabledText), RealColor(tm, bg, ColorControlDisabledBack)
 	} else if b.Active() {
-		fg, bg = RealColor(tm, fg, ColorControlActiveText), RealColor(tm, bg, ColorControlActiveBack)
+		fg, bg = RealColor(tm, b.fgActive, ColorControlActiveText), RealColor(tm, b.bgActive, ColorControlActiveBack)
 	} else {
 		fg, bg = RealColor(tm, fg, ColorControlText), RealColor(tm, bg, ColorControlBack)
 	}

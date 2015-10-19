@@ -56,10 +56,37 @@ func NewThemeManager() *ThemeManager {
 	defTheme.objects[ObjRadio] = "() *"
 	defTheme.objects[ObjProgressBar] = "░▒"
 
+	defTheme.colors[ColorDisabledText] = ColorBlackBold
+	defTheme.colors[ColorDisabledBack] = ColorWhite
 	defTheme.colors[ColorText] = ColorWhite
 	defTheme.colors[ColorBack] = ColorBlack
 	defTheme.colors[ColorViewBack] = ColorBlackBold
 	defTheme.colors[ColorViewText] = ColorWhite
+
+	defTheme.colors[ColorControlText] = ColorWhite
+	defTheme.colors[ColorControlBack] = ColorBlack
+	defTheme.colors[ColorControlActiveText] = ColorWhite
+	defTheme.colors[ColorControlActiveBack] = ColorMagenta
+	defTheme.colors[ColorControlShadow] = ColorBlue
+	defTheme.colors[ColorControlDisabledText] = ColorWhite
+	defTheme.colors[ColorControlDisabledBack] = ColorBlackBold
+
+	defTheme.colors[ColorEditText] = ColorBlack
+	defTheme.colors[ColorEditBack] = ColorWhite
+	defTheme.colors[ColorEditActiveText] = ColorBlack
+	defTheme.colors[ColorEditActiveBack] = ColorWhiteBold
+	defTheme.colors[ColorSelectionText] = ColorYellow
+	defTheme.colors[ColorSelectionBack] = ColorBlue
+
+	defTheme.colors[ColorScrollBack] = ColorBlackBold
+	defTheme.colors[ColorScrollText] = ColorWhite
+	defTheme.colors[ColorThumbBack] = ColorBlackBold
+	defTheme.colors[ColorThumbText] = ColorWhite
+
+	defTheme.colors[ColorProgressText] = ColorBlue
+	defTheme.colors[ColorProgressBack] = ColorBlackBold
+	defTheme.colors[ColorProgressActiveText] = ColorBlack
+	defTheme.colors[ColorProgressActiveBack] = ColorBlueBold
 
 	sm.themes[defaultTheme] = defTheme
 

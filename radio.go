@@ -27,9 +27,6 @@ func NewRadio(view View, parent Control, width int, title string, scale int) *Ra
 	c.SetTitle(title)
 	c.SetTabStop(true)
 
-	c.bg = ColorBlack
-	c.fg = ColorWhite
-
 	if parent != nil {
 		parent.AddChild(c, scale)
 	}
@@ -46,6 +43,8 @@ func (c *Radio) Repaint() {
 	fg, bg := RealColor(tm, c.fg, ColorControlText), RealColor(tm, c.bg, ColorControlBack)
 	if !c.Enabled() {
 		fg, bg = RealColor(tm, c.fg, ColorControlDisabledText), RealColor(tm, c.bg, ColorControlDisabledBack)
+	} else if c.Active() {
+		fg, bg = RealColor(tm, c.fg, ColorControlActiveText), RealColor(tm, c.bg, ColorControlActiveBack)
 	}
 
 	parts := []rune(tm.SysObject(ObjRadio))

@@ -33,9 +33,6 @@ func NewWindow(parent Screen, x, y, w, h int, title string) *Window {
 	d.parent = parent
 	d.padSide, d.padTop, d.padX, d.padY = 1, 1, 1, 0
 
-	d.fg = ColorDefault
-	d.bg = ColorDefault
-
 	return d
 }
 

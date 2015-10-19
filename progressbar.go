@@ -34,11 +34,6 @@ func NewProgressBar(view View, parent Control, width, height int, scale int) *Pr
 	b.parent = parent
 	b.view = view
 
-	b.bg = ColorBlack
-	b.fg = ColorBlueBold
-	b.emptyBg = ColorBlackBold
-	b.emptyFg = ColorBlue
-
 	if parent != nil {
 		parent.AddChild(b, scale)
 	}
@@ -54,8 +49,8 @@ func (b *ProgressBar) Repaint() {
 	canvas := b.view.Canvas()
 	tm := b.view.Screen().Theme()
 
-	fgOff, fgOn := RealColor(tm, b.emptyFg, ColorProgressEmptyText), RealColor(tm, b.fg, ColorProgressText)
-	bgOff, bgOn := RealColor(tm, b.emptyBg, ColorProgressEmptyBack), RealColor(tm, b.bg, ColorProgressBack)
+	fgOff, fgOn := RealColor(tm, b.fg, ColorProgressText), RealColor(tm, b.fgActive, ColorProgressActiveText)
+	bgOff, bgOn := RealColor(tm, b.bg, ColorProgressBack), RealColor(tm, b.bgActive, ColorProgressActiveBack)
 
 	parts := []rune(tm.SysObject(ObjProgressBar))
 	cFilled, cEmpty := parts[0], parts[1]
