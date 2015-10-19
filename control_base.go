@@ -7,20 +7,22 @@ import (
 )
 
 type ControlBase struct {
-	title         string
-	x, y          int
-	width, height int
-	minW, minH    int
-	scale         int
-	fg, bg        term.Attribute
-	fgActive      term.Attribute
-	bgActive      term.Attribute
-	tabSkip       bool
-	disabled      bool
-	align         Align
-	parent        Control
-	view          View
-	active        bool
+	title           string
+	x, y            int
+	width, height   int
+	minW, minH      int
+	scale           int
+	fg, bg          term.Attribute
+	fgActive        term.Attribute
+	bgActive        term.Attribute
+	tabSkip         bool
+	disabled        bool
+	align           Align
+	parent          Control
+	view            View
+	active          bool
+	padX, padY      int
+	padTop, padSide int
 }
 
 func (c *ControlBase) Title() string {
@@ -110,13 +112,6 @@ func (c *ControlBase) SetPack(pk PackType) {
 func (c *ControlBase) AddChild(ctrl Control, scale int) {
 }
 
-func (c *ControlBase) Paddings() (int, int, int, int) {
-	return 0, 0, 0, 0
-}
-
-func (c *ControlBase) SetPaddings(int, int, int, int) {
-}
-
 func (c *ControlBase) Children() []Control {
 	return make([]Control, 0)
 }
@@ -186,6 +181,25 @@ func (c *ControlBase) Parent() Control {
 }
 
 func (c *ControlBase) RecalculateConstraints() {
+}
+
+func (c *ControlBase) Paddings() (int, int, int, int) {
+	return c.padSide, c.padTop, c.padX, c.padY
+}
+
+func (c *ControlBase) SetPaddings(side, top, dx, dy int) {
+	if side >= 0 {
+		c.padSide = side
+	}
+	if top >= 0 {
+		c.padTop = top
+	}
+	if dx >= 0 {
+		c.padX = dx
+	}
+	if dy >= 0 {
+		c.padY = dy
+	}
 }
 
 //---------- debug ----------------

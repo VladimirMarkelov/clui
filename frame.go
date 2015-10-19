@@ -7,11 +7,9 @@ that control in any place where a spacer is required
 */
 type Frame struct {
 	ControlBase
-	border          BorderStyle
-	children        []Control
-	padSide, padTop int
-	padX, padY      int
-	pack            PackType
+	border   BorderStyle
+	children []Control
+	pack     PackType
 }
 
 func NewFrame(view View, parent Control, width, height int, bs BorderStyle, scale int) *Frame {
@@ -35,14 +33,6 @@ func NewFrame(view View, parent Control, width, height int, bs BorderStyle, scal
 	}
 
 	return f
-}
-
-func (f *Frame) Paddings() (int, int, int, int) {
-	return f.padSide, f.padTop, f.padX, f.padY
-}
-
-func (f *Frame) SetPaddings(side, top, dx, dy int) {
-	f.padSide, f.padTop, f.padX, f.padY = side, top, dx, dy
 }
 
 func (f *Frame) repaintChildren() {

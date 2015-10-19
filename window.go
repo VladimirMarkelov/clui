@@ -8,14 +8,12 @@ import (
 
 type Window struct {
 	ControlBase
-	buttons         ViewButton
-	canvas          Canvas
-	parent          Screen
-	pack            PackType
-	padX, padY      int
-	padTop, padSide int
-	children        []Control
-	controls        []Control
+	buttons  ViewButton
+	canvas   Canvas
+	parent   Screen
+	pack     PackType
+	children []Control
+	controls []Control
 }
 
 func NewWindow(parent Screen, x, y, w, h int, title string) *Window {
@@ -179,14 +177,6 @@ func (w *Window) DrawFrame(tm Theme) {
 	fg := RealColor(tm, w.fg, ColorViewText)
 
 	w.canvas.DrawFrame(0, 0, w.width, w.height, fg, bg, chars)
-}
-
-func (w *Window) Paddings() (int, int, int, int) {
-	return w.padSide, w.padTop, w.padX, w.padY
-}
-
-func (w *Window) SetPaddings(side, top, dx, dy int) {
-	w.padSide, w.padTop, w.padX, w.padY = side, top, dx, dy
 }
 
 func (w *Window) Canvas() Canvas {

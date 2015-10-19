@@ -139,6 +139,8 @@ func (c *Composer) activateView(view View) {
 		if v != view {
 			v.SetActive(false)
 			wList = append(wList, v)
+		} else {
+			found = true
 		}
 	}
 
