@@ -35,17 +35,25 @@ func NewWindow(parent Screen, x, y, w, h int, title string) *Window {
 }
 
 func (w *Window) SetSize(width, height int) {
-	if width > 1000 || width < w.minW {
+	if width == w.width && height == w.height {
+		return
+	}
+
+	if width != DoNotChange && (width > 1000 || width < w.minW) {
 		panic(fmt.Sprintf("Invalid width: %v", width))
 	}
-	if height > 200 || height < w.minH {
+	if height != DoNotChange && (height > 200 || height < w.minH) {
 		panic(fmt.Sprintf("Invalid height: %v", height))
 	}
 
-	w.width = width
-	w.height = height
+	if width != DoNotChange {
+		w.width = width
+	}
+	if height != DoNotChange {
+		w.height = height
+	}
 
-	w.canvas.SetSize(width, height)
+	w.canvas.SetSize(w.width, w.height)
 	RepositionControls(0, 0, w)
 }
 

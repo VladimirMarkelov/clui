@@ -59,7 +59,7 @@ func NewThemeManager() *ThemeManager {
 	defTheme.colors[ColorDisabledText] = ColorBlackBold
 	defTheme.colors[ColorDisabledBack] = ColorWhite
 	defTheme.colors[ColorText] = ColorWhite
-	defTheme.colors[ColorBack] = ColorBlack
+	defTheme.colors[ColorBack] = ColorBlackBold
 	defTheme.colors[ColorViewBack] = ColorBlackBold
 	defTheme.colors[ColorViewText] = ColorWhite
 
