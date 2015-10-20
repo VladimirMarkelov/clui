@@ -25,6 +25,14 @@ type ProgressBar struct {
 
 func NewProgressBar(view View, parent Control, width, height int, scale int) *ProgressBar {
 	b := new(ProgressBar)
+
+	if height == AutoSize {
+		height = 1
+	}
+	if width == AutoSize {
+		width = 10
+	}
+
 	b.SetSize(width, height)
 	b.SetConstraints(width, height)
 	b.SetTabStop(false)

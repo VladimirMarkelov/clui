@@ -1,6 +1,7 @@
 package clui
 
 import (
+	xs "github.com/huandu/xstrings"
 	term "github.com/nsf/termbox-go"
 )
 
@@ -21,6 +22,10 @@ func NewCheckBox(view View, parent Control, width int, title string, scale int) 
 	c := new(CheckBox)
 	c.view = view
 	c.parent = parent
+
+	if width == AutoSize {
+		width = xs.Len(title) + 4
+	}
 
 	c.SetSize(width, 1) // TODO: only one line checkboxes are supported at that moment
 	c.SetConstraints(width, 1)

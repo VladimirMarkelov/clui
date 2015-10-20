@@ -14,6 +14,14 @@ type Frame struct {
 
 func NewFrame(view View, parent Control, width, height int, bs BorderStyle, scale int) *Frame {
 	f := new(Frame)
+
+	if width == AutoSize {
+		width = 5
+	}
+	if height == AutoSize {
+		height = 3
+	}
+
 	f.SetSize(width, height)
 	f.SetConstraints(width, height)
 	f.border = bs

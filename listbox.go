@@ -33,6 +33,14 @@ type ListBox struct {
 
 func NewListBox(view View, parent Control, width, height int, scale int) *ListBox {
 	l := new(ListBox)
+
+	if height == AutoSize {
+		height = 3
+	}
+	if width == AutoSize {
+		width = 5
+	}
+
 	l.SetSize(width, height)
 	l.SetConstraints(width, height)
 	l.currSelection = -1

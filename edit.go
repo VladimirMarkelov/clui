@@ -32,6 +32,11 @@ func NewEditField(view View, parent Control, width int, text string, scale int) 
 	e.onChange = nil
 	e.SetTitle(text)
 	e.SetEnabled(true)
+
+	if width == AutoSize {
+		width = xs.Len(text) + 1
+	}
+
 	e.SetSize(width, 1)
 	e.cursorPos = xs.Len(text)
 	e.offset = 0

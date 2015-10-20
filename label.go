@@ -2,6 +2,7 @@ package clui
 
 import (
 	_ "fmt"
+	xs "github.com/huandu/xstrings"
 	term "github.com/nsf/termbox-go"
 )
 
@@ -13,9 +14,15 @@ type Label struct {
 func NewLabel(view View, parent Control, w, h int, title string, scale int) *Label {
 	c := new(Label)
 
+	if w == AutoSize {
+		w = xs.Len(title)
+	}
+	if h == AutoSize {
+		h = 1
+	}
+
 	c.view = view
 	c.parent = parent
-	c.minW, c.minH = 1, 1
 
 	c.SetTitle(title)
 	c.SetSize(w, h)

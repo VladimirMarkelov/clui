@@ -20,9 +20,16 @@ func NewWindow(parent Screen, x, y, w, h int, title string) *Window {
 	d := new(Window)
 	d.canvas = NewFrameBuffer(w, h)
 
-	d.SetConstraints(10, 5)
-	d.SetTitle(title)
+	if w == AutoSize {
+		w = 10
+	}
+	if h == AutoSize {
+		h = 5
+	}
+
 	d.SetSize(w, h)
+	d.SetConstraints(w, h)
+	d.SetTitle(title)
 	d.SetPos(x, y)
 	d.SetButtons(ButtonClose | ButtonBottom | ButtonMaximize)
 

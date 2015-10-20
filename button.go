@@ -1,6 +1,7 @@
 package clui
 
 import (
+	xs "github.com/huandu/xstrings"
 	term "github.com/nsf/termbox-go"
 	"time"
 )
@@ -23,6 +24,13 @@ func NewButton(view View, parent Control, width, height int, title string, scale
 	b.view = view
 	b.parent = parent
 	b.align = AlignCenter
+
+	if height == AutoSize {
+		height = 4
+	}
+	if width == AutoSize {
+		width = xs.Len(title) + 2
+	}
 
 	if height < 4 {
 		height = 4

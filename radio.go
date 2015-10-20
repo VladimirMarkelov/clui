@@ -1,6 +1,7 @@
 package clui
 
 import (
+	xs "github.com/huandu/xstrings"
 	term "github.com/nsf/termbox-go"
 )
 
@@ -19,6 +20,11 @@ type Radio struct {
 
 func NewRadio(view View, parent Control, width int, title string, scale int) *Radio {
 	c := new(Radio)
+
+	if width == AutoSize {
+		width = xs.Len(title) + 4
+	}
+
 	c.view = view
 	c.parent = parent
 
