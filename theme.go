@@ -1,7 +1,11 @@
 package clui
 
 import (
+	"bufio"
 	term "github.com/nsf/termbox-go"
+	"io/ioutil"
+	"os"
+	"strings"
 )
 
 /*
@@ -17,7 +21,9 @@ type ThemeManager struct {
 	// available theme list
 	themes map[string]theme
 	// name of the current theme
-	current string
+	current   string
+	themePath string
+	version   string
 }
 
 /*
@@ -27,21 +33,31 @@ theme object is not declared in the current one. If no parent is
 defined then the library uses default built-in theme.
 */
 type theme struct {
-	colors  map[ColorId]term.Attribute
-	objects map[ObjId]string
+	colors  map[string]term.Attribute
+	objects map[string]string
 	parent  string
+	title   string
+	author  string
+	version string
 }
 
 const defaultTheme = "default"
 
 func NewThemeManager() *ThemeManager {
 	sm := new(ThemeManager)
-	sm.current = defaultTheme
-	sm.themes = make(map[string]theme, 0)
 
-	defTheme := theme{parent: ""}
-	defTheme.colors = make(map[ColorId]term.Attribute, 0)
-	defTheme.objects = make(map[ObjId]string, 0)
+	sm.Reset()
+
+	return sm
+}
+
+func (s *ThemeManager) Reset() {
+	s.current = defaultTheme
+	s.themes = make(map[string]theme, 0)
+
+	defTheme := theme{parent: "", title: "Default Theme", author: "V. Markelov", version: "1.0"}
+	defTheme.colors = make(map[string]term.Attribute, 0)
+	defTheme.objects = make(map[string]string, 0)
 
 	defTheme.objects[ObjSingleBorder] = "─│┌┐└┘"
 	defTheme.objects[ObjDoubleBorder] = "═║╔╗╚╝"
@@ -84,12 +100,10 @@ func NewThemeManager() *ThemeManager {
 	defTheme.colors[ColorProgressActiveText] = ColorBlack
 	defTheme.colors[ColorProgressActiveBack] = ColorBlueBold
 
-	sm.themes[defaultTheme] = defTheme
-
-	return sm
+	s.themes[defaultTheme] = defTheme
 }
 
-func (s *ThemeManager) SysColor(color ColorId) term.Attribute {
+func (s *ThemeManager) SysColor(color string) term.Attribute {
 	sch, ok := s.themes[s.current]
 	if !ok {
 		sch = s.themes[defaultTheme]
@@ -107,7 +121,7 @@ func (s *ThemeManager) SysColor(color ColorId) term.Attribute {
 	return clr
 }
 
-func (s *ThemeManager) SysObject(object ObjId) string {
+func (s *ThemeManager) SysObject(object string) string {
 	sch, ok := s.themes[s.current]
 	if !ok {
 		sch = s.themes[defaultTheme]
@@ -123,9 +137,22 @@ func (s *ThemeManager) SysObject(object ObjId) string {
 }
 
 func (s *ThemeManager) ThemeList() []string {
-	str := make([]string, len(s.themes))
-	for k := range s.themes {
-		str = append(str, k)
+	var str []string
+	str = append(str, defaultTheme)
+
+	path := s.themePath
+	if path == "" {
+		path = "." + string(os.PathSeparator)
+	}
+	files, err := ioutil.ReadDir(path)
+	if err != nil {
+		panic("Failed to read theme directory: " + s.themePath)
+	}
+
+	for _, f := range files {
+		if !f.IsDir() {
+			str = append(str, f.Name())
+		}
 	}
 
 	return str
@@ -136,9 +163,92 @@ func (s *ThemeManager) CurrentTheme() string {
 }
 
 func (s *ThemeManager) SetCurrentTheme(name string) bool {
+	if _, ok := s.themes[name]; !ok {
+		tnames := s.ThemeList()
+		for _, theme := range tnames {
+			if theme == name {
+				s.LoadTheme(theme)
+				break
+			}
+		}
+	}
+
 	if _, ok := s.themes[name]; ok {
 		s.current = name
 		return true
 	}
 	return false
+}
+
+func (s *ThemeManager) ThemePath() string {
+	return s.themePath
+}
+
+func (s *ThemeManager) SetThemePath(path string) {
+	if path == s.themePath {
+		return
+	}
+
+	s.themePath = path
+	s.Reset()
+}
+
+func (s *ThemeManager) LoadTheme(name string) {
+	if _, ok := s.themes[name]; ok {
+		delete(s.themes, name)
+	}
+
+	theme := theme{parent: "", title: "", author: ""}
+	theme.colors = make(map[string]term.Attribute, 0)
+	theme.objects = make(map[string]string, 0)
+
+	file, err := os.Open(s.themePath + string(os.PathSeparator) + name)
+	if err != nil {
+		panic("Failed to open theme " + name + " : " + err.Error())
+	}
+	defer file.Close()
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		line := scanner.Text()
+		line = strings.Trim(line, " ")
+
+		// skip comments
+		if strings.HasPrefix(line, "#") || strings.HasPrefix(line, "/") {
+			continue
+		}
+
+		// skip invalid lines
+		if !strings.Contains(line, "=") {
+			continue
+		}
+
+		parts := strings.SplitN(line, "=", 2)
+		key := strings.Trim(parts[0], " ")
+		value := strings.Trim(parts[1], " ")
+
+		low := strings.ToLower(key)
+		if low == "parent" {
+			theme.parent = value
+		} else if low == "author" {
+			theme.author = value
+		} else if low == "name" || low == "title" {
+			theme.title = value
+		} else if low == "version" {
+			theme.version = value
+		} else if strings.HasSuffix(key, "Back") || strings.HasSuffix(key, "Text") {
+			c := StringToColor(value)
+			if c%32 == 0 {
+				panic("Failed to read color: " + value)
+			}
+			theme.colors[key] = c
+		} else {
+			theme.objects[key] = value
+		}
+	}
+
+	if theme.parent == "" {
+		theme.parent = "default"
+	}
+
+	s.themes[name] = theme
 }

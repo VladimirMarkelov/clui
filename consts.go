@@ -28,9 +28,6 @@ type (
 	EventType   int
 	Direction   int
 	PackType    int
-	// EditBoxMode int
-	ObjId   string
-	ColorId string
 )
 
 // Internal event structure. Used by Windows and controls to communicate with Composer
@@ -145,7 +142,7 @@ const (
 	// general colors
 	ColorBack         = "Back"
 	ColorText         = "Text"
-	ColorDisabledText = "Gray"
+	ColorDisabledText = "GrayText"
 	ColorDisabledBack = "GrayBack"
 
 	// editable & listbox-like controls
@@ -169,7 +166,7 @@ const (
 	ColorControlActiveText   = "ControlActiveText"
 	ColorControlDisabledBack = "ControlDisabledBack"
 	ColorControlDisabledText = "ControlDisabledText"
-	ColorControlShadow       = "ControlShadow"
+	ColorControlShadow       = "ControlShadowBack"
 
 	// progressbar colors
 	ColorProgressBack       = "ProgressBack"

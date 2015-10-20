@@ -26,8 +26,8 @@ type Canvas interface {
 }
 
 type Theme interface {
-	SysObject(ObjId) string
-	SysColor(ColorId) term.Attribute
+	SysObject(string) string
+	SysColor(string) term.Attribute
 }
 
 type View interface {

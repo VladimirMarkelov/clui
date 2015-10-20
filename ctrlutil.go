@@ -1,8 +1,8 @@
 package clui
 
 import (
-	_ "fmt"
 	term "github.com/nsf/termbox-go"
+	"strings"
 )
 
 func CalculateMinimalSize(c Control) (int, int) {
@@ -130,13 +130,56 @@ func RepositionControls(dx, dy int, c Control) {
 	}
 }
 
-func RealColor(tm Theme, clr term.Attribute, id ColorId) term.Attribute {
+func RealColor(tm Theme, clr term.Attribute, id string) term.Attribute {
 	if clr != ColorDefault {
 		return clr
 	}
 
 	if clr == ColorDefault {
 		return tm.SysColor(id)
+	}
+
+	return clr
+}
+
+func StringToColor(str string) term.Attribute {
+	var parts []string
+	if strings.ContainsRune(str, '+') {
+		parts = strings.Split(str, "+")
+	} else if strings.ContainsRune(str, '|') {
+		parts = strings.Split(str, "|")
+	} else if strings.ContainsRune(str, ' ') {
+		parts = strings.Split(str, " ")
+	} else {
+		parts = append(parts, str)
+	}
+
+	var cmap = map[string]term.Attribute{
+		"default":    term.ColorDefault,
+		"black":      term.ColorBlack,
+		"red":        term.ColorRed,
+		"green":      term.ColorGreen,
+		"yellow":     term.ColorYellow,
+		"blue":       term.ColorBlue,
+		"magenta":    term.ColorMagenta,
+		"cyan":       term.ColorCyan,
+		"white":      term.ColorWhite,
+		"bold":       term.AttrBold,
+		"bright":     term.AttrBold, // windows make color brighter when it is bold
+		"underline":  term.AttrUnderline,
+		"underlined": term.AttrUnderline,
+		"reverse":    term.AttrReverse,
+	}
+
+	var clr term.Attribute
+	for _, item := range parts {
+		item = strings.Trim(item, " ")
+		item = strings.ToLower(item)
+
+		c, ok := cmap[item]
+		if ok {
+			clr |= c
+		}
 	}
 
 	return clr

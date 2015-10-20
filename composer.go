@@ -1,7 +1,7 @@
 package clui
 
 import (
-	"github.com/nsf/termbox-go"
+	term "github.com/nsf/termbox-go"
 	"log"
 	"os"
 )
@@ -22,9 +22,9 @@ type Composer struct {
 	themeManager *ThemeManager
 
 	// multi key sequences support. The flag below are true if the last keyboard combination was Ctrl+S or Ctrl+W respectively
-	ctrlKey termbox.Key
+	ctrlKey term.Key
 	// last pressed key - to make repeatable actions simpler, e.g, at first one presses Ctrl+S and then just repeatedly presses arrow lest to resize View
-	lastKey termbox.Key
+	lastKey term.Key
 
 	//debug
 	logger *log.Logger
@@ -37,15 +37,15 @@ func (c *Composer) initBuffer() {
 
 // Initialize library and starts console management
 func InitLibrary() *Composer {
-	err := termbox.Init()
+	err := term.Init()
 	if err != nil {
 		panic(err)
 	}
 
 	c := new(Composer)
-	c.ctrlKey = termbox.KeyEsc
+	c.ctrlKey = term.KeyEsc
 
-	termbox.HideCursor()
+	term.HideCursor()
 
 	file, _ := os.OpenFile("debugui.txt", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
 	c.logger = log.New(file, "", log.Ldate|log.Ltime|log.Lshortfile)
@@ -55,12 +55,12 @@ func InitLibrary() *Composer {
 
 	c.views = make([]View, 0)
 
-	c.width, c.height = termbox.Size()
+	c.width, c.height = term.Size()
 	c.initBuffer()
 
 	c.themeManager = NewThemeManager()
 
-	termbox.SetInputMode(termbox.InputAlt | termbox.InputMouse)
+	term.SetInputMode(term.InputAlt | term.InputMouse)
 
 	c.redrawAll()
 
@@ -72,12 +72,12 @@ func (c *Composer) redrawAll() {
 		for i := 0; i < c.width; i++ {
 			sym, ok := c.canvas.Symbol(i, j)
 			if ok {
-				termbox.SetCell(i, j, sym.Ch, termbox.Attribute(sym.Fg), termbox.Attribute(sym.Bg))
+				term.SetCell(i, j, sym.Ch, term.Attribute(sym.Fg), term.Attribute(sym.Bg))
 			}
 		}
 	}
 
-	termbox.Flush()
+	term.Flush()
 }
 
 // Repaints all View on the screen. Now the method is not efficient: at first clears a console and then draws all Views starting from the bottom
@@ -176,7 +176,7 @@ func (c *Composer) moveActiveWindowToBottom() bool {
 	return true
 }
 
-func (c *Composer) termboxEventToLocal(ev termbox.Event) Event {
+func (c *Composer) termboxEventToLocal(ev term.Event) Event {
 	e := Event{Type: EventType(ev.Type), Ch: ev.Ch, Key: ev.Key, Err: ev.Err, X: ev.MouseX, Y: ev.MouseY, Mod: ev.Mod}
 	return e
 }
@@ -198,7 +198,7 @@ func (c *Composer) topView() View {
 	return c.views[len(c.views)-1]
 }
 
-func (c *Composer) resizeTopView(ev termbox.Event) bool {
+func (c *Composer) resizeTopView(ev term.Event) bool {
 	view := c.topView()
 	if view == nil {
 		return false
@@ -207,13 +207,13 @@ func (c *Composer) resizeTopView(ev termbox.Event) bool {
 	w, h := view.Size()
 	w1, h1 := w, h
 	minW, minH := view.Constraints()
-	if ev.Key == termbox.KeyArrowUp && minH < h {
+	if ev.Key == term.KeyArrowUp && minH < h {
 		h--
-	} else if ev.Key == termbox.KeyArrowLeft && minW < w {
+	} else if ev.Key == term.KeyArrowLeft && minW < w {
 		w--
-	} else if ev.Key == termbox.KeyArrowDown {
+	} else if ev.Key == term.KeyArrowDown {
 		h++
-	} else if ev.Key == termbox.KeyArrowRight {
+	} else if ev.Key == term.KeyArrowRight {
 		w++
 	}
 
@@ -227,21 +227,21 @@ func (c *Composer) resizeTopView(ev termbox.Event) bool {
 	return true
 }
 
-func (c *Composer) moveTopView(ev termbox.Event) bool {
+func (c *Composer) moveTopView(ev term.Event) bool {
 	if len(c.views) > 0 {
 		view := c.topView()
 		if view != nil {
 			x, y := view.Pos()
 			w, h := view.Size()
 			x1, y1 := x, y
-			cx, cy := termbox.Size()
-			if ev.Key == termbox.KeyArrowUp && y > 0 {
+			cx, cy := term.Size()
+			if ev.Key == term.KeyArrowUp && y > 0 {
 				y--
-			} else if ev.Key == termbox.KeyArrowDown && y+h < cy {
+			} else if ev.Key == term.KeyArrowDown && y+h < cy {
 				y++
-			} else if ev.Key == termbox.KeyArrowLeft && x > 0 {
+			} else if ev.Key == term.KeyArrowLeft && x > 0 {
 				x--
-			} else if ev.Key == termbox.KeyArrowRight && x+w < cx {
+			} else if ev.Key == term.KeyArrowRight && x+w < cx {
 				x++
 			}
 
@@ -258,32 +258,32 @@ func (c *Composer) moveTopView(ev termbox.Event) bool {
 	}
 }
 
-func (c *Composer) isDeadKey(ev termbox.Event) bool {
-	if ev.Key == termbox.KeyCtrlS || ev.Key == termbox.KeyCtrlW {
+func (c *Composer) isDeadKey(ev term.Event) bool {
+	if ev.Key == term.KeyCtrlS || ev.Key == term.KeyCtrlP || ev.Key == term.KeyCtrlW {
 		c.ctrlKey = ev.Key
-		c.lastKey = termbox.KeyEsc
+		c.lastKey = term.KeyEsc
 		return true
 	}
 
-	c.ctrlKey = termbox.KeyEsc
+	c.ctrlKey = term.KeyEsc
 	return false
 }
 
-func (c *Composer) processKeySeq(ev termbox.Event) bool {
-	if c.ctrlKey == termbox.KeyEsc {
+func (c *Composer) processKeySeq(ev term.Event) bool {
+	if c.ctrlKey == term.KeyEsc {
 		return false
 	}
 
-	if c.ctrlKey == termbox.KeyCtrlS {
-		if c.lastKey == termbox.KeyEsc {
+	if c.ctrlKey == term.KeyCtrlS {
+		if c.lastKey == term.KeyEsc {
 			c.lastKey = ev.Key
 		} else if c.lastKey != ev.Key {
-			c.ctrlKey = termbox.KeyEsc
+			c.ctrlKey = term.KeyEsc
 			return false
 		}
 
 		switch ev.Key {
-		case termbox.KeyArrowUp, termbox.KeyArrowDown, termbox.KeyArrowLeft, termbox.KeyArrowRight:
+		case term.KeyArrowUp, term.KeyArrowDown, term.KeyArrowLeft, term.KeyArrowRight:
 			evCopy := ev
 			c.resizeTopView(evCopy)
 			return true
@@ -292,34 +292,39 @@ func (c *Composer) processKeySeq(ev termbox.Event) bool {
 		return false
 	}
 
-	if c.ctrlKey == termbox.KeyCtrlW {
-		if c.lastKey == termbox.KeyEsc {
+	if c.ctrlKey == term.KeyCtrlP {
+		if c.lastKey == term.KeyEsc {
 			c.lastKey = ev.Key
 		} else if c.lastKey != ev.Key {
-			c.ctrlKey = termbox.KeyEsc
+			c.ctrlKey = term.KeyEsc
 			return false
 		}
 
 		switch ev.Key {
-		case termbox.KeyArrowUp, termbox.KeyArrowDown, termbox.KeyArrowLeft, termbox.KeyArrowRight:
+		case term.KeyArrowUp, term.KeyArrowDown, term.KeyArrowLeft, term.KeyArrowRight:
 			evCopy := ev
 			c.moveTopView(evCopy)
 			return true
-		case termbox.KeyCtrlH:
-			// if len(c.windowOrder) > 1 && ev.Mod&termbox.ModControl != 0 {
-			//  c.moveActiveWindowToBottom()
-			// }
-			return true
+		default:
+			return false
 		}
-
-		return false
 	}
 
-	c.ctrlKey = termbox.KeyEsc
+	if c.ctrlKey == term.KeyCtrlW {
+		switch ev.Key {
+		case term.KeyCtrlH:
+			c.moveActiveWindowToBottom()
+			return true
+		default:
+			return false
+		}
+	}
+
+	c.ctrlKey = term.KeyEsc
 	return true
 }
 
-func (c *Composer) processKey(ev termbox.Event) bool {
+func (c *Composer) processKey(ev term.Event) bool {
 	if c.processKeySeq(ev) {
 		return false
 	}
@@ -328,13 +333,13 @@ func (c *Composer) processKey(ev termbox.Event) bool {
 	}
 
 	switch ev.Key {
-	case termbox.KeyCtrlQ:
+	case term.KeyCtrlQ:
 		return true
-	// case termbox.KeyArrowUp, termbox.KeyArrowDown, termbox.KeyArrowLeft, termbox.KeyArrowRight:
+	// case term.KeyArrowUp, term.KeyArrowDown, term.KeyArrowLeft, term.KeyArrowRight:
 	//  if c.sendEventToActiveView(c.termboxEventToLocal(ev)) {
 	//      c.RefreshScreen()
 	//  }
-	// case termbox.KeyEnd:
+	// case term.KeyEnd:
 	//  if c.sendEventToActiveView(c.termboxEventToLocal(ev)) {
 	//      c.RefreshScreen()
 	//  }
@@ -348,7 +353,7 @@ func (c *Composer) processKey(ev termbox.Event) bool {
 	return false
 }
 
-func (c *Composer) processMouseClick(ev termbox.Event) {
+func (c *Composer) processMouseClick(ev term.Event) {
 	view, hit := c.checkWindowUnderMouse(ev.MouseX, ev.MouseY)
 
 	if view == nil {
@@ -445,10 +450,10 @@ func (c *Composer) Stop() {
 func (c *Composer) MainLoop() {
 	// c.redrawAll()
 
-	eventQueue := make(chan termbox.Event)
+	eventQueue := make(chan term.Event)
 	go func() {
 		for {
-			eventQueue <- termbox.PollEvent()
+			eventQueue <- term.PollEvent()
 		}
 	}()
 
@@ -456,17 +461,17 @@ func (c *Composer) MainLoop() {
 		select {
 		case ev := <-eventQueue:
 			switch ev.Type {
-			case termbox.EventKey:
+			case term.EventKey:
 				if c.processKey(ev) {
 					return
 				}
-			case termbox.EventMouse:
+			case term.EventMouse:
 				c.processMouseClick(ev)
-			case termbox.EventError:
+			case term.EventError:
 				panic(ev.Err)
-				// case termbox.EventResize:
-				//  termbox.Clear(termbox.ColorDefault, termbox.ColorDefault)
-				//  c.width, c.height = termbox.Size()
+				// case term.EventResize:
+				//  term.Clear(term.ColorDefault, term.ColorDefault)
+				//  c.width, c.height = term.Size()
 				//  c.screen = c.initBuffer(c.width, c.height)
 				//  c.RefreshScreen()
 			}
@@ -487,13 +492,13 @@ func (c *Composer) PutEvent(ev Event) {
 
 // Closes console management and makes a console cursor visible
 func (c *Composer) Close() {
-	termbox.SetCursor(3, 3)
-	termbox.Close()
+	term.SetCursor(3, 3)
+	term.Close()
 }
 
 // Shows consolse cursor at given position. Setting cursor to -1,-1 hides cursor
 func (c *Composer) SetCursorPos(x, y int) {
-	termbox.SetCursor(x, y)
+	term.SetCursor(x, y)
 }
 
 func (c *Composer) DestroyWindow(view View) {
