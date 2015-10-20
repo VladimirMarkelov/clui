@@ -34,10 +34,6 @@ type theme struct {
 
 const defaultTheme = "default"
 
-// Theme color constants
-// const (
-// )
-
 func NewThemeManager() *ThemeManager {
 	sm := new(ThemeManager)
 	sm.current = defaultTheme
@@ -126,7 +122,7 @@ func (s *ThemeManager) SysObject(object ObjId) string {
 	return obj
 }
 
-func (s *ThemeManager) GetThemeList() []string {
+func (s *ThemeManager) ThemeList() []string {
 	str := make([]string, len(s.themes))
 	for k := range s.themes {
 		str = append(str, k)
@@ -135,7 +131,7 @@ func (s *ThemeManager) GetThemeList() []string {
 	return str
 }
 
-func (s *ThemeManager) GetCurrentTheme() string {
+func (s *ThemeManager) CurrentTheme() string {
 	return s.current
 }
 
