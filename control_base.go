@@ -110,6 +110,7 @@ func (c *ControlBase) SetPack(pk PackType) {
 }
 
 func (c *ControlBase) AddChild(ctrl Control, scale int) {
+	panic("This control cannot have children")
 }
 
 func (c *ControlBase) Children() []Control {
