@@ -28,6 +28,10 @@ type Canvas interface {
 type Theme interface {
 	SysObject(string) string
 	SysColor(string) term.Attribute
+	SetCurrentTheme(string) bool
+	ThemeNames() []string
+	ThemeInfo(string) ThemeInfo
+	SetThemePath(string)
 }
 
 type View interface {

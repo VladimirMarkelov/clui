@@ -26,6 +26,13 @@ type ThemeManager struct {
 	version   string
 }
 
+type ThemeInfo struct {
+	parent  string
+	title   string
+	author  string
+	version string
+}
+
 /*
 A theme structure. It keeps all colors, characters for the theme.
 Parent property determines a theme name that is used if a requested
@@ -33,12 +40,12 @@ theme object is not declared in the current one. If no parent is
 defined then the library uses default built-in theme.
 */
 type theme struct {
-	colors  map[string]term.Attribute
-	objects map[string]string
 	parent  string
 	title   string
 	author  string
 	version string
+	colors  map[string]term.Attribute
+	objects map[string]string
 }
 
 const defaultTheme = "default"
@@ -136,7 +143,7 @@ func (s *ThemeManager) SysObject(object string) string {
 	return obj
 }
 
-func (s *ThemeManager) ThemeList() []string {
+func (s *ThemeManager) ThemeNames() []string {
 	var str []string
 	str = append(str, defaultTheme)
 
@@ -164,7 +171,7 @@ func (s *ThemeManager) CurrentTheme() string {
 
 func (s *ThemeManager) SetCurrentTheme(name string) bool {
 	if _, ok := s.themes[name]; !ok {
-		tnames := s.ThemeList()
+		tnames := s.ThemeNames()
 		for _, theme := range tnames {
 			if theme == name {
 				s.LoadTheme(theme)
@@ -251,4 +258,15 @@ func (s *ThemeManager) LoadTheme(name string) {
 	}
 
 	s.themes[name] = theme
+}
+
+func (s *ThemeManager) ThemeInfo(name string) ThemeInfo {
+	s.LoadTheme(name)
+	var theme ThemeInfo
+	if t, ok := s.themes[name]; !ok {
+		theme.parent = t.parent
+		theme.title = t.title
+		theme.version = t.version
+	}
+	return theme
 }
