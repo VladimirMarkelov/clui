@@ -117,11 +117,27 @@ func (s *ThemeManager) SysColor(color string) term.Attribute {
 	}
 
 	clr, okclr := sch.colors[color]
-	if !okclr && sch.parent != "" {
-		sch = s.themes[sch.parent]
-		clr, okclr = sch.colors[color]
-		if !okclr {
-			clr = term.ColorDefault
+	if !okclr {
+		visited := make(map[string]int, 0)
+		visited[s.current] = 1
+		if !ok {
+			visited[defaultTheme] = 1
+		}
+
+		for {
+			s.LoadTheme(sch.parent)
+			sch = s.themes[sch.parent]
+			clr, okclr = sch.colors[color]
+
+			if ok {
+				break
+			} else {
+				if _, okSch := visited[sch.parent]; okSch {
+					panic("Color + " + color + ". Theme loop detected: " + sch.title + " --> " + sch.parent)
+				} else {
+					visited[sch.parent] = 1
+				}
+			}
 		}
 	}
 
@@ -135,9 +151,28 @@ func (s *ThemeManager) SysObject(object string) string {
 	}
 
 	obj, okobj := sch.objects[object]
-	if !okobj && sch.parent != "" {
-		sch = s.themes[sch.parent]
-		obj = sch.objects[object]
+	if !okobj {
+		visited := make(map[string]int, 0)
+		visited[s.current] = 1
+		if !ok {
+			visited[defaultTheme] = 1
+		}
+
+		for {
+			s.LoadTheme(sch.parent)
+			sch = s.themes[sch.parent]
+			obj, okobj = sch.objects[object]
+
+			if ok {
+				break
+			} else {
+				if _, okSch := visited[sch.parent]; okSch {
+					panic("Object: " + object + ". Theme loop detected: " + sch.title + " --> " + sch.parent)
+				} else {
+					visited[sch.parent] = 1
+				}
+			}
+		}
 	}
 
 	return obj
@@ -202,7 +237,7 @@ func (s *ThemeManager) SetThemePath(path string) {
 
 func (s *ThemeManager) LoadTheme(name string) {
 	if _, ok := s.themes[name]; ok {
-		delete(s.themes, name)
+		return
 	}
 
 	theme := theme{parent: "", title: "", author: ""}
@@ -258,6 +293,14 @@ func (s *ThemeManager) LoadTheme(name string) {
 	}
 
 	s.themes[name] = theme
+}
+
+func (s *ThemeManager) ReLoadTheme(name string) {
+	if _, ok := s.themes[name]; ok {
+		delete(s.themes, name)
+	}
+
+	s.LoadTheme(name)
 }
 
 func (s *ThemeManager) ThemeInfo(name string) ThemeInfo {
