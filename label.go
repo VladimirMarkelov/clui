@@ -4,11 +4,13 @@ import (
 	_ "fmt"
 	xs "github.com/huandu/xstrings"
 	term "github.com/nsf/termbox-go"
+	"strings"
 )
 
 type Label struct {
 	ControlBase
 	direction Direction
+	multiline bool
 }
 
 func NewLabel(view View, parent Control, w, h int, title string, scale int) *Label {
@@ -55,11 +57,50 @@ func (l *Label) Repaint() {
 
 	canvas.FillRect(l.x, l.y, l.width, l.height, term.Cell{Ch: ' ', Fg: fg, Bg: bg})
 
-	if l.direction == Horizontal {
-		shift, text := AlignText(l.title, l.width, l.align)
-		canvas.PutText(l.x+shift, l.y, text, fg, bg)
+	if l.multiline {
+		lineCnt, lineLen := l.height, l.width
+		if l.direction == Vertical {
+			lineCnt, lineLen = l.width, l.height
+		}
+
+		lines := strings.Split(l.title, "\n")
+
+		var realLines []string
+		for _, s := range lines {
+			curr := s
+			for xs.Len(curr) > lineLen {
+				realLines = append(realLines, xs.Slice(curr, 0, lineLen))
+				curr = xs.Slice(curr, lineLen, -1)
+			}
+			realLines = append(realLines, curr)
+		}
+
+		idx := 0
+		for idx < lineCnt && idx < len(realLines) {
+			if l.direction == Horizontal {
+				shift, text := AlignText(realLines[idx], l.width, l.align)
+				canvas.PutText(l.x+shift, l.y+idx, text, fg, bg)
+			} else {
+				shift, text := AlignText(realLines[idx], l.height, l.align)
+				canvas.PutVerticalText(l.x+idx, l.y+shift, text, fg, bg)
+			}
+			idx++
+		}
 	} else {
-		shift, text := AlignText(l.title, l.height, l.align)
-		canvas.PutVerticalText(l.x, l.y+shift, text, fg, bg)
+		if l.direction == Horizontal {
+			shift, text := AlignText(l.title, l.width, l.align)
+			canvas.PutText(l.x+shift, l.y, text, fg, bg)
+		} else {
+			shift, text := AlignText(l.title, l.height, l.align)
+			canvas.PutVerticalText(l.x, l.y+shift, text, fg, bg)
+		}
 	}
+}
+
+func (l *Label) Multiline() bool {
+	return l.multiline
+}
+
+func (l *Label) SetMultiline(multi bool) {
+	l.multiline = multi
 }
