@@ -157,6 +157,10 @@ func (c *Composer) moveActiveWindowToBottom() bool {
 		return false
 	}
 
+	if c.topView().Modal() {
+		return false
+	}
+
 	event := Event{Type: EventActivate, X: 0} // send deactivated
 	c.sendEventToActiveView(event)
 
@@ -313,8 +317,7 @@ func (c *Composer) processKeySeq(ev term.Event) bool {
 	if c.ctrlKey == term.KeyCtrlW {
 		switch ev.Key {
 		case term.KeyCtrlH:
-			c.moveActiveWindowToBottom()
-			return true
+			return c.moveActiveWindowToBottom()
 		default:
 			return false
 		}
@@ -361,6 +364,9 @@ func (c *Composer) processMouseClick(ev term.Event) {
 	}
 
 	if c.topView() != view {
+		if c.topView().Modal() {
+			return
+		}
 		event := Event{Type: EventActivate, X: 0} // send 'deactivated'
 		c.sendEventToActiveView(event)
 		c.activateView(view)

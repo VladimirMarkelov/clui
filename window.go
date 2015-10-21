@@ -14,6 +14,8 @@ type Window struct {
 	pack     PackType
 	children []Control
 	controls []Control
+	// dialog support
+	modal bool
 }
 
 func NewWindow(parent Screen, x, y, w, h int, title string) *Window {
@@ -459,4 +461,12 @@ func (w *Window) HitTest(x, y int) HitResult {
 	}
 
 	return HitInside
+}
+
+func (w *Window) SetModal(modal bool) {
+	w.modal = modal
+}
+
+func (w *Window) Modal() bool {
+	return w.modal
 }

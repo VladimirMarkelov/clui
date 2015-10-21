@@ -53,6 +53,8 @@ type View interface {
 	Screen() Screen
 	Parent() Control
 	HitTest(int, int) HitResult
+	SetModal(bool)
+	Modal() bool
 
 	Paddings() (int, int, int, int)
 	SetPaddings(int, int, int, int)

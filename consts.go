@@ -208,6 +208,8 @@ const (
 	EventChanged
 	// Button event - button was clicked
 	EventClicked
+	// dialog closed
+	EventDialogClose
 	// Close application
 	EventQuit
 )
