@@ -81,7 +81,7 @@ func (c *Composer) redrawAll() {
 }
 
 // Repaints all View on the screen. Now the method is not efficient: at first clears a console and then draws all Views starting from the bottom
-func (c *Composer) RefreshScreen(invalidate bool) {
+func (c *Composer) refreshScreen(invalidate bool) {
 	c.canvas.Clear(ColorBlack)
 
 	for _, wnd := range c.views {
@@ -102,7 +102,7 @@ func (c *Composer) CreateView(posX, posY, width, height int, title string) View 
 
 	c.activateView(view)
 
-	c.RefreshScreen(false)
+	c.refreshScreen(false)
 
 	return view
 }
@@ -175,7 +175,7 @@ func (c *Composer) moveActiveWindowToBottom() bool {
 
 	event = Event{Type: EventActivate, X: 1} // send 'activated'
 	c.sendEventToActiveView(event)
-	c.RefreshScreen(true)
+	c.refreshScreen(true)
 
 	return true
 }
@@ -225,7 +225,7 @@ func (c *Composer) resizeTopView(ev term.Event) bool {
 		view.SetSize(w, h)
 		// event := Event{Type: EventResize, X: w, Y: h}
 		// c.sendEventToActiveView(event)
-		c.RefreshScreen(true)
+		c.refreshScreen(true)
 	}
 
 	return true
@@ -253,7 +253,7 @@ func (c *Composer) moveTopView(ev term.Event) bool {
 				view.SetPos(x, y)
 				// event := Event{Type: EventMove, X: x, Y: y}
 				// c.sendEventToActiveView(event)
-				c.RefreshScreen(true)
+				c.refreshScreen(true)
 			}
 		}
 		return true
@@ -340,16 +340,16 @@ func (c *Composer) processKey(ev term.Event) bool {
 		return true
 	// case term.KeyArrowUp, term.KeyArrowDown, term.KeyArrowLeft, term.KeyArrowRight:
 	//  if c.sendEventToActiveView(c.termboxEventToLocal(ev)) {
-	//      c.RefreshScreen()
+	//      c.refreshScreen()
 	//  }
 	// case term.KeyEnd:
 	//  if c.sendEventToActiveView(c.termboxEventToLocal(ev)) {
-	//      c.RefreshScreen()
+	//      c.refreshScreen()
 	//  }
 	default:
 		if c.sendEventToActiveView(c.termboxEventToLocal(ev)) {
 			c.topView().Repaint()
-			c.RefreshScreen(false)
+			c.refreshScreen(false)
 		}
 	}
 
@@ -372,10 +372,10 @@ func (c *Composer) processMouseClick(ev term.Event) {
 		c.activateView(view)
 		event = Event{Type: EventActivate, X: 1} // send 'activated'
 		c.sendEventToActiveView(event)
-		c.RefreshScreen(true)
+		c.refreshScreen(true)
 	} else if hit == HitInside {
 		c.sendEventToActiveView(c.termboxEventToLocal(ev))
-		c.RefreshScreen(true)
+		c.refreshScreen(true)
 	} else if hit == HitButtonClose {
 		if len(c.views) > 1 {
 			event := Event{Type: EventClose, X: 1}
@@ -387,7 +387,7 @@ func (c *Composer) processMouseClick(ev term.Event) {
 			event = Event{Type: EventActivate, X: 1} // send 'activated'
 			c.sendEventToActiveView(event)
 
-			c.RefreshScreen(true)
+			c.refreshScreen(true)
 		}
 	} else if hit == HitButtonBottom {
 		c.moveActiveWindowToBottom()
@@ -402,7 +402,7 @@ func (c *Composer) Stop() {
 
 // Main event loop
 func (c *Composer) MainLoop() {
-	// c.redrawAll()
+	c.refreshScreen(true)
 
 	eventQueue := make(chan term.Event)
 	go func() {
@@ -426,11 +426,11 @@ func (c *Composer) MainLoop() {
 			case term.EventResize:
 				c.width, c.height = term.Size()
 				c.initBuffer()
-				c.RefreshScreen(true)
+				c.refreshScreen(true)
 			}
 		case cmd := <-c.channel:
 			if cmd.Type == EventRedraw {
-				c.RefreshScreen(true)
+				c.refreshScreen(true)
 			} else if cmd.Type == EventQuit {
 				return
 			}
