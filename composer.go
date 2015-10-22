@@ -381,7 +381,7 @@ func (c *Composer) processMouseClick(ev term.Event) {
 			event := Event{Type: EventClose}
 			c.sendEventToActiveView(event)
 
-			c.DestroyWindow(view)
+			c.DestroyView(view)
 			activate := c.topView()
 			c.activateView(activate)
 			event = Event{Type: EventActivate, X: 1} // send 'activated'
@@ -393,58 +393,6 @@ func (c *Composer) processMouseClick(ev term.Event) {
 		c.moveActiveWindowToBottom()
 	}
 }
-
-// func (c *Composer) moveAndResize(dx, dy int, wnd Window) bool {
-//  if dx == 0 && dy == 0 {
-//      return false
-//  }
-//
-//  posX, posY := wnd.GetPos()
-//  w, h := wnd.GetSize()
-//  mnX, mnY := wnd.GetConstraints()
-//  newW, newH := w, h
-//  newX, newY := posX, posY
-//
-//  if c.dragHit == HitLeftBorder {
-//      newX = posX + dx
-//      newW = w - dx
-//  } else if c.dragHit == HitRightBorder {
-//      newW = w + dx
-//  } else if c.dragHit == HitBottomBorder {
-//      newH = h + dy
-//  } else if c.dragHit == HitTopLeft {
-//      newX, newY = posX+dx, posY+dy
-//      newW, newH = w-dx, h-dy
-//  } else if c.dragHit == HitBottomLeft {
-//      newX = posX + dx
-//      newW, newH = w-dx, h+dy
-//  } else if c.dragHit == HitTopRight {
-//      newY = posY + dy
-//      newW, newH = w+dx, h-dy
-//  } else if c.dragHit == HitBottomRight {
-//      newW, newH = w+dx, h+dy
-//  }
-//
-//  if (mnX != -1 && newW < mnX) || (mnY != -1 && newH < mnY) {
-//      return false
-//  }
-//
-//  wnd.SetPos(newX, newY)
-//  wnd.SetSize(newW, newH)
-//
-//  if posX != newX || posY != newY {
-//      event := Event{Type: EventMove, X: newX, Y: newY}
-//      c.sendEventToActiveView(event)
-//  }
-//  if newW != w || newH != h {
-//      event := Event{Type: EventResize, X: w, Y: h}
-//      c.sendEventToActiveView(event)
-//  }
-//
-//  wnd.Redraw()
-//
-//  return true
-// }
 
 // Asks a Composer to stops console management and quit application
 func (c *Composer) Stop() {
@@ -475,11 +423,10 @@ func (c *Composer) MainLoop() {
 				c.processMouseClick(ev)
 			case term.EventError:
 				panic(ev.Err)
-				// case term.EventResize:
-				//  term.Clear(term.ColorDefault, term.ColorDefault)
-				//  c.width, c.height = term.Size()
-				//  c.screen = c.initBuffer(c.width, c.height)
-				//  c.RefreshScreen()
+			case term.EventResize:
+				c.width, c.height = term.Size()
+				c.initBuffer()
+				c.RefreshScreen(true)
 			}
 		case cmd := <-c.channel:
 			if cmd.Type == EventRedraw {
@@ -507,7 +454,7 @@ func (c *Composer) SetCursorPos(x, y int) {
 	term.SetCursor(x, y)
 }
 
-func (c *Composer) DestroyWindow(view View) {
+func (c *Composer) DestroyView(view View) {
 	ev := Event{Type: EventClose}
 	c.sendEventToActiveView(ev)
 
@@ -518,6 +465,7 @@ func (c *Composer) DestroyWindow(view View) {
 		}
 	}
 	c.views = newOrder
+	c.activateView(c.topView())
 }
 
 func (c *Composer) Theme() Theme {

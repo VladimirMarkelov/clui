@@ -8,6 +8,7 @@ import (
 type Screen interface {
 	Theme() Theme
 	PutEvent(Event)
+	DestroyView(View)
 
 	Logger() *log.Logger
 }
@@ -55,6 +56,7 @@ type View interface {
 	HitTest(int, int) HitResult
 	SetModal(bool)
 	Modal() bool
+	OnClose(func(Event))
 
 	Paddings() (int, int, int, int)
 	SetPaddings(int, int, int, int)

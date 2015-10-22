@@ -29,7 +29,7 @@ func NewButton(view View, parent Control, width, height int, title string, scale
 		height = 4
 	}
 	if width == AutoSize {
-		width = xs.Len(title) + 2
+		width = xs.Len(title) + 2 + 1
 	}
 
 	if height < 4 {

@@ -213,3 +213,10 @@ const (
 	// Close application
 	EventQuit
 )
+
+const (
+	DialogClosed = -1
+	DialogAlive  = 0
+	DialogOK     = 1
+	DialogCancel = 2
+)

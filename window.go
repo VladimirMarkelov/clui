@@ -15,7 +15,8 @@ type Window struct {
 	children []Control
 	controls []Control
 	// dialog support
-	modal bool
+	modal   bool
+	onClose func(Event)
 }
 
 func NewWindow(parent Screen, x, y, w, h int, title string) *Window {
@@ -319,6 +320,10 @@ func (w *Window) ProcessEvent(ev Event) bool {
 		if ev.X == 0 {
 			w.canvas.SetCursorPos(-1, -1)
 		}
+	case EventClose:
+		if w.onClose != nil {
+			w.onClose(Event{Type: EventClose})
+		}
 		// case EventResize:
 		// 	d.hideAllExtraControls()
 		// 	d.recalculateControls()
@@ -469,4 +474,8 @@ func (w *Window) SetModal(modal bool) {
 
 func (w *Window) Modal() bool {
 	return w.modal
+}
+
+func (w *Window) OnClose(fn func(Event)) {
+	w.onClose = fn
 }
