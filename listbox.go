@@ -254,7 +254,7 @@ func (l *ListBox) processMouseClick(ev Event) bool {
 
 	l.SelectItem(l.topLine + dy)
 	if l.onSelectItem != nil {
-		ev := Event{Y: l.topLine + dy, Msg: l.GetSelectedItem()}
+		ev := Event{Y: l.topLine + dy, Msg: l.SelectedItemText()}
 		go l.onSelectItem(ev)
 	}
 
@@ -300,7 +300,7 @@ func (l *ListBox) ProcessEvent(event Event) bool {
 			return true
 		case term.KeyCtrlM:
 			if l.currSelection != -1 && l.onSelectItem != nil {
-				ev := Event{Y: l.currSelection, Msg: l.GetSelectedItem()}
+				ev := Event{Y: l.currSelection, Msg: l.SelectedItemText()}
 				go l.onSelectItem(ev)
 			}
 		default:
@@ -352,9 +352,14 @@ func (l *ListBox) FindItem(text string, caseSensitive bool) int {
 	return -1
 }
 
+// Returns currently selected item id
+func (l *ListBox) SelectedItem() int {
+	return l.currSelection
+}
+
 // Returns text of currently selected item or empty sting if nothing is
 // selected or ListBox is empty
-func (l *ListBox) GetSelectedItem() string {
+func (l *ListBox) SelectedItemText() string {
 	if l.currSelection == -1 {
 		return ""
 	}

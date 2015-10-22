@@ -322,7 +322,7 @@ func (w *Window) ProcessEvent(ev Event) bool {
 		}
 	case EventClose:
 		if w.onClose != nil {
-			w.onClose(Event{Type: EventClose})
+			w.onClose(Event{Type: EventClose, X: ev.X})
 		}
 		// case EventResize:
 		// 	d.hideAllExtraControls()

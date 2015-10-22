@@ -378,7 +378,7 @@ func (c *Composer) processMouseClick(ev term.Event) {
 		c.RefreshScreen(true)
 	} else if hit == HitButtonClose {
 		if len(c.views) > 1 {
-			event := Event{Type: EventClose}
+			event := Event{Type: EventClose, X: 1}
 			c.sendEventToActiveView(event)
 
 			c.DestroyView(view)

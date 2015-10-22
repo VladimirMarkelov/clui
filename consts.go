@@ -21,13 +21,14 @@ type Box struct {
 
 // Predefined types
 type (
-	BorderStyle int
-	ViewButton  int
-	HitResult   int
-	Align       int
-	EventType   int
-	Direction   int
-	PackType    int
+	BorderStyle      int
+	ViewButton       int
+	HitResult        int
+	Align            int
+	EventType        int
+	Direction        int
+	PackType         int
+	SelectDialogType uint
 )
 
 // Internal event structure. Used by Windows and controls to communicate with Composer
@@ -226,4 +227,9 @@ var (
 	ButtonsOK          = []string{"OK"}
 	ButtonsYesNo       = []string{"Yes", "No"}
 	ButtonsYesNoCancel = []string{"Yes", "No", "Cancel"}
+)
+
+const (
+	SelectDialogList = iota
+	SelectDialogRadio
 )
