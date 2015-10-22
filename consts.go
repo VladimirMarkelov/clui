@@ -215,8 +215,15 @@ const (
 )
 
 const (
-	DialogClosed = -1
-	DialogAlive  = 0
-	DialogOK     = 1
-	DialogCancel = 2
+	DialogClosed  = -1
+	DialogAlive   = 0
+	DialogButton1 = 1
+	DialogButton2 = 2
+	DialogButton3 = 3
+)
+
+var (
+	ButtonsOK          = []string{"OK"}
+	ButtonsYesNo       = []string{"Yes", "No"}
+	ButtonsYesNoCancel = []string{"Yes", "No", "Cancel"}
 )
