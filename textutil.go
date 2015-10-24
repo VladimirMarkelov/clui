@@ -3,6 +3,7 @@ package clui
 import (
 	//"fmt"
 	xs "github.com/huandu/xstrings"
+	"regexp"
 )
 
 // Truncates text to maxWidth by replacing long
@@ -49,4 +50,14 @@ func AlignText(str string, width int, align Align) (int, string) {
 	}
 
 	return 0, str
+}
+
+func UnColorizeText(str string) string {
+	r1 := regexp.MustCompile("<f:[^>]*>")
+	r2 := regexp.MustCompile("<t:[^>]*>")
+	r3 := regexp.MustCompile("<b:[^>]*>")
+
+	str = r1.ReplaceAllString(str, "")
+	str = r2.ReplaceAllString(str, "")
+	return r3.ReplaceAllString(str, "")
 }
