@@ -174,6 +174,37 @@ func (fb *FrameBuffer) PutTextVertical(x, y int, text string, fg, bg term.Attrib
 	}
 }
 
+func (fb *FrameBuffer) PutColorizedText(x, y, max int, text string, fg, bg term.Attribute, dir Direction, align Align) {
+	// file, _ := os.OpenFile("debugui.txt", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+	// logger := log.New(file, "", log.Ldate|log.Ltime|log.Lshortfile)
+
+	sReal := UnColorizeText(text)
+	var dx, dy int
+	if dir == Horizontal {
+		delta, _ := AlignText(sReal, max, align)
+		x += delta
+		dx = 1
+	} else {
+		delta, _ := AlignText(sReal, max, align)
+		y += delta
+		dy = 1
+	}
+
+	parser := NewColorParser(text, fg, bg)
+	elem := parser.NextElement()
+	for elem.Type != ElemEndOfText && max > 0 {
+		// logger.Printf("ELEM: %v", elem)
+		if elem.Type == ElemPrintable {
+			fb.PutChar(x, y, elem.Ch, elem.Fg, elem.Bg)
+			x += dx
+			y += dy
+			max--
+		}
+
+		elem = parser.NextElement()
+	}
+}
+
 func (fb *FrameBuffer) DrawFrame(x, y, w, h int, fg, bg term.Attribute, frameChars string) {
 	if h < 1 || w < 1 {
 		return

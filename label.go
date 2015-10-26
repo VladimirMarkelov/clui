@@ -9,8 +9,9 @@ import (
 
 type Label struct {
 	ControlBase
-	direction Direction
-	multiline bool
+	direction  Direction
+	multiline  bool
+	multicolor bool
 }
 
 func NewLabel(view View, parent Control, w, h int, title string, scale int) *Label {
@@ -87,12 +88,20 @@ func (l *Label) Repaint() {
 			idx++
 		}
 	} else {
-		if l.direction == Horizontal {
-			shift, text := AlignText(l.title, l.width, l.align)
-			canvas.PutText(l.x+shift, l.y, text, fg, bg)
+		if l.multicolor {
+			max := l.width
+			if l.direction == Vertical {
+				max = l.height
+			}
+			canvas.PutColorizedText(l.x, l.y, max, l.title, fg, bg, l.direction, l.align)
 		} else {
-			shift, text := AlignText(l.title, l.height, l.align)
-			canvas.PutVerticalText(l.x, l.y+shift, text, fg, bg)
+			if l.direction == Horizontal {
+				shift, text := AlignText(l.title, l.width, l.align)
+				canvas.PutText(l.x+shift, l.y, text, fg, bg)
+			} else {
+				shift, text := AlignText(l.title, l.height, l.align)
+				canvas.PutVerticalText(l.x, l.y+shift, text, fg, bg)
+			}
 		}
 	}
 }
@@ -103,4 +112,12 @@ func (l *Label) Multiline() bool {
 
 func (l *Label) SetMultiline(multi bool) {
 	l.multiline = multi
+}
+
+func (l *Label) MultiColored() bool {
+	return l.multicolor
+}
+
+func (l *Label) SetMultiColored(multi bool) {
+	l.multicolor = multi
 }

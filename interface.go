@@ -19,6 +19,7 @@ type Canvas interface {
 	PutSymbol(int, int, term.Cell) bool
 	PutText(int, int, string, term.Attribute, term.Attribute)
 	PutVerticalText(int, int, string, term.Attribute, term.Attribute)
+	PutColorizedText(int, int, int, string, term.Attribute, term.Attribute, Direction, Align)
 	Symbol(int, int) (term.Cell, bool)
 	Clear(term.Attribute)
 	FillRect(int, int, int, int, term.Cell)

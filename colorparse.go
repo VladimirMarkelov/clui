@@ -53,7 +53,8 @@ func (p *ColorParser) parseColor() (term.Attribute, TextElementType, bool) {
 		cText string
 		attr  term.Attribute
 		t     TextElementType
-		step  int
+		step  int = StepType
+		done  bool
 	)
 
 	for {
@@ -92,6 +93,7 @@ func (p *ColorParser) parseColor() (term.Attribute, TextElementType, bool) {
 				} else {
 					attr = StringToColor(cText)
 				}
+				done = true
 				break
 			} else {
 				if c != ' ' || cText != "" {
@@ -99,6 +101,10 @@ func (p *ColorParser) parseColor() (term.Attribute, TextElementType, bool) {
 				}
 				newIdx++
 			}
+		}
+
+		if done || !ok {
+			break
 		}
 	}
 
@@ -121,6 +127,7 @@ func (p *ColorParser) NextElement() TextElement {
 	}
 
 	attr, atype, ok := p.parseColor()
+	// logger.Printf("PARSED: %v, %v, %v (at %v)", attr, atype, ok, p.index)
 	if !ok {
 		p.index++
 		return TextElement{Type: ElemPrintable, Ch: p.text[p.index-1], Fg: p.currText, Bg: p.currBack}
