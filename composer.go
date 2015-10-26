@@ -132,7 +132,7 @@ func (c *Composer) activateView(view View) {
 		return
 	}
 
-	wList := make([]View, 0)
+	var wList []View
 	found := false
 
 	for _, v := range c.views {
@@ -257,9 +257,9 @@ func (c *Composer) moveTopView(ev term.Event) bool {
 			}
 		}
 		return true
-	} else {
-		return false
 	}
+
+	return false
 }
 
 func (c *Composer) isDeadKey(ev term.Event) bool {
@@ -458,7 +458,7 @@ func (c *Composer) DestroyView(view View) {
 	ev := Event{Type: EventClose}
 	c.sendEventToActiveView(ev)
 
-	newOrder := make([]View, 0)
+	var newOrder []View
 	for i := 0; i < len(c.views); i++ {
 		if c.views[i] != view {
 			newOrder = append(newOrder, c.views[i])

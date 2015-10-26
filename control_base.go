@@ -207,7 +207,6 @@ func (c *ControlBase) SetPaddings(side, top, dx, dy int) {
 func (c *ControlBase) Logger() *log.Logger {
 	if c.parent == nil {
 		return nil
-	} else {
-		return c.parent.Logger()
 	}
+	return c.parent.Logger()
 }

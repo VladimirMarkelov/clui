@@ -1,7 +1,6 @@
 package clui
 
 import (
-	_ "fmt"
 	xs "github.com/huandu/xstrings"
 	term "github.com/nsf/termbox-go"
 	"strings"

@@ -82,9 +82,9 @@ func (fb *FrameBuffer) FillRect(x, y, w, h int, s term.Cell) {
 func (fb *FrameBuffer) Symbol(x, y int) (term.Cell, bool) {
 	if x >= fb.w || x < 0 || y >= fb.h || y < 0 {
 		return term.Cell{Ch: ' '}, false
-	} else {
-		return fb.buffer[y][x], true
 	}
+
+	return fb.buffer[y][x], true
 }
 
 func (fb *FrameBuffer) PutSymbol(x, y int, s term.Cell) bool {

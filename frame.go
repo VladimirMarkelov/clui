@@ -63,7 +63,7 @@ func (f *Frame) Repaint() {
 	w, h := f.Size()
 
 	fg, bg := RealColor(tm, f.fg, ColorViewText), RealColor(tm, f.bg, ColorViewBack)
-	var chars string = ""
+	var chars string
 	if f.border == BorderDouble {
 		chars = tm.SysObject(ObjDoubleBorder)
 	} else {

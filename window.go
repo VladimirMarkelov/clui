@@ -184,7 +184,7 @@ func (w *Window) DrawButtons(tm Theme) {
 }
 
 func (w *Window) DrawFrame(tm Theme) {
-	var chars string = ""
+	var chars string
 	if w.active {
 		chars = tm.SysObject(ObjDoubleBorder)
 	} else {
@@ -389,9 +389,8 @@ func (w *Window) NextControl(c Control, forward bool) Control {
 		if orig == id {
 			if !w.controls[id].TabStop() {
 				return nil
-			} else {
-				return c
 			}
+			return c
 		}
 	}
 }
