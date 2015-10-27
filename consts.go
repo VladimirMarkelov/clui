@@ -5,33 +5,47 @@ import (
 )
 
 const (
-	// scale coefficient means never change of the object when its parent resizes
+	// DoNotScale means 'never change size of the object when its parent resizes'
 	DoNotScale int = 0
-	// Used as a placeholder when width or height is not important, e.g, creating a control manually to use in packer later
+	// AutoSize is used only in constructors. It means that the constructor
+	// should either calculate the size of an object, e.g. for Label it is its text
+	// length, or use default intial values
 	AutoSize int = -1
-	// Used as a placeholder when you want to change only one value keeping others untouched. Example: ctrl.SetConstraint(10, DoNotChange)
+	// DoNotChange is used as a placeholder when you want to change only one
+	// value and keep other ones untouched. Used in SetSize and SetConstraints
+	// methods only
+	// Example: control.SetConstraint(10, DoNotChange) changes only minimal width
+	// of the control and do not change the current minimal control height
 	DoNotChange int = -1
-	// NullWindow  View = nil
 )
-
-type Box struct {
-	X, Y int
-	W, H int
-}
 
 // Predefined types
 type (
-	BorderStyle      int
-	ViewButton       int
-	HitResult        int
-	Align            int
-	EventType        int
-	Direction        int
-	PackType         int
+	// BorderStyle is a kind of frame: none, single, and double
+	BorderStyle int
+	// ViewButton is a set of buttons displayed in a view title
+	ViewButton int
+	// HitResult is a type of a view area that is under mouse cursor.
+	// Used in mouse click events
+	HitResult int
+	// Align is text align: left, right and center
+	Align int
+	// EventType is a type of event fired by an object
+	EventType int
+	// Direction indicates the direction in which a control must draw its
+	// content. At that moment it can be applied to Label (text output
+	// direction and to ProgressBar (direction of bar filling)
+	Direction int
+	// PackType sets how to pack controls inside its parent. Can be Vertical or
+	// Horizontal
+	PackType int
+	// SelectDialogType sets the way of choosing an item from a list for
+	// SelectionDialog control: a list-based selections, or radio group one
 	SelectDialogType uint
 )
 
-// Internal event structure. Used by Windows and controls to communicate with Composer
+// Event is structure used by Views and controls to communicate with Composer
+// and vice versa
 type Event struct {
 	Type   EventType
 	Mod    term.Modifier
@@ -94,14 +108,6 @@ const (
 	ButtonMaximize = 1 << 2
 )
 
-// InternalEvent types
-const (
-	// asks Composer to redraw the screen
-	ActionRedraw = iota
-	// asks application to close
-	ActionQuit
-)
-
 // Alignment constants
 const (
 	AlignLeft = iota
@@ -110,7 +116,8 @@ const (
 )
 
 // Output direction
-// Used for Label text output direction and for Radio items distribution
+// Used for Label text output direction and for Radio items distribution,
+// and for container controls
 const (
 	Horizontal = iota
 	Vertical
@@ -176,8 +183,7 @@ const (
 	ColorProgressActiveText = "ProgressActiveText"
 )
 
-// EventType
-// Event that window or control may process
+// EventType is event that window or control may process
 // Note: Do not change events from EventKey to EventNone - they correspond to the same named events in termbox library
 const (
 	// a key pressed
