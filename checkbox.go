@@ -8,16 +8,23 @@ import (
 /*
 CheckBox control. It can be two-state one(on and off) - it is default mode - or tree-state.
 State values are 0=off, 1=on, 2=third state
-Minimal width of a checkbox cannot be less than 3
-Own methods:
-Allow3State, SetAllow3State, State, SetState
 */
 type CheckBox struct {
 	ControlBase
-	state       int // 0 - off, 1 - on, 2 - third state(?)
+	state       int
 	allow3state bool
 }
 
+/*
+NewCheckBox creates a new CheckBox control.
+view - is a View that manages the control.
+parent - is container that keeps the control. The same View can be a view and a parent at the same time.
+width and heith - are minimal size of the control.
+title - button title.
+scale - the way of scaling the control when the parent is resized. Use DoNotScale constant if the
+control should keep its original size.
+CheckBox state can be changed using mouse or pressing space on keyboard while the control is active
+*/
 func NewCheckBox(view View, parent Control, width int, title string, scale int) *CheckBox {
 	c := new(CheckBox)
 	c.view = view
@@ -41,6 +48,7 @@ func NewCheckBox(view View, parent Control, width int, title string, scale int) 
 	return c
 }
 
+// Repaint draws the control on its View surface
 func (c *CheckBox) Repaint() {
 	x, y := c.Pos()
 	w, h := c.Size()
@@ -76,6 +84,10 @@ func (c *CheckBox) Repaint() {
 	canvas.PutText(x+4+shift, y, text, fg, bg)
 }
 
+//ProcessEvent processes all events come from the control parent. If a control
+//   processes an event it should return true. If the method returns false it means
+//   that the control do not want or cannot process the event and the caller sends
+//   the event to the control parent
 func (c *CheckBox) ProcessEvent(event Event) bool {
 	if (!c.Active() && event.Type == EventKey) || !c.Enabled() {
 		return false
@@ -99,9 +111,9 @@ func (c *CheckBox) ProcessEvent(event Event) bool {
 	return false
 }
 
-// Sets the current state of CheckBox
-// Value must be 0/1 if 3State is off
-// or 0/1/2 if 3State is on
+// SetState changes the current state of CheckBox
+// Value must be 0 or 1 if Allow3State is off,
+// and 0, 1, or 2 if Allow3State is on
 func (c *CheckBox) SetState(val int) {
 	if val < 0 {
 		val = 0
@@ -116,12 +128,13 @@ func (c *CheckBox) SetState(val int) {
 	c.state = val
 }
 
+// State returns current state of CheckBox
 func (c *CheckBox) State() int {
 	return c.state
 }
 
-// Set3State - sets if ComboBox should use 3 states. If the current
-// state is unknown and one disables 3State option then the current
+// SetAllow3State sets if ComboBox should use 3 states. If the current
+// state is unknown and one disables Allow3State option then the current
 // value resets to off
 func (c *CheckBox) SetAllow3State(enable bool) {
 	if !enable && c.state == 2 {
@@ -130,7 +143,7 @@ func (c *CheckBox) SetAllow3State(enable bool) {
 	c.allow3state = enable
 }
 
-// Allow3State - return true if ComboBox uses 3 states (on/off/unknown)
+// Allow3State returns true if ComboBox uses 3 states
 func (c *CheckBox) Allow3State() bool {
 	return c.allow3state
 }
