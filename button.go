@@ -19,6 +19,15 @@ type Button struct {
 	onClick func(Event)
 }
 
+/*
+NewButton creates a new Button.
+view - is a View that manages the control
+parent - is container that keeps the control. The same View can be a view and a parent at the same time.
+width and heith - are minimal size of the control.
+title - button title.
+scale - the way of scaling the control when the parent is resized. Use DoNotScale constant if the
+control should keep its original size.
+*/
 func NewButton(view View, parent Control, width, height int, title string, scale int) *Button {
 	b := new(Button)
 
@@ -51,6 +60,7 @@ func NewButton(view View, parent Control, width, height int, title string, scale
 	return b
 }
 
+// Repaint draws the control on its View surface
 func (b *Button) Repaint() {
 	x, y := b.Pos()
 	w, h := b.Size()
@@ -79,6 +89,12 @@ func (b *Button) Repaint() {
 	}
 }
 
+/*
+ProcessEvent processes all events come from the control parent. If a control
+processes an event it should return true. If the method returns false it means
+that the control do not want or cannot process the event and the caller sends
+the event to the control parent
+*/
 func (b *Button) ProcessEvent(event Event) bool {
 	if (!b.active && event.Type == EventKey) || !b.Enabled() || b.pressed {
 		return false
@@ -107,6 +123,8 @@ func (b *Button) ProcessEvent(event Event) bool {
 	return false
 }
 
+// OnClick sets the callback that is called when one clicks button
+// with mouse or pressing space on keyboard while the button is active
 func (b *Button) OnClick(fn func(Event)) {
 	b.onClick = fn
 }

@@ -64,6 +64,7 @@ type View interface {
 	Title() string
 	SetTitle(string)
 	Draw(Canvas)
+	// Repaint draws the control on console surface
 	Repaint()
 	Constraints() (int, int)
 	Size() (int, int)
@@ -73,6 +74,12 @@ type View interface {
 	Canvas() Canvas
 	Active() bool
 	SetActive(bool)
+	/*
+	   ProcessEvent processes all events come from the control parent. If a control
+	   processes an event it should return true. If the method returns false it means
+	   that the control do not want or cannot process the event and the caller sends
+	   the event to the control parent
+	*/
 	ProcessEvent(Event) bool
 	ActivateControl(Control)
 	RegisterControl(Control)
@@ -116,6 +123,7 @@ type Control interface {
 	Constraints() (int, int)
 	Paddings() (int, int, int, int)
 	SetPaddings(int, int, int, int)
+	// Repaint draws the control on its View surface
 	Repaint()
 	AddChild(Control, int)
 	SetPack(PackType)
@@ -123,6 +131,12 @@ type Control interface {
 	Children() []Control
 	Active() bool
 	SetActive(bool)
+	/*
+	   ProcessEvent processes all events come from the control parent. If a control
+	   processes an event it should return true. If the method returns false it means
+	   that the control do not want or cannot process the event and the caller sends
+	   the event to the control parent
+	*/
 	ProcessEvent(Event) bool
 	TabStop() bool
 	Parent() Control
