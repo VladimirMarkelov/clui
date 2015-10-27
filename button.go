@@ -6,9 +6,10 @@ import (
 	"time"
 )
 
-/* Push button control
-onClick function is called every time a user clicks the Button. Sent event has only one valid field sender ID(Ctrl field of Event structure).
-Button can be clicked with mouse or using space on keyboard when the button is active.
+/*
+Button is a simpe push button control. Every time a user clicks a Button, it
+emits OnClick event. Event has only one valid field Sender.
+Button can be clicked with mouse or using space on keyboard while the Button is active.
 */
 type Button struct {
 	ControlBase

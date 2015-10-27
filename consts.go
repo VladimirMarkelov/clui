@@ -47,15 +47,28 @@ type (
 // Event is structure used by Views and controls to communicate with Composer
 // and vice versa
 type Event struct {
-	Type   EventType
-	Mod    term.Modifier
+	// Event type - the first events are mapped to termbox Event and then a few
+	// own events added to the end
+	Type EventType
+	// Mod - is a key modifier. Only Alt modifier is supported
+	Mod term.Modifier
+	// Sender is a control that fired the event. Can be nil
 	Sender Control
-	View   View
-	Msg    string
-	X, Y   int
-	Err    error
-	Key    term.Key
-	Ch     rune
+	// View is parent View for Sender. Can be nil
+	View View
+	// Msg is a text part of the event. Used by few events: e.g, ListBox click
+	// sends a value of clicked item
+	Msg string
+	// X and Y are multi-purpose fields: mouse coordinated for click event,
+	// X is used to indicate on/off for events like Activate
+	// Y is used for vertical-based events like ListBox item selection - id of the item
+	X, Y int
+	// Err is error got from termbox library
+	Err error
+	// Key is a pressed key
+	Key term.Key
+	// Ch is a printable representation of pressed key combinaton
+	Ch rune
 }
 
 // BorderStyle constants
@@ -96,15 +109,15 @@ const (
 	HitButtonMaximize
 )
 
-// Buttons available to use in Window title
+// VeiwButton values - list of buttons available for using in View title
 const (
-	// No button
+	// ButtonDefault - no button
 	ButtonDefault = 0
-	// Button to close Window
+	// ButtonClose - button to close View
 	ButtonClose = 1 << 0
-	// Button to move Window to bottom
+	// ButtonBottom -  move Window to bottom of the View stack
 	ButtonBottom = 1 << 1
-	// Button to maximize/restore window
+	// ButtonMaximaize - maximize and restore View
 	ButtonMaximize = 1 << 2
 )
 
@@ -123,14 +136,7 @@ const (
 	Vertical
 )
 
-// EditField modes
-const (
-	// Simple text edit field
-	EditBoxSimple = iota
-	// Text edit field with drop down ListBox and Button
-	EditBoxCombo
-)
-
+// Available object identifiers that can be used in themes
 const (
 	ObjSingleBorder = "SingleBorder"
 	ObjDoubleBorder = "DoubleBorder"
@@ -142,6 +148,7 @@ const (
 	ObjProgressBar  = "ProgressBar"
 )
 
+// Available color identifiers that can be used in themes
 const (
 	// Window back and fore colors (inner area & border)
 	ColorViewBack = "ViewBack"
@@ -199,7 +206,7 @@ const (
 	EventNone
 
 	// Asks an object to redraw. A library can ask a control to redraw and control can send the event to its parent to ask for total repaint, e.g, button sends redraw event after to its parent it depressed after a while to imitate real button
-	EventRedraw
+	EventRedraw = iota + 100
 	// an object that receives the event should close and destroys itself
 	EventClose
 	// Notify an object when it is activated or deactivated. X determines whether the object is activated or deactivated(0 - deactivated, 1 - activated)
@@ -221,21 +228,31 @@ const (
 	EventQuit
 )
 
+// ConfirmationDialog and SelectDialog exit codes
 const (
-	DialogClosed  = -1
-	DialogAlive   = 0
+	// DialogClosed - a user clicked close button on the dialog title
+	DialogClosed = -1
+	// DialogAlive - a user does not close the dialog yet, exit code is unavailable
+	DialogAlive = 0
+	// DialogButton1 - a user clicked the first button in the dialog (by default, it is 'Yes' or 'OK')
 	DialogButton1 = 1
+	// DialogButton2 - a user clicked the second button in the dialog
 	DialogButton2 = 2
+	// DialogButton3 - a user clicked the third button in the dialog
 	DialogButton3 = 3
 )
 
+// Predefined sets of the buttons for ConfirmationDialog and SelectDialog
 var (
 	ButtonsOK          = []string{"OK"}
 	ButtonsYesNo       = []string{"Yes", "No"}
 	ButtonsYesNoCancel = []string{"Yes", "No", "Cancel"}
 )
 
+// SelectDialogType constants
 const (
+	// SelectDialogList - all items are displayed in a ListBox
 	SelectDialogList = iota
+	// SelectDialogList - all items are displayed in a RadioGroup
 	SelectDialogRadio
 )
