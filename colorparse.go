@@ -4,23 +4,37 @@ import (
 	term "github.com/nsf/termbox-go"
 )
 
+// TextElementType type of the parsed element of the string
+type TextElementType int
+
+// TextElementType values
 const (
+	// ElemPrintable - the item is a rune
 	ElemPrintable = iota
+	// ElemBackColor - the item sets new background color
 	ElemBackColor
+	// ElemTextColor - the item sets new text color
 	ElemTextColor
+	// ElemLineBreak - line break
 	ElemLineBreak
+	// ElemEndOfText - the string parsing has complited
 	ElemEndOfText
 )
 
-type TextElementType int
-
+// TextElement is currently parsed text element
 type TextElement struct {
+	// Type is an element type
 	Type TextElementType
-	Ch   rune
-	Fg   term.Attribute
-	Bg   term.Attribute
+	// Ch is a parsed rune, it is filled only if Type is ElemPrintable
+	Ch rune
+	// Fg is a text color for the rune
+	Fg term.Attribute
+	// Bg is a background color for the rune
+	Bg term.Attribute
 }
 
+// ColorParser is a string parser to process a text with color tags
+// inside the string
 type ColorParser struct {
 	text     []rune
 	index    int
@@ -30,6 +44,11 @@ type ColorParser struct {
 	currText term.Attribute
 }
 
+// NewColorParser creates a new string parser.
+// str is a string to parse.
+// defText is a default text color.
+// defBack is a default background color.
+// Default colors are applied in case of reset color tag
 func NewColorParser(str string, defText, defBack term.Attribute) *ColorParser {
 	p := new(ColorParser)
 	p.text = []rune(str)
@@ -53,9 +72,9 @@ func (p *ColorParser) parseColor() (term.Attribute, TextElementType, bool) {
 		cText string
 		attr  term.Attribute
 		t     TextElementType
-		step  int = StepType
 		done  bool
 	)
+	step := StepType
 
 	for {
 		if newIdx >= length {
@@ -111,6 +130,7 @@ func (p *ColorParser) parseColor() (term.Attribute, TextElementType, bool) {
 	return attr, t, ok
 }
 
+// NextElement parses and returns the next string element
 func (p *ColorParser) NextElement() TextElement {
 	if p.index >= len(p.text) {
 		return TextElement{Type: ElemEndOfText}
@@ -127,7 +147,6 @@ func (p *ColorParser) NextElement() TextElement {
 	}
 
 	attr, atype, ok := p.parseColor()
-	// logger.Printf("PARSED: %v, %v, %v (at %v)", attr, atype, ok, p.index)
 	if !ok {
 		p.index++
 		return TextElement{Type: ElemPrintable, Ch: p.text[p.index-1], Fg: p.currText, Bg: p.currBack}
