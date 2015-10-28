@@ -1,9 +1,10 @@
 package clui
 
 /*
-Decorative control - frame with optional title. All area inside a frame is transparent.
-Frame can be used as spacer element in dynamic layout - set border to BorderNone and use
-that control in any place where a spacer is required
+Frame is a decorative control and container - frame with optional title.
+All area inside a frame is transparent. Frame can be used as spacer element
+- set border to BorderNone and use that control in any place where a spacer
+is required
 */
 type Frame struct {
 	ControlBase
@@ -12,6 +13,15 @@ type Frame struct {
 	pack     PackType
 }
 
+/*
+NewFrame creates a new frame.
+view - is a View that manages the control
+parent - is container that keeps the control. The same View can be a view and a parent at the same time.
+width and heith - are minimal size of the control.
+bs - type of border: no border, single or double.
+scale - the way of scaling the control when the parent is resized. Use DoNotScale constant if the
+control should keep its original size.
+*/
 func NewFrame(view View, parent Control, width, height int, bs BorderStyle, scale int) *Frame {
 	f := new(Frame)
 
@@ -49,6 +59,7 @@ func (f *Frame) repaintChildren() {
 	}
 }
 
+// Repaint draws the control on its View surface
 func (f *Frame) Repaint() {
 	f.repaintChildren()
 
@@ -78,6 +89,8 @@ func (f *Frame) Repaint() {
 	}
 }
 
+// RecalculateConstraints used by containers to recalculate new minimal size
+// depending on its children constraints after a new child is added
 func (f *Frame) RecalculateConstraints() {
 	width, height := f.Constraints()
 	minW, minH := CalculateMinimalSize(f)
@@ -101,6 +114,9 @@ func (f *Frame) RecalculateConstraints() {
 	}
 }
 
+// AddChild adds a new child to a container. After adding
+// a new child the frame automatically recalculates its
+// its minimal size
 func (f *Frame) AddChild(c Control, scale int) {
 	if f.view.ChildExists(c) {
 		panic("Frame: Cannot add the same control twice")
@@ -112,10 +128,14 @@ func (f *Frame) AddChild(c Control, scale int) {
 	f.view.RegisterControl(c)
 }
 
+// Children returns the list of container child controls
 func (f *Frame) Children() []Control {
 	return f.children
 }
 
+// SetPack changes the direction of children packing.
+// Changing pack type on the fly is not always possible:
+// it panics if a frame already contains children
 func (f *Frame) SetPack(pk PackType) {
 	if len(f.children) > 0 {
 		panic("Control already has children")
@@ -124,6 +144,8 @@ func (f *Frame) SetPack(pk PackType) {
 	f.pack = pk
 }
 
+// Pack returns direction in which a container packs
+// its children: horizontal or vertical
 func (f *Frame) Pack() PackType {
 	return f.pack
 }
