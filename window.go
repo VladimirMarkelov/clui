@@ -67,7 +67,7 @@ func (w *Window) SetSize(width, height int) {
 	RepositionControls(0, 0, w)
 }
 
-func (w *Window) ApplyConstraints() {
+func (w *Window) applyConstraints() {
 	width, height := w.Size()
 	wM, hM := w.Constraints()
 
@@ -92,7 +92,7 @@ func (w *Window) SetConstraints(width, height int) {
 		w.minH = height
 	}
 
-	w.ApplyConstraints()
+	w.applyConstraints()
 }
 
 func (w *Window) Draw(canvas Canvas) {

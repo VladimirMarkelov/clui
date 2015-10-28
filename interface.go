@@ -112,11 +112,25 @@ type View interface {
 }
 
 type Control interface {
+	// Title returns the current title or text of the control
 	Title() string
+	// SetTitle changes control text or title
 	SetTitle(string)
+	// Pos returns the current control position: X and Y.
+	// For View the position's origin is top left corner of console window,
+	// for other controls the origin is top left corner of View that hold
+	// the control
 	Pos() (int, int)
+	// SetPos changes contols position. Manual call of the method does not
+	// make sense for any control except View because control positions
+	// inside of container always recalculated after View resizes
 	SetPos(int, int)
+	// Size returns current control width and height
 	Size() (int, int)
+	// SetSize changes control size. Constant DoNotChange can be
+	// used as placeholder to indicate that the control attrubute
+	// should be unchanged.
+	// Method panics if new size is less than minimal size
 	SetSize(int, int)
 	Scale() int
 	SetScale(int)

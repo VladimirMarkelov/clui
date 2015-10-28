@@ -79,10 +79,10 @@ func (c *ControlBase) SetPos(x, y int) {
 	c.y = y
 }
 
-// ApplyConstraints checks if the current size fits minimal size.
+// applyConstraints checks if the current size fits minimal size.
 // Contol size is increased if its size is less than the current
 // contol minimal size
-func (c *ControlBase) ApplyConstraints() {
+func (c *ControlBase) applyConstraints() {
 	w, h := c.Size()
 	wM, hM := c.Constraints()
 
@@ -110,7 +110,7 @@ func (c *ControlBase) SetConstraints(width, height int) {
 		c.minH = height
 	}
 
-	c.ApplyConstraints()
+	c.applyConstraints()
 }
 
 // Constraints return minimal control widht and height
