@@ -6,8 +6,9 @@ import (
 	"os"
 )
 
-// An service object that manages Views and console, processes events, and provides service methods
-// One application must have only one object of this type
+// Composer is a service object that manages Views and console, processes
+// events, and provides service methods. One application must have only
+// one object of this type
 type Composer struct {
 	// list of visible Views
 	views []View
@@ -35,7 +36,7 @@ func (c *Composer) initBuffer() {
 	c.canvas.Clear(ColorBlack)
 }
 
-// Initialize library and starts console management
+// InitLibrary initializes library and starts console management
 func InitLibrary() *Composer {
 	err := term.Init()
 	if err != nil {
@@ -94,6 +95,10 @@ func (c *Composer) refreshScreen(invalidate bool) {
 	c.redrawAll()
 }
 
+// CreateView constucts a new View
+// posX and posY are top left coordinates of the View
+// width and height are View size
+// title is a View title shown inside the top View line
 func (c *Composer) CreateView(posX, posY, width, height int, title string) View {
 	view := NewWindow(c, posX, posY, width, height, title)
 
@@ -327,6 +332,7 @@ func (c *Composer) processKeySeq(ev term.Event) bool {
 	return true
 }
 
+// processKey returns false in case of the application should be terminated
 func (c *Composer) processKey(ev term.Event) bool {
 	if c.processKeySeq(ev) {
 		return false
@@ -338,14 +344,6 @@ func (c *Composer) processKey(ev term.Event) bool {
 	switch ev.Key {
 	case term.KeyCtrlQ:
 		return true
-	// case term.KeyArrowUp, term.KeyArrowDown, term.KeyArrowLeft, term.KeyArrowRight:
-	//  if c.sendEventToActiveView(c.termboxEventToLocal(ev)) {
-	//      c.refreshScreen()
-	//  }
-	// case term.KeyEnd:
-	//  if c.sendEventToActiveView(c.termboxEventToLocal(ev)) {
-	//      c.refreshScreen()
-	//  }
 	default:
 		if c.sendEventToActiveView(c.termboxEventToLocal(ev)) {
 			c.topView().Repaint()
@@ -394,13 +392,14 @@ func (c *Composer) processMouseClick(ev term.Event) {
 	}
 }
 
-// Asks a Composer to stops console management and quit application
+// Stop sends termination event to Composer. Composer should stop
+// console management and quit application
 func (c *Composer) Stop() {
 	ev := Event{Type: EventQuit}
 	go c.PutEvent(ev)
 }
 
-// Main event loop
+// MainLoop starts the main application event loop
 func (c *Composer) MainLoop() {
 	c.refreshScreen(true)
 
@@ -438,22 +437,25 @@ func (c *Composer) MainLoop() {
 	}
 }
 
-// Send event to a Composer. Used by Windows to ask for repainting or for quitting the application
+// PutEvent send event to a Composer directly.
+// Used by Views to ask for repainting or for quitting the application
 func (c *Composer) PutEvent(ev Event) {
 	c.channel <- ev
 }
 
-// Closes console management and makes a console cursor visible
+// Close closes console management and makes a console cursor visible
 func (c *Composer) Close() {
 	term.SetCursor(3, 3)
 	term.Close()
 }
 
-// Shows consolse cursor at given position. Setting cursor to -1,-1 hides cursor
+// SetCursorPos shows consolse cursor at given position.
+// Setting cursor to -1,-1 hides cursor
 func (c *Composer) SetCursorPos(x, y int) {
 	term.SetCursor(x, y)
 }
 
+// DestroyView removes the View from the list of managed views
 func (c *Composer) DestroyView(view View) {
 	ev := Event{Type: EventClose}
 	c.sendEventToActiveView(ev)
@@ -468,6 +470,8 @@ func (c *Composer) DestroyView(view View) {
 	c.activateView(c.topView())
 }
 
+// Theme returns the theme manager. Theme manager implements
+// Theme interface, so a caller can read the current colors
 func (c *Composer) Theme() Theme {
 	return c.themeManager
 }
