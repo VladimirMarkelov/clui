@@ -6,14 +6,13 @@ import (
 )
 
 /*
-Text edit field contol. Can be simple edit field(default mode) and edit field
-with drop down list. The EditField mode is set during creation and cannot be changed on the fly.
-Edit field consumes some keyboard events when it is active: all printable charaters;
-Delete, BackSpace, Home, End, left and right arrows; Enter, up and down arrows if EditField
-in combobox mode and drop down list is visible; F5 to open drop down list in combobox mode;
-Ctrl+R to clear EditField.
-Edit text can be limited. By default a user can enter text of any lenght. Use SetMaxWidth to limit the maximum text length. If the text is longer than maximun then the text is automatically truncated.
-EditField call funtion onChage in case of its text is changed. Event field Msg contains the new text
+EditField is a single-line text edit contol. Edit field consumes some keyboard
+events when it is active: all printable charaters; Delete, BackSpace, Home,
+End, left and right arrows; Ctrl+R to clear EditField.
+Edit text can be limited. By default a user can enter text of any length.
+Use SetMaxWidth to limit the maximum text length. If the text is longer than
+maximun then the text is automatically truncated.
+EditField calls onChage in case of its text is changed. Event field Msg contains the new text
 */
 type EditField struct {
 	ControlBase
@@ -27,6 +26,13 @@ type EditField struct {
 	onChange func(Event)
 }
 
+// NewEditField creates a new EditField control
+// view - is a View that manages the control
+// parent - is container that keeps the control. The same View can be a view and a parent at the same time.
+// width - is minimal width of the control.
+// text - text to edit.
+// scale - the way of scaling the control when the parent is resized. Use DoNotScale constant if the
+//  control should keep its original size.
 func NewEditField(view View, parent Control, width int, text string, scale int) *EditField {
 	e := new(EditField)
 	e.onChange = nil
@@ -56,10 +62,12 @@ func NewEditField(view View, parent Control, width int, text string, scale int) 
 	return e
 }
 
+// OnChange sets the callback that is called when EditField content is changed
 func (e *EditField) OnChange(fn func(Event)) {
 	e.onChange = fn
 }
 
+// SetTitle changes the EditField content and emits OnChage eventif the new value does not equal to old one
 func (e *EditField) SetTitle(title string) {
 	if e.title != title {
 		e.title = title
@@ -70,6 +78,7 @@ func (e *EditField) SetTitle(title string) {
 	}
 }
 
+// Repaint draws the control on its View surface
 func (e *EditField) Repaint() {
 	canvas := e.view.Canvas()
 
@@ -230,11 +239,18 @@ func (e *EditField) end() {
 	e.offset = length - (e.width - 2)
 }
 
+// Clear empties the EditField and emits OnChange event
 func (e *EditField) Clear() {
 	e.home()
 	e.SetTitle("")
 }
 
+/*
+ProcessEvent processes all events come from the control parent. If a control
+processes an event it should return true. If the method returns false it means
+that the control do not want or cannot process the event and the caller sends
+the event to the control parent
+*/
 func (e *EditField) ProcessEvent(event Event) bool {
 	if !e.Active() || !e.Enabled() {
 		return false
@@ -284,6 +300,7 @@ func (e *EditField) ProcessEvent(event Event) bool {
 	return false
 }
 
+// SetMaxWidth sets the maximum lenght of the EditField text. If the current text is longer it is truncated
 func (e *EditField) SetMaxWidth(w int) {
 	e.maxWidth = w
 	if w > 0 && xs.Len(e.title) > w {
@@ -292,6 +309,7 @@ func (e *EditField) SetMaxWidth(w int) {
 	}
 }
 
-func (e *EditField) GetMaxWidth() int {
+// MaxWidth returns the current maximum text length. Zero means no limit
+func (e *EditField) MaxWidth() int {
 	return e.maxWidth
 }

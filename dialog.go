@@ -4,6 +4,12 @@ import (
 	term "github.com/nsf/termbox-go"
 )
 
+// ConfirmationDialog is a simple dialog to get a user
+// choice or confirmation. The dialog can contain upto
+// three button with custom titles. There are a few
+// predefined button sets: see Buttons* constants.
+// The dialog is modal, so a user cannot interact other
+// Views until the user closes the dialog
 type ConfirmationDialog struct {
 	view    View
 	parent  *Composer
@@ -11,6 +17,11 @@ type ConfirmationDialog struct {
 	onClose func()
 }
 
+// SelectDialog allows to user to select an item from
+// the list. Items can be displayed in ListBox or in
+// RadioGroup.
+// The dialog is modal, so a user cannot interact other
+// Views until the user closes the dialog
 type SelectDialog struct {
 	view    View
 	parent  *Composer
@@ -22,6 +33,16 @@ type SelectDialog struct {
 	onClose func()
 }
 
+// NewConfirmationDialog creates new confirmation dialog.
+// c is a composer that manages the dialog
+// title is a dialog title
+// question is a text inside dialog for user to explain what happens
+// buttons is a titles for button inside dialog. If the list is empty,
+//  the dialog will have only one button 'OK'. If the list has more
+//  than 3 button then only first three items will be used in the dialog
+// defaultButton is the number of button that is active right after
+//  dialog is created. If the number is greater than the number of
+//  buttons, no button is active
 func NewConfirmationDialog(c *Composer, title, question string, buttons []string, defaultButton int) *ConfirmationDialog {
 	dlg := new(ConfirmationDialog)
 
@@ -107,16 +128,29 @@ func NewConfirmationDialog(c *Composer, title, question string, buttons []string
 	return dlg
 }
 
+// OnClose sets the callback that is called when the
+// dialog is closed
 func (d *ConfirmationDialog) OnClose(fn func()) {
 	d.onClose = fn
 }
 
+// Result returns what button closed the dialog.
+// See DialogButton constants. It can equal DialogAlive
+// that means that the dialog is still visible and a
+// user still does not click any button
 func (d *ConfirmationDialog) Result() int {
 	return d.result
 }
 
 // ------------------------ Selection Dialog ---------------------
 
+// NewSelectDialog creates new dialog to select an item from list.
+// c is a composer that manages the dialog
+// title is a dialog title
+// items is a list of items to select from
+// selectedItem is the index of the item that is selected after
+//  the dialog is created
+// typ is a selection type: ListBox or RadioGroup
 func NewSelectDialog(c *Composer, title string, items []string, selectedItem int, typ SelectDialogType) *SelectDialog {
 	dlg := new(SelectDialog)
 
@@ -200,14 +234,22 @@ func NewSelectDialog(c *Composer, title string, items []string, selectedItem int
 	return dlg
 }
 
+// OnClose sets the callback that is called when the
+// dialog is closed
 func (d *SelectDialog) OnClose(fn func()) {
 	d.onClose = fn
 }
 
+// Result returns what button closed the dialog.
+// See DialogButton constants. It can equal DialogAlive
+// that means that the dialog is still visible and a
+// user still does not click any button
 func (d *SelectDialog) Result() int {
 	return d.result
 }
 
+// Value returns the number of the selected item or
+// -1 if nothing is selected or the dialog is cancelled
 func (d *SelectDialog) Value() int {
 	return d.value
 }
