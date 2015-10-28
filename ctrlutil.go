@@ -5,6 +5,9 @@ import (
 	"strings"
 )
 
+// CalculateMinimalSize return the minimal width and height
+// of the Control based on control's children minial sizes
+// and control's paddings
 func CalculateMinimalSize(c Control) (int, int) {
 	w, h := c.Constraints()
 
@@ -45,6 +48,8 @@ func CalculateMinimalSize(c Control) (int, int) {
 	return w, h
 }
 
+// CalculateTotalScale return sum of all
+// control children scale coefficients
 func CalculateTotalScale(c Control) int {
 	scale := 0
 
@@ -58,6 +63,13 @@ func CalculateTotalScale(c Control) int {
 	return scale
 }
 
+// RepositionControls calculates position of all
+// control children and moves them to a new positions.
+// Call the funtion after the control is resized.
+// dx and dy are position of the container control
+// relative to parent View. Initial calculation start
+// point is 0, 0. After calculation all childen are
+// moved by dx and dy
 func RepositionControls(dx, dy int, c Control) {
 	if len(c.Children()) == 0 {
 		return
@@ -130,6 +142,15 @@ func RepositionControls(dx, dy int, c Control) {
 	}
 }
 
+// RealColor return attribute than should be applied to an
+// object. By default all attributes equal ColorDefault and
+// the real color should be retrieved from the current theme.
+// Attribute selection word this way: if color is not ColorDefault,
+// it is returned as is, otherwise the function tries to load
+// color from the theme.
+// tm - the theme to retrieve color from
+// clr - current object color
+// id - color ID in theme
 func RealColor(tm Theme, clr term.Attribute, id string) term.Attribute {
 	if clr != ColorDefault {
 		return clr
@@ -142,6 +163,16 @@ func RealColor(tm Theme, clr term.Attribute, id string) term.Attribute {
 	return clr
 }
 
+// StringToColor returns attribute by its string description.
+// Description is the list of attributes separated with
+// spaces, plus or pipe symbols. You can use 8 base colors:
+// black, white, red, green, blue, magenta, yellow, cyan
+// and a few modifiers:
+// bold or bright, underline or underlined, reverse
+// Note: some terminals do not support all modifiers, e.g,
+// Windows one understands only bold/bright - it makes the
+// color brighter with the modidierA
+// Examples: "red bold", "green+underline+bold"
 func StringToColor(str string) term.Attribute {
 	var parts []string
 	if strings.ContainsRune(str, '+') {

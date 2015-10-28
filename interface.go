@@ -61,18 +61,37 @@ type Theme interface {
 }
 
 type View interface {
+	// Title returns the current title or text of the control
 	Title() string
+	// SetTitle changes control text or title
 	SetTitle(string)
 	Draw(Canvas)
 	// Repaint draws the control on console surface
 	Repaint()
+	// Constraints return minimal control widht and height
 	Constraints() (int, int)
+	// Size returns current control width and height
 	Size() (int, int)
+	// SetSize changes control size. Constant DoNotChange can be
+	// used as placeholder to indicate that the control attrubute
+	// should be unchanged.
+	// Method panics if new size is less than minimal size
 	SetSize(int, int)
+	// Pos returns the current control position: X and Y.
+	// For View the position's origin is top left corner of console window,
+	// for other controls the origin is top left corner of View that hold
+	// the control
 	Pos() (int, int)
+	// SetPos changes contols position. Manual call of the method does not
+	// make sense for any control except View because control positions
+	// inside of container always recalculated after View resizes
 	SetPos(int, int)
 	Canvas() Canvas
+	// Active returns if a control is active. Only active controls can
+	// process keyboard events. Parent View looks for active controls to
+	// make sure that there is only one active control at a time
 	Active() bool
+	// SetActive activates and deactivates control
 	SetActive(bool)
 	/*
 	   ProcessEvent processes all events come from the control parent. If a control
@@ -84,28 +103,69 @@ type View interface {
 	ActivateControl(Control)
 	RegisterControl(Control)
 	Screen() Screen
+	// Parent return control's container or nil if there is no parent container
 	Parent() Control
 	HitTest(int, int) HitResult
 	SetModal(bool)
 	Modal() bool
 	OnClose(func(Event))
 
+	// Paddings returns a number of spaces used to auto-arrange children inside
+	// a container: indent from left and right sides, indent from top and bottom
+	// sides, horizontal space between controls, vertical space between controls.
+	// Horizontal space is used in case of PackType is horizontal, and vertical
+	// in other case
 	Paddings() (int, int, int, int)
+	// SetPaddings changes indents for the container. Use DoNotChange as a placeholder
+	// if you do not want to touch a parameter
 	SetPaddings(int, int, int, int)
+	// AddChild adds a new child to a container. For the most
+	// of controls the method is just a stub that panics
+	// because not every control can be a container
 	AddChild(Control, int)
+	// SetPack changes the direction of children packing
 	SetPack(PackType)
+	// Pack returns direction in which a container packs
+	// its children: horizontal or vertical
 	Pack() PackType
+	// Children returns the list of container child controls
 	Children() []Control
 	ChildExists(Control) bool
+	// Scale return scale coefficient that is used to calculate
+	// new control size after its parent resizes.
+	// DoNotScale means the controls never changes its size.
+	// Any positive value is a real coefficient of scaling.
+	// How the scaling works: after resizing, parent control
+	// calculates the difference between minimal and current sizes,
+	// then divides the difference between controls that has
+	// positive scale depending on a scale value. The more scale,
+	// the larger control after resizing. Example: if you have
+	// two controls with scales 1 and 2, then after every resizing
+	// the latter controls expands by 100% more than the first one.
 	Scale() int
+	// SetScale sets a scale coefficient for the control.
+	// See Scale method for details
 	SetScale(int)
+	// TabStop returns if a control can be selected by traversing
+	// controls using TAB key
 	TabStop() bool
+	// Colors return the basic attrubutes for the controls: text
+	// attribute and background one. Some controls inroduce their
+	// own additional controls: see ProgressBar
 	Colors() (term.Attribute, term.Attribute)
+	// ActiveColors return the attrubutes for the controls when it
+	// is active: text and background colors
 	ActiveColors() (term.Attribute, term.Attribute)
+	// SetBackColor changes background color of the control
 	SetBackColor(term.Attribute)
+	// SetActiveBackColor changes background color of the active control
 	SetActiveBackColor(term.Attribute)
+	// SetTextColor changes text color of the control
 	SetTextColor(term.Attribute)
+	// SetActiveTextColor changes text color of the active control
 	SetActiveTextColor(term.Attribute)
+	// RecalculateConstraints used by containers to recalculate new minimal size
+	// depending on its children constraints after a new child is added
 	RecalculateConstraints()
 
 	Logger() *log.Logger
@@ -132,18 +192,50 @@ type Control interface {
 	// should be unchanged.
 	// Method panics if new size is less than minimal size
 	SetSize(int, int)
+	// Scale return scale coefficient that is used to calculate
+	// new control size after its parent resizes.
+	// DoNotScale means the controls never changes its size.
+	// Any positive value is a real coefficient of scaling.
+	// How the scaling works: after resizing, parent control
+	// calculates the difference between minimal and current sizes,
+	// then divides the difference between controls that has
+	// positive scale depending on a scale value. The more scale,
+	// the larger control after resizing. Example: if you have
+	// two controls with scales 1 and 2, then after every resizing
+	// the latter controls expands by 100% more than the first one.
 	Scale() int
+	// SetScale sets a scale coefficient for the control.
+	// See Scale method for details
 	SetScale(int)
+	// Constraints return minimal control widht and height
 	Constraints() (int, int)
+	// Paddings returns a number of spaces used to auto-arrange children inside
+	// a container: indent from left and right sides, indent from top and bottom
+	// sides, horizontal space between controls, vertical space between controls.
+	// Horizontal space is used in case of PackType is horizontal, and vertical
+	// in other case
 	Paddings() (int, int, int, int)
+	// SetPaddings changes indents for the container. Use DoNotChange as a placeholder
+	// if you do not want to touch a parameter
 	SetPaddings(int, int, int, int)
 	// Repaint draws the control on its View surface
 	Repaint()
+	// AddChild adds a new child to a container. For the most
+	// of controls the method is just a stub that panics
+	// because not every control can be a container
 	AddChild(Control, int)
+	// SetPack changes the direction of children packing
 	SetPack(PackType)
+	// Pack returns direction in which a container packs
+	// its children: horizontal or vertical
 	Pack() PackType
+	// Children returns the list of container child controls
 	Children() []Control
+	// Active returns if a control is active. Only active controls can
+	// process keyboard events. Parent View looks for active controls to
+	// make sure that there is only one active control at a time
 	Active() bool
+	// SetActive activates and deactivates control
 	SetActive(bool)
 	/*
 	   ProcessEvent processes all events come from the control parent. If a control
@@ -152,15 +244,29 @@ type Control interface {
 	   the event to the control parent
 	*/
 	ProcessEvent(Event) bool
+	// TabStop returns if a control can be selected by traversing
+	// controls using TAB key
 	TabStop() bool
+	// Parent return control's container or nil if there is no parent container
 	Parent() Control
+	// Colors return the basic attrubutes for the controls: text
+	// attribute and background one. Some controls inroduce their
+	// own additional controls: see ProgressBar
 	Colors() (term.Attribute, term.Attribute)
+	// ActiveColors return the attrubutes for the controls when it
+	// is active: text and background colors
 	ActiveColors() (term.Attribute, term.Attribute)
+	// SetBackColor changes background color of the control
 	SetBackColor(term.Attribute)
+	// SetActiveBackColor changes background color of the active control
 	SetActiveBackColor(term.Attribute)
+	// SetTextColor changes text color of the control
 	SetTextColor(term.Attribute)
+	// SetActiveTextColor changes text color of the active control
 	SetActiveTextColor(term.Attribute)
 
+	// RecalculateConstraints used by containers to recalculate new minimal size
+	// depending on its children constraints after a new child is added
 	RecalculateConstraints()
 
 	Logger() *log.Logger
