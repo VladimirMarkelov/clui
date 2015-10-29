@@ -65,7 +65,8 @@ type Theme interface {
 	ThemeNames() []string
 	// ThemeInfo returns detailed info about theme
 	ThemeInfo(string) ThemeInfo
-	// SetThemePath changes the directory that contains themes
+	// SetThemePath changes the directory that contains themes.
+	// If new path does not equal old one, theme list reloads
 	SetThemePath(string)
 }
 
@@ -180,6 +181,8 @@ type View interface {
 	Logger() *log.Logger
 }
 
+// Control is an interface that every visible control on the View must
+// implement
 type Control interface {
 	// Title returns the current title or text of the control
 	Title() string

@@ -6,7 +6,7 @@ import (
 )
 
 /*
-Control to display a list of items and allow to user to select any of them.
+ListBox is control to display a list of items and allow to user to select any of them.
 Content is scrollable with arrow keys or by clicking up and bottom buttons
 on the scroll(now content is scrollable with mouse dragging only on Windows).
 
@@ -15,9 +15,6 @@ selected item with mouse or using keyboard (extra case: the event is emitted
 when a user presses Enter - the case is used in ComboBox to select an item
 from drop down list). Event structure has 2 fields filled: Y - selected
 item number in list(-1 if nothing is selected), Msg - text of the selected item.
-
-ListBox provides a few own methods to manipulate its items:
-AddItem, SelectItem, FindItem, GetSelectedItem, RemoveItem, Clear
 */
 type ListBox struct {
 	ControlBase
@@ -31,6 +28,14 @@ type ListBox struct {
 	onSelectItem func(Event)
 }
 
+/*
+NewListBox creates a new frame.
+view - is a View that manages the control
+parent - is container that keeps the control. The same View can be a view and a parent at the same time.
+width and heith - are minimal size of the control.
+scale - the way of scaling the control when the parent is resized. Use DoNotScale constant if the
+control should keep its original size.
+*/
 func NewListBox(view View, parent Control, width, height int, scale int) *ListBox {
 	l := new(ListBox)
 
@@ -123,6 +128,7 @@ func (l *ListBox) redrawItems(canvas Canvas, tm Theme) {
 	}
 }
 
+// Repaint draws the control on its View surface
 func (l *ListBox) Repaint() {
 	canvas := l.view.Canvas()
 	tm := l.view.Screen().Theme()
@@ -186,10 +192,11 @@ func (l *ListBox) moveDown() {
 	l.EnsureVisible()
 }
 
+// EnsureVisible makes the currently selected item visible and scrolls the item list if it is required
 func (l *ListBox) EnsureVisible() {
 	length := len(l.items)
 
-	if length <= l.height {
+	if length <= l.height || l.currSelection == -1 {
 		return
 	}
 
@@ -210,7 +217,7 @@ func (l *ListBox) EnsureVisible() {
 	}
 }
 
-// Deletes all ListBox items
+// Clear deletes all ListBox items
 func (l *ListBox) Clear() {
 	l.items = make([]string, 0)
 	l.currSelection = -1
@@ -278,6 +285,12 @@ func (l *ListBox) recalcPositionByScroll() {
 	l.EnsureVisible()
 }
 
+/*
+ProcessEvent processes all events come from the control parent. If a control
+processes an event it should return true. If the method returns false it means
+that the control do not want or cannot process the event and the caller sends
+the event to the control parent
+*/
 func (l *ListBox) ProcessEvent(event Event) bool {
 	if !l.Active() || !l.Enabled() {
 		return false
@@ -315,7 +328,9 @@ func (l *ListBox) ProcessEvent(event Event) bool {
 
 // own methods
 
-// Adds a new item to item list
+// AddItem adds a new item to item list. If the maximun item
+// is greater than 0 and the number of item greater maximum
+// then the first item is deleted.
 // Returns true if the operation is successful
 func (l *ListBox) AddItem(item string) bool {
 	if l.maxItems > 0 && len(l.items) > l.maxItems {
@@ -326,8 +341,9 @@ func (l *ListBox) AddItem(item string) bool {
 	return true
 }
 
-// Selects item which number in the list equals id. If the item exists the
-// ListBox scrolls the list to make the item visible.
+// SelectItem slects item which number in the list equals
+// id. If the item exists the ListBox scrolls the list to
+// make the item visible.
 // Returns true if the item is selected successfully
 func (l *ListBox) SelectItem(id int) bool {
 	if len(l.items) <= id || id < 0 {
@@ -339,8 +355,8 @@ func (l *ListBox) SelectItem(id int) bool {
 	return true
 }
 
-// Finds an item in list which text equals to text, by default the search
-// is casesensitive.
+// FindItem looks for an item in list which text equals
+// to text, by default the search is casesensitive.
 // Returns item number in item list or -1 if nothing is found.
 func (l *ListBox) FindItem(text string, caseSensitive bool) int {
 	for idx, itm := range l.items {
@@ -352,13 +368,13 @@ func (l *ListBox) FindItem(text string, caseSensitive bool) int {
 	return -1
 }
 
-// Returns currently selected item id
+// SelectedItem returns currently selected item id
 func (l *ListBox) SelectedItem() int {
 	return l.currSelection
 }
 
-// Returns text of currently selected item or empty sting if nothing is
-// selected or ListBox is empty
+// SelectedItemText returns text of currently selected item or empty sting if nothing is
+// selected or ListBox is empty.
 func (l *ListBox) SelectedItemText() string {
 	if l.currSelection == -1 {
 		return ""
@@ -367,7 +383,7 @@ func (l *ListBox) SelectedItemText() string {
 	return l.items[l.currSelection]
 }
 
-// Deletes an item which number is id in item list
+// RemoveItem deletes an item which number is id in item list
 // Returns true if item is deleted
 func (l *ListBox) RemoveItem(id int) bool {
 	if id < 0 || id >= len(l.items) {
@@ -378,18 +394,26 @@ func (l *ListBox) RemoveItem(id int) bool {
 	return true
 }
 
+// OnSelectItem sets a callback that is called every time
+// the selected item is changed
 func (l *ListBox) OnSelectItem(fn func(Event)) {
 	l.onSelectItem = fn
 }
 
+// MaxItems returns the maximum number of items that the
+// ListBox can keep. 0 means unlimited. It makes a ListBox
+// work like a FIFO queue: the oldest(the first) items are
+// deleted if one adds an item to a full ListBox
 func (l *ListBox) MaxItems() int {
 	return l.maxItems
 }
 
+// SetMaxItems sets the maximum items that ListBox keeps
 func (l *ListBox) SetMaxItems(max int) {
 	l.maxItems = max
 }
 
+// ItemCount returns the number of items in the ListBox
 func (l *ListBox) ItemCount() int {
 	return len(l.items)
 }
