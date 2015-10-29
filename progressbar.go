@@ -11,9 +11,6 @@ ProgressBar control visualizes the progression of extended operation.
 The control has two sets of colors(almost all other controls have only
 one set: foreground and background colors): for filled part and for
 empty one. By default colors are the same.
-
-In addition to standard Control methods it has its own ones:
-SetLimits, SetValue, Step
 */
 type ProgressBar struct {
 	ControlBase
@@ -23,6 +20,14 @@ type ProgressBar struct {
 	emptyFg, emptyBg term.Attribute
 }
 
+/*
+NewProgressBar creates a new ProgressBar.
+view - is a View that manages the control
+parent - is container that keeps the control. The same View can be a view and a parent at the same time.
+width and heith - are minimal size of the control.
+scale - the way of scaling the control when the parent is resized. Use DoNotScale constant if the
+control should keep its original size.
+*/
 func NewProgressBar(view View, parent Control, width, height int, scale int) *ProgressBar {
 	b := new(ProgressBar)
 
@@ -49,6 +54,7 @@ func NewProgressBar(view View, parent Control, width, height int, scale int) *Pr
 	return b
 }
 
+// Repaint draws the control on its View surface
 func (b *ProgressBar) Repaint() {
 	if b.max <= b.min {
 		return
@@ -97,7 +103,7 @@ func (b *ProgressBar) Repaint() {
 
 //----------------- own methods -------------------------
 
-// Sets new progress value. If value exeeds ProgressBar
+// SetValue sets new progress value. If value exceeds ProgressBar
 // limits then the limit value is used
 func (b *ProgressBar) SetValue(pos int) {
 	if pos < b.min {
@@ -109,16 +115,18 @@ func (b *ProgressBar) SetValue(pos int) {
 	}
 }
 
+// Value returns the current ProgressBar value
 func (b *ProgressBar) Value() int {
 	return b.value
 }
 
+// Limits returns current minimal and maximal values of ProgressBar
 func (b *ProgressBar) Limits() (int, int) {
 	return b.min, b.max
 }
 
-// Set new ProgressBar limits. The current value is adjusted
-// if it exeeds new limits
+// SetLimits set new ProgressBar limits. The current value
+// is adjusted if it exceeds new limits
 func (b *ProgressBar) SetLimits(min, max int) {
 	b.min = min
 	b.max = max
@@ -131,7 +139,7 @@ func (b *ProgressBar) SetLimits(min, max int) {
 	}
 }
 
-// Increase ProgressBar value by 1 if the value is less
+// Step increases ProgressBar value by 1 if the value is less
 // than ProgressBar high limit
 func (b *ProgressBar) Step() int {
 	b.value++
@@ -143,10 +151,14 @@ func (b *ProgressBar) Step() int {
 	return b.value
 }
 
+// SecondaryColors returns text and background colors for empty
+// part of the ProgressBar
 func (b *ProgressBar) SecondaryColors() (term.Attribute, term.Attribute) {
 	return b.emptyFg, b.emptyBg
 }
 
+// SetSecondaryColors sets new text and background colors for
+// empty part of the ProgressBar
 func (b *ProgressBar) SetSecondaryColors(fg, bg term.Attribute) {
 	b.emptyFg, b.emptyBg = fg, bg
 }
