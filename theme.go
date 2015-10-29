@@ -26,6 +26,8 @@ type ThemeManager struct {
 	version   string
 }
 
+// ThemeInfo is a detailed information about theme:
+// title, author, version number
 type ThemeInfo struct {
 	parent  string
 	title   string
@@ -50,6 +52,7 @@ type theme struct {
 
 const defaultTheme = "default"
 
+// NewThemeManager creates a new theme manager
 func NewThemeManager() *ThemeManager {
 	sm := new(ThemeManager)
 
@@ -58,6 +61,8 @@ func NewThemeManager() *ThemeManager {
 	return sm
 }
 
+// Reset removes all loaded themes from cache and reinitialize
+// the default theme
 func (s *ThemeManager) Reset() {
 	s.current = defaultTheme
 	s.themes = make(map[string]theme, 0)
@@ -110,6 +115,7 @@ func (s *ThemeManager) Reset() {
 	s.themes[defaultTheme] = defTheme
 }
 
+// SysColor returns attribute by its id for the current theme
 func (s *ThemeManager) SysColor(color string) term.Attribute {
 	sch, ok := s.themes[s.current]
 	if !ok {
@@ -144,6 +150,8 @@ func (s *ThemeManager) SysColor(color string) term.Attribute {
 	return clr
 }
 
+// SysObject returns object look by its id for the current
+// theme. E.g, border lines for frame or arrows for scrollbar
 func (s *ThemeManager) SysObject(object string) string {
 	sch, ok := s.themes[s.current]
 	if !ok {
@@ -178,6 +186,7 @@ func (s *ThemeManager) SysObject(object string) string {
 	return obj
 }
 
+// ThemeNames returns the list of short theme names (file names)
 func (s *ThemeManager) ThemeNames() []string {
 	var str []string
 	str = append(str, defaultTheme)
@@ -200,10 +209,13 @@ func (s *ThemeManager) ThemeNames() []string {
 	return str
 }
 
+// CurrentTheme returns name of the current theme
 func (s *ThemeManager) CurrentTheme() string {
 	return s.current
 }
 
+// SetCurrentTheme changes the current theme.
+// Returns false if changing failed - e.g, theme does not exist
 func (s *ThemeManager) SetCurrentTheme(name string) bool {
 	if _, ok := s.themes[name]; !ok {
 		tnames := s.ThemeNames()
@@ -222,10 +234,13 @@ func (s *ThemeManager) SetCurrentTheme(name string) bool {
 	return false
 }
 
+// ThemePath returns the current directory with theme inside it
 func (s *ThemeManager) ThemePath() string {
 	return s.themePath
 }
 
+// SetThemePath changes the directory that contains themes.
+// If new path does not equal old one, theme list reloads
 func (s *ThemeManager) SetThemePath(path string) {
 	if path == s.themePath {
 		return
@@ -235,6 +250,8 @@ func (s *ThemeManager) SetThemePath(path string) {
 	s.Reset()
 }
 
+// LoadTheme loads the theme if it is not in the cache already.
+// If theme is in the cache LoadTheme does nothing
 func (s *ThemeManager) LoadTheme(name string) {
 	if _, ok := s.themes[name]; ok {
 		return
@@ -295,6 +312,9 @@ func (s *ThemeManager) LoadTheme(name string) {
 	s.themes[name] = theme
 }
 
+// ReLoadTheme refresh cache entry for the theme with new
+// data loaded from file. Use it to apply theme changes on
+// the fly without resetting manager or restarting application
 func (s *ThemeManager) ReLoadTheme(name string) {
 	if _, ok := s.themes[name]; ok {
 		delete(s.themes, name)
@@ -303,6 +323,7 @@ func (s *ThemeManager) ReLoadTheme(name string) {
 	s.LoadTheme(name)
 }
 
+// ThemeInfo returns detailed info about theme
 func (s *ThemeManager) ThemeInfo(name string) ThemeInfo {
 	s.LoadTheme(name)
 	var theme ThemeInfo

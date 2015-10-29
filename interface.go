@@ -51,12 +51,21 @@ type Canvas interface {
 	SetCursorPos(x int, y int)
 }
 
+// Theme is a theme manager: set of colors and object looks
 type Theme interface {
+	// SysObject returns object look by its id for the current
+	// theme. E.g, border lines for frame or arrows for scrollbar
 	SysObject(string) string
+	// SysColor returns attribute by its id for the current theme
 	SysColor(string) term.Attribute
+	// SetCurrentTheme changes the current theme.
+	// Returns false if changing failed - e.g, theme does not exist
 	SetCurrentTheme(string) bool
+	// ThemeNames returns the list of short theme names (file names)
 	ThemeNames() []string
+	// ThemeInfo returns detailed info about theme
 	ThemeInfo(string) ThemeInfo
+	// SetThemePath changes the directory that contains themes
 	SetThemePath(string)
 }
 
