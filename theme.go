@@ -9,7 +9,7 @@ import (
 )
 
 /*
-Theme support for controls.
+ThemeManager support for controls.
 The current implementation is limited but later the manager will be
 able to load a requested theme on demand and use deep inheritance.
 Theme 'default' exists always - it is predefinded and always complete.

@@ -1,12 +1,11 @@
 package clui
 
 import (
-	//"fmt"
 	xs "github.com/huandu/xstrings"
 	"regexp"
 )
 
-// Truncates text to maxWidth by replacing long
+// Ellipsize truncates text to maxWidth by replacing a
 // substring in the middle with ellipsis and keeping
 // the beginning and ending of the string untouched.
 // If maxWidth is less than 5 then no ellipsis is
@@ -26,7 +25,7 @@ func Ellipsize(str string, maxWidth int) string {
 	return xs.Slice(str, 0, left) + "..." + xs.Slice(str, ln-right, -1)
 }
 
-// Make a text no longer than maxWidth
+// CutText makes a text no longer than maxWidth
 func CutText(str string, maxWidth int) string {
 	ln := xs.Len(str)
 	if ln <= maxWidth {
@@ -36,7 +35,16 @@ func CutText(str string, maxWidth int) string {
 	return xs.Slice(str, 0, maxWidth)
 }
 
-func AlignText(str string, width int, align Align) (int, string) {
+// AlignText calculates the initial position of the text
+// output depending on str length and available width.
+// The str is truncated in case of its lenght greater than
+// width. Function returns shift that should be added to
+// original label position before output instead of padding
+// the string with spaces. The reason is to make possible
+// to draw a label aligned but with transparent beginning
+// and ending. If you do not need transparency you can
+// add spaces manually using the returned shift value
+func AlignText(str string, width int, align Align) (shift int, out string) {
 	length := xs.Len(str)
 
 	if length >= width {
@@ -52,6 +60,8 @@ func AlignText(str string, width int, align Align) (int, string) {
 	return 0, str
 }
 
+// UnColorizeText removes all color-related tags from the
+// string. Tags to remove: <(f|t|b):.*>
 func UnColorizeText(str string) string {
 	r1 := regexp.MustCompile("<f:[^>]*>")
 	r2 := regexp.MustCompile("<t:[^>]*>")

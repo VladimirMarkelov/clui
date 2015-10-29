@@ -70,11 +70,15 @@ type Theme interface {
 	SetThemePath(string)
 }
 
+// View is an interface that every object that is managed by
+// composer should implement
 type View interface {
 	// Title returns the current title or text of the control
 	Title() string
 	// SetTitle changes control text or title
 	SetTitle(string)
+	// Draw paints the view screen buffer to a canvas. It does not
+	// repaint all view children
 	Draw(Canvas)
 	// Repaint draws the control on console surface
 	Repaint()
@@ -96,6 +100,8 @@ type View interface {
 	// make sense for any control except View because control positions
 	// inside of container always recalculated after View resizes
 	SetPos(int, int)
+	// Canvas returns an internal graphic buffer to draw everything.
+	// Used by children controls - they paint themselves on the canvas
 	Canvas() Canvas
 	// Active returns if a control is active. Only active controls can
 	// process keyboard events. Parent View looks for active controls to
@@ -110,14 +116,35 @@ type View interface {
 	   the event to the control parent
 	*/
 	ProcessEvent(Event) bool
+	// ActivateControl make the control active and previously
+	// focused control loses the focus. As a side effect the method
+	// emits two events: deactivate for previously focused and
+	// activate for new one if it is possible (EventActivate with
+	// different X values)
 	ActivateControl(Control)
+	// RegisterControl adds a control to the view control list. It
+	// a list of all controls visible on the view - used to
+	// calculate the control under mouse when a user clicks, and
+	// to calculate the next control after a user presses TAB key
 	RegisterControl(Control)
+	// Screen returns the composer that manages the view
 	Screen() Screen
 	// Parent return control's container or nil if there is no parent container
 	Parent() Control
+	// HitTest returns the area that corresponds to the clicked
+	// position X, Y (absolute position in console window): title,
+	// internal view area, title button, border or outside the view
 	HitTest(int, int) HitResult
+	// SetModal enables or disables modal mode
 	SetModal(bool)
+	// Modal returns if the view is in modal mode.In modal mode a
+	// user cannot switch to any other view until the user closes
+	// the modal view. Used by confirmation and select dialog to be
+	// sure that the user has made a choice before continuing work
 	Modal() bool
+	// OnClose sets a callback that is called when view is closed.
+	// For dialogs after windows is closed a user can check the
+	// close result
 	OnClose(func(Event))
 
 	// Paddings returns a number of spaces used to auto-arrange children inside
@@ -129,9 +156,9 @@ type View interface {
 	// SetPaddings changes indents for the container. Use DoNotChange as a placeholder
 	// if you do not want to touch a parameter
 	SetPaddings(int, int, int, int)
-	// AddChild adds a new child to a container. For the most
-	// of controls the method is just a stub that panics
-	// because not every control can be a container
+	// AddChild add control to a list of view children. Minimal size
+	// of the view calculated as a sum of sizes of its children.
+	// Method panics if the same control is added twice
 	AddChild(Control, int)
 	// SetPack changes the direction of children packing
 	SetPack(PackType)
@@ -140,6 +167,8 @@ type View interface {
 	Pack() PackType
 	// Children returns the list of container child controls
 	Children() []Control
+	// ChildExists returns true if the container already has
+	// the control in its children list
 	ChildExists(Control) bool
 	// Scale return scale coefficient that is used to calculate
 	// new control size after its parent resizes.

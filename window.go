@@ -6,6 +6,7 @@ import (
 	"log"
 )
 
+// Window is an implemetation of View managed by Composer.
 type Window struct {
 	ControlBase
 	buttons  ViewButton
@@ -19,6 +20,14 @@ type Window struct {
 	onClose func(Event)
 }
 
+/*
+NewWindow creates a new View.
+parent - is composer that manages all views.
+x and y - initial View postion.
+w and h - are minimal size of the view.
+    The minimal view size cannot be less than 10x5
+title - view title.
+*/
 func NewWindow(parent Screen, x, y, w, h int, title string) *Window {
 	d := new(Window)
 	d.canvas = NewFrameBuffer(w, h)
@@ -44,6 +53,11 @@ func NewWindow(parent Screen, x, y, w, h int, title string) *Window {
 	return d
 }
 
+// SetSize changes control size. Constant DoNotChange can be
+// used as placeholder to indicate that the control attrubute
+// should be unchanged.
+// Method panics if new size is less than minimal size.
+// View automatically recalculates position and size of its children after changing its size
 func (w *Window) SetSize(width, height int) {
 	if width == w.width && height == w.height {
 		return
@@ -84,6 +98,10 @@ func (w *Window) applyConstraints() {
 	}
 }
 
+// SetConstraints sets new minimal size of control.
+// If minimal size of the control is greater than the current
+// control size then the control size is changed to fit minimal values
+// The minimal constraints for view is width=10, height=5
 func (w *Window) SetConstraints(width, height int) {
 	if width >= 10 {
 		w.minW = width
@@ -95,6 +113,8 @@ func (w *Window) SetConstraints(width, height int) {
 	w.applyConstraints()
 }
 
+// Draw paints the view screen buffer to a canvas. It does not
+// repaint all view children
 func (w *Window) Draw(canvas Canvas) {
 	for y := 0; y < w.height; y++ {
 		for x := 0; x < w.width; x++ {
@@ -109,7 +129,7 @@ func (w *Window) Draw(canvas Canvas) {
 	}
 }
 
-func (w *Window) ButtonCount() int {
+func (w *Window) buttonCount() int {
 	count := 0
 	if w.buttons&ButtonClose != 0 {
 		count++
@@ -124,6 +144,7 @@ func (w *Window) ButtonCount() int {
 	return count
 }
 
+// Repaint draws the control and its children on the internal canvas
 func (w *Window) Repaint() {
 	tm := w.parent.Theme()
 	bg := RealColor(tm, w.bg, ColorViewBack)
@@ -135,17 +156,17 @@ func (w *Window) Repaint() {
 		child.Repaint()
 	}
 	// paint itself - to overpaint any control that draws itself on the window border
-	w.DrawFrame(tm)
-	w.DrawTitle(tm)
-	w.DrawButtons(tm)
+	w.drawFrame(tm)
+	w.drawTitle(tm)
+	w.drawButtons(tm)
 }
 
-func (w *Window) DrawTitle(tm Theme) {
+func (w *Window) drawTitle(tm Theme) {
 	if w.title == "" {
 		return
 	}
 
-	btnWidth := w.ButtonCount()
+	btnWidth := w.buttonCount()
 	if btnWidth != 0 {
 		btnWidth += 2
 	}
@@ -156,8 +177,8 @@ func (w *Window) DrawTitle(tm Theme) {
 	w.canvas.PutText(1, 0, text, fg, bg)
 }
 
-func (w *Window) DrawButtons(tm Theme) {
-	if w.ButtonCount() == 0 {
+func (w *Window) drawButtons(tm Theme) {
+	if w.buttonCount() == 0 {
 		return
 	}
 
@@ -183,7 +204,7 @@ func (w *Window) DrawButtons(tm Theme) {
 	w.canvas.PutSymbol(x, 0, term.Cell{Ch: cOpenB, Fg: fg, Bg: bg})
 }
 
-func (w *Window) DrawFrame(tm Theme) {
+func (w *Window) drawFrame(tm Theme) {
 	var chars string
 	if w.active {
 		chars = tm.SysObject(ObjDoubleBorder)
@@ -197,18 +218,26 @@ func (w *Window) DrawFrame(tm Theme) {
 	w.canvas.DrawFrame(0, 0, w.width, w.height, fg, bg, chars)
 }
 
+// Canvas returns an internal graphic buffer to draw everything.
+// Used by children controls - they paint themselves on the canvas
 func (w *Window) Canvas() Canvas {
 	return w.canvas
 }
 
+// SetButtons detemines which button is visible inside view
+// title
 func (w *Window) SetButtons(bi ViewButton) {
 	w.buttons = bi
 }
 
+// Buttons returns the bit set of buttons displayed in Windows's title
+// A set may contain any combination of: ButtonClose, ButtonBottom, and ButtonMaximize
 func (w *Window) Buttons() ViewButton {
 	return w.buttons
 }
 
+// SetPack changes the direction of children packing. Call the method only before any child is added to view. Otherwise, the method
+// panics if a view already contains children
 func (w *Window) SetPack(pk PackType) {
 	if len(w.children) > 0 {
 		panic("Control already has children")
@@ -217,10 +246,14 @@ func (w *Window) SetPack(pk PackType) {
 	w.pack = pk
 }
 
+// Pack returns direction in which a container packs
+// its children: horizontal or vertical
 func (w *Window) Pack() PackType {
 	return w.pack
 }
 
+// RecalculateConstraints used by containers to recalculate new minimal size
+// depending on its children constraints after a new child is added
 func (w *Window) RecalculateConstraints() {
 	width, height := w.Constraints()
 	minW, minH := CalculateMinimalSize(w)
@@ -238,12 +271,19 @@ func (w *Window) RecalculateConstraints() {
 	}
 }
 
+// RegisterControl adds a control to the view control list. It
+// a list of all controls visible on the view - used to
+// calculate the control under mouse when a user clicks, and
+// to calculate the next control after a user presses TAB key
 func (w *Window) RegisterControl(c Control) {
 	w.controls = append(w.controls, c)
 	w.RecalculateConstraints()
 	RepositionControls(0, 0, w)
 }
 
+// AddChild add control to a list of view children. Minimal size
+// of the view calculated as a sum of sizes of its children.
+// Method panics if the same control is added twice
 func (w *Window) AddChild(c Control, scale int) {
 	if w.ChildExists(c) {
 		panic("Cannot add the same control twice")
@@ -254,10 +294,13 @@ func (w *Window) AddChild(c Control, scale int) {
 	w.RegisterControl(c)
 }
 
+// Children returns the list of view children
 func (w *Window) Children() []Control {
 	return w.children
 }
 
+// Scale is a stub that always return DoNotScale becaue the
+// scaling feature is not applied to views
 func (w *Window) Scale() int {
 	return DoNotScale
 }
@@ -279,6 +322,11 @@ func (w *Window) controlAtPos(x, y int) Control {
 	return nil
 }
 
+// ProcessEvent processes all events come from the composer.
+// If a view processes an event it should return true. If
+// the method returns false it means that the view do
+// not want or cannot process the event and the caller sends
+// the event to the next target
 func (w *Window) ProcessEvent(ev Event) bool {
 	switch ev.Type {
 	case EventKey, EventMouse:
@@ -288,7 +336,7 @@ func (w *Window) ProcessEvent(ev Event) bool {
 			if ctrl != nil {
 				ctrl.ProcessEvent(Event{Type: EventActivate, X: 0})
 			}
-			ctrl = w.NextControl(ctrl, forward)
+			ctrl = w.nextControl(ctrl, forward)
 			if ctrl != nil {
 				// w.Logger().Printf("Activate control: %v", ctrl)
 				w.ActivateControl(ctrl)
@@ -332,6 +380,8 @@ func (w *Window) ProcessEvent(ev Event) bool {
 	return false
 }
 
+// ChildExists returns true if the container already has
+// the control in its children list
 func (w *Window) ChildExists(c Control) bool {
 	for _, ctrl := range w.controls {
 		if ctrl == c {
@@ -342,7 +392,7 @@ func (w *Window) ChildExists(c Control) bool {
 	return false
 }
 
-func (w *Window) NextControl(c Control, forward bool) Control {
+func (w *Window) nextControl(c Control, forward bool) Control {
 	length := len(w.controls)
 
 	if length == 0 {
@@ -395,6 +445,8 @@ func (w *Window) NextControl(c Control, forward bool) Control {
 	}
 }
 
+// ActiveControl returns control that currently has focus or nil
+// if there is no active control
 func (w *Window) ActiveControl() Control {
 	for _, ctrl := range w.controls {
 		if ctrl.Active() {
@@ -405,6 +457,11 @@ func (w *Window) ActiveControl() Control {
 	return nil
 }
 
+// ActivateControl make the control active and previously
+// focused control loses the focus. As a side effect the method
+// emits two events: deactivate for previously focused and
+// activate for new one if it is possible (EventActivate with
+// different X values)
 func (w *Window) ActivateControl(ctrl Control) {
 	active := w.ActiveControl()
 	if active == ctrl {
@@ -422,18 +479,26 @@ func (w *Window) Logger() *log.Logger {
 	return w.parent.Logger()
 }
 
+// Screen returns the composer that manages the view
 func (w *Window) Screen() Screen {
 	return w.parent
 }
 
+// Parent is a stub that always returns nil because the view
+// cannot be added to any container
 func (w *Window) Parent() Control {
 	return nil
 }
 
+// TabStop is a stub that always returns false because the view
+// cannot be selected by pressing TAB key
 func (w *Window) TabStop() bool {
 	return false
 }
 
+// HitTest returns the area that corresponds to the clicked
+// position X, Y (absolute position in console window): title,
+// internal view area, title button, border or outside the view
 func (w *Window) HitTest(x, y int) HitResult {
 	if x < w.x || y < w.y || x >= w.x+w.width || y >= w.y+w.height {
 		return HitOutside
@@ -467,14 +532,22 @@ func (w *Window) HitTest(x, y int) HitResult {
 	return HitInside
 }
 
+// SetModal enables or disables modal mode
 func (w *Window) SetModal(modal bool) {
 	w.modal = modal
 }
 
+// Modal returns if the view is in modal mode.In modal mode a
+// user cannot switch to any other view until the user closes
+// the modal view. Used by confirmation and select dialog to be
+// sure that the user has made a choice before continuing work
 func (w *Window) Modal() bool {
 	return w.modal
 }
 
+// OnClose sets a callback that is called when view is closed.
+// For dialogs after windows is closed a user can check the
+// close result
 func (w *Window) OnClose(fn func(Event)) {
 	w.onClose = fn
 }
