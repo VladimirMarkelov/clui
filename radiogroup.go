@@ -1,15 +1,21 @@
 package clui
 
+// RadioGroup is non-interactive invisible object. It manages
+// set of Radio buttons: at a time no more than one radio
+// button from a group can be selected
 type RadioGroup struct {
 	items []*Radio
 }
 
+// NewRadioGroup creates a new RadioGroup
 func NewRadioGroup() *RadioGroup {
 	c := new(RadioGroup)
 	c.items = make([]*Radio, 0)
 	return c
 }
 
+// Selected returns the number of currently selected radio
+// button inside the group or -1 if no button is selected
 func (c *RadioGroup) Selected() int {
 	selected := -1
 
@@ -23,6 +29,8 @@ func (c *RadioGroup) Selected() int {
 	return selected
 }
 
+// SelectItem makes the radio selected. The function returns false
+// if it failed to find the radio in the radio group
 func (c *RadioGroup) SelectItem(r *Radio) bool {
 	found := false
 
@@ -38,6 +46,8 @@ func (c *RadioGroup) SelectItem(r *Radio) bool {
 	return found
 }
 
+// SetSelected selects the radio by its number. The function
+// returns false if the number is invalid for the radio group
 func (c *RadioGroup) SetSelected(id int) bool {
 	found := false
 	if id < 0 || id >= len(c.items) {
@@ -56,6 +66,7 @@ func (c *RadioGroup) SetSelected(id int) bool {
 	return found
 }
 
+// AddItem add a new radio button to group
 func (c *RadioGroup) AddItem(r *Radio) {
 	c.items = append(c.items, r)
 	r.SetGroup(c)
