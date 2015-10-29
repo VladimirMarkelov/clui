@@ -24,7 +24,7 @@ type ProgressBar struct {
 NewProgressBar creates a new ProgressBar.
 view - is a View that manages the control
 parent - is container that keeps the control. The same View can be a view and a parent at the same time.
-width and heith - are minimal size of the control.
+width and heigth - are minimal size of the control.
 scale - the way of scaling the control when the parent is resized. Use DoNotScale constant if the
 control should keep its original size.
 */
