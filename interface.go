@@ -15,6 +15,8 @@ type Screen interface {
 	PutEvent(event Event)
 	// DestroyView removes view from the view list and makes the next view in the view stack active. It is not possible to destroy the last view - Screen must have at least one visible view
 	DestroyView(view View)
+	// Size returns size of the console(visible) buffer
+	Size() (width int, height int)
 
 	Logger() *log.Logger
 }
@@ -206,6 +208,11 @@ type View interface {
 	// RecalculateConstraints used by containers to recalculate new minimal size
 	// depending on its children constraints after a new child is added
 	RecalculateConstraints()
+	// SetMaximized opens the view to full screen or restores its
+	// previous size
+	SetMaximized(maximize bool)
+	// Maximized returns if the view is in full screen mode
+	Maximized() bool
 
 	Logger() *log.Logger
 }

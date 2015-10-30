@@ -9,12 +9,18 @@ import (
 // Window is an implemetation of View managed by Composer.
 type Window struct {
 	ControlBase
-	buttons  ViewButton
-	canvas   Canvas
-	parent   Screen
-	pack     PackType
-	children []Control
-	controls []Control
+	buttons   ViewButton
+	canvas    Canvas
+	parent    Screen
+	pack      PackType
+	children  []Control
+	controls  []Control
+	maximized bool
+	// maximization support
+	origWidth  int
+	origHeight int
+	origX      int
+	origY      int
 	// dialog support
 	modal   bool
 	onClose func(Event)
@@ -550,4 +556,30 @@ func (w *Window) Modal() bool {
 // close result
 func (w *Window) OnClose(fn func(Event)) {
 	w.onClose = fn
+}
+
+// SetMaximized opens the view to full screen or restores its
+// previous size
+func (w *Window) SetMaximized(maximize bool) {
+	if maximize == w.maximized {
+		return
+	}
+
+	if maximize {
+		w.origX, w.origY = w.Pos()
+		w.origWidth, w.origHeight = w.Size()
+		w.maximized = true
+		w.SetPos(0, 0)
+		width, height := w.parent.Size()
+		w.SetSize(width, height)
+	} else {
+		w.maximized = false
+		w.SetPos(w.origX, w.origY)
+		w.SetSize(w.origWidth, w.origHeight)
+	}
+}
+
+// Maximized returns if the view is in full screen mode
+func (w *Window) Maximized() bool {
+	return w.maximized
 }

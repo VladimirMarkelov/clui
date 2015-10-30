@@ -323,6 +323,12 @@ func (c *Composer) processKeySeq(ev term.Event) bool {
 		switch ev.Key {
 		case term.KeyCtrlH:
 			return c.moveActiveWindowToBottom()
+		case term.KeyCtrlM:
+			v := c.topView()
+			maximized := v.Maximized()
+			v.SetMaximized(!maximized)
+			c.refreshScreen(true)
+			return true
 		default:
 			return false
 		}
@@ -389,6 +395,11 @@ func (c *Composer) processMouseClick(ev term.Event) {
 		}
 	} else if hit == HitButtonBottom {
 		c.moveActiveWindowToBottom()
+	} else if hit == HitButtonMaximize {
+		v := c.topView()
+		maximized := v.Maximized()
+		v.SetMaximized(!maximized)
+		c.refreshScreen(true)
 	}
 }
 
@@ -474,6 +485,11 @@ func (c *Composer) DestroyView(view View) {
 // Theme interface, so a caller can read the current colors
 func (c *Composer) Theme() Theme {
 	return c.themeManager
+}
+
+// Size returns size of the console(visible) buffer
+func (c *Composer) Size() (int, int) {
+	return term.Size()
 }
 
 func (c *Composer) Logger() *log.Logger {
