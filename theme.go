@@ -26,6 +26,8 @@ type ThemeManager struct {
 	version   string
 }
 
+const themeSuffix = ".theme"
+
 // ThemeInfo is a detailed information about theme:
 // title, author, version number
 type ThemeInfo struct {
@@ -201,8 +203,9 @@ func (s *ThemeManager) ThemeNames() []string {
 	}
 
 	for _, f := range files {
-		if !f.IsDir() {
-			str = append(str, f.Name())
+		name := f.Name()
+		if !f.IsDir() && strings.HasSuffix(name, themeSuffix) {
+			str = append(str, strings.TrimSuffix(name, themeSuffix))
 		}
 	}
 
@@ -261,7 +264,7 @@ func (s *ThemeManager) LoadTheme(name string) {
 	theme.colors = make(map[string]term.Attribute, 0)
 	theme.objects = make(map[string]string, 0)
 
-	file, err := os.Open(s.themePath + string(os.PathSeparator) + name)
+	file, err := os.Open(s.themePath + string(os.PathSeparator) + name + themeSuffix)
 	if err != nil {
 		panic("Failed to open theme " + name + " : " + err.Error())
 	}
