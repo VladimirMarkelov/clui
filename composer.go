@@ -452,8 +452,14 @@ func (c *Composer) MainLoop() {
 			case term.EventError:
 				panic(ev.Err)
 			case term.EventResize:
+				term.Flush()
 				c.width, c.height = term.Size()
 				c.initBuffer()
+				for _, view := range c.views {
+					if view.Maximized() {
+						view.SetSize(c.width, c.height)
+					}
+				}
 				c.refreshScreen(true)
 			}
 		case cmd := <-c.channel:
