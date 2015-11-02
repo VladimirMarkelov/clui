@@ -342,6 +342,9 @@ func (c *Composer) processKeySeq(ev term.Event) bool {
 			v.SetMaximized(!maximized)
 			c.refreshScreen(true)
 			return true
+		case term.KeyCtrlC:
+			c.closeTopView()
+			return true
 		default:
 			return false
 		}
@@ -368,6 +371,24 @@ func (c *Composer) processKey(ev term.Event) bool {
 	return false
 }
 
+func (c *Composer) closeTopView() {
+	if len(c.views) > 1 {
+		view := c.topView()
+		event := Event{Type: EventClose, X: 1}
+		c.sendEventToActiveView(event)
+
+		c.DestroyView(view)
+		activate := c.topView()
+		c.activateView(activate)
+		event = Event{Type: EventActivate, X: 1} // send 'activated'
+		c.sendEventToActiveView(event)
+
+		c.refreshScreen(true)
+	} else {
+		go c.Stop()
+	}
+}
+
 func (c *Composer) processMouseClick(ev term.Event) {
 	view, hit := c.checkWindowUnderMouse(ev.MouseX, ev.MouseY)
 
@@ -389,18 +410,7 @@ func (c *Composer) processMouseClick(ev term.Event) {
 		c.sendEventToActiveView(c.termboxEventToLocal(ev))
 		c.refreshScreen(true)
 	} else if hit == HitButtonClose {
-		if len(c.views) > 1 {
-			event := Event{Type: EventClose, X: 1}
-			c.sendEventToActiveView(event)
-
-			c.DestroyView(view)
-			activate := c.topView()
-			c.activateView(activate)
-			event = Event{Type: EventActivate, X: 1} // send 'activated'
-			c.sendEventToActiveView(event)
-
-			c.refreshScreen(true)
-		}
+		c.closeTopView()
 	} else if hit == HitButtonBottom {
 		c.moveActiveWindowToBottom()
 	} else if hit == HitButtonMaximize {
