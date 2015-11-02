@@ -16,6 +16,31 @@ Theme 'default' exists always - it is predefinded and always complete.
 User-defined themes may omit any theme section, all omitted items
 are loaded from parent theme. The only required property that a user-
 defined theme must have is a theme name.
+
+Theme file is a simple text file that has similar to INI file format:
+1. Every line started with '#' or '/' is a comment line.
+2. Invalid lines - lines that do not contain symbol '=' - are skipped.
+3. Valid lines are splitted in two parts:
+    key - the text before the first '=' in the line
+    value - the text after the first '=' in the line (so, values can
+        include '=')
+4. There is no mandatory keys - all of them are optional
+5. Avaiable system keys that used to describe the theme:
+    'title' - the theme title
+    'author' - theme author
+    'version' - theme version
+    'parent' - name of the parent theme. If it is not set then the
+        'default' is used as a parent
+6. Non-system keys are divided into two groups: Colors and Objects
+    Colors are the keys that end with 'Back' or 'Text' - background
+        and text color, respectively. If theme manager cannot
+        value to color it panics. See Color*Back * Color*Text constants.
+    Other keys are considered as objects - see Obj* constants.
+    One is not limited with only predefined color and object names.
+    The theme can inroduce its own objects, e.g. to provide a runes or
+        colors for new control that is not in standard library
+To see the real world example of full featured theme, please see
+    included theme 'turbovision'
 */
 type ThemeManager struct {
 	// available theme list
