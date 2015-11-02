@@ -268,7 +268,7 @@ func (c *Composer) moveTopView(ev term.Event) bool {
 }
 
 func (c *Composer) isDeadKey(ev term.Event) bool {
-	if ev.Key == term.KeyCtrlS || ev.Key == term.KeyCtrlP || ev.Key == term.KeyCtrlW {
+	if ev.Key == term.KeyCtrlS || ev.Key == term.KeyCtrlP || ev.Key == term.KeyCtrlW || ev.Key == term.KeyCtrlQ {
 		c.ctrlKey = ev.Key
 		c.lastKey = term.KeyEsc
 		return true
@@ -281,6 +281,19 @@ func (c *Composer) isDeadKey(ev term.Event) bool {
 func (c *Composer) processKeySeq(ev term.Event) bool {
 	if c.ctrlKey == term.KeyEsc {
 		return false
+	}
+
+	if c.ctrlKey == term.KeyCtrlQ {
+		if c.ctrlKey == ev.Key {
+			go c.Stop()
+		} else if c.lastKey == term.KeyEsc {
+			c.ctrlKey = ev.Key
+		} else {
+			c.ctrlKey = term.KeyEsc
+			return false
+		}
+
+		return true
 	}
 
 	if c.ctrlKey == term.KeyCtrlS {
@@ -347,14 +360,9 @@ func (c *Composer) processKey(ev term.Event) bool {
 		return false
 	}
 
-	switch ev.Key {
-	case term.KeyCtrlQ:
-		return true
-	default:
-		if c.sendEventToActiveView(c.termboxEventToLocal(ev)) {
-			c.topView().Repaint()
-			c.refreshScreen(false)
-		}
+	if c.sendEventToActiveView(c.termboxEventToLocal(ev)) {
+		c.topView().Repaint()
+		c.refreshScreen(false)
 	}
 
 	return false
