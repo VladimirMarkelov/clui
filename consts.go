@@ -168,6 +168,15 @@ const (
 	ColorSelectionText  = "SelectionText"
 	ColorSelectionBack  = "SelectionBack"
 
+	// button control
+	ColorButtonBack         = "ButtonBack"
+	ColorButtonText         = "ButtonText"
+	ColorButtonActiveBack   = "ButtonActiveBack"
+	ColorButtonActiveText   = "ButtonActiveText"
+	ColorButtonShadow       = "ButtonShadowBack"
+	ColorButtonDisabledBack = "ButtonDisabledBack"
+	ColorButtonDisabledText = "ButtonDisabledText"
+
 	// scroll control
 	ColorScrollText = "ScrollText"
 	ColorScrollBack = "ScrollBack"

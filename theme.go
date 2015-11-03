@@ -34,8 +34,10 @@ Theme file is a simple text file that has similar to INI file format:
 6. Non-system keys are divided into two groups: Colors and Objects
     Colors are the keys that end with 'Back' or 'Text' - background
         and text color, respectively. If theme manager cannot
-        value to color it panics. See Color*Back * Color*Text constants.
-    Other keys are considered as objects - see Obj* constants.
+        value to color it panics. See Color*Back * Color*Text constants,
+        just drop 'Color' at the beginning of key name
+    Other keys are considered as objects - see Obj* constants, just drop
+        'Obj' at the beginning of the key name
     One is not limited with only predefined color and object names.
     The theme can inroduce its own objects, e.g. to provide a runes or
         colors for new control that is not in standard library
@@ -121,6 +123,14 @@ func (s *ThemeManager) Reset() {
 	defTheme.colors[ColorControlShadow] = ColorBlue
 	defTheme.colors[ColorControlDisabledText] = ColorWhite
 	defTheme.colors[ColorControlDisabledBack] = ColorBlackBold
+
+	defTheme.colors[ColorButtonText] = ColorWhite
+	defTheme.colors[ColorButtonBack] = ColorBlack
+	defTheme.colors[ColorButtonActiveText] = ColorWhite
+	defTheme.colors[ColorButtonActiveBack] = ColorMagenta
+	defTheme.colors[ColorButtonShadow] = ColorBlue
+	defTheme.colors[ColorButtonDisabledText] = ColorWhite
+	defTheme.colors[ColorButtonDisabledBack] = ColorBlackBold
 
 	defTheme.colors[ColorEditText] = ColorBlack
 	defTheme.colors[ColorEditBack] = ColorWhite
@@ -344,6 +354,11 @@ func (s *ThemeManager) LoadTheme(name string) {
 // data loaded from file. Use it to apply theme changes on
 // the fly without resetting manager or restarting application
 func (s *ThemeManager) ReLoadTheme(name string) {
+	if name == defaultTheme {
+		// default theme cannot be reloaded
+		return
+	}
+
 	if _, ok := s.themes[name]; ok {
 		delete(s.themes, name)
 	}

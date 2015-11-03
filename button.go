@@ -68,13 +68,13 @@ func (b *Button) Repaint() {
 	tm := b.view.Screen().Theme()
 
 	fg, bg := b.fg, b.bg
-	shadow := RealColor(tm, b.shadowColor, ColorControlShadow)
+	shadow := RealColor(tm, b.shadowColor, ColorButtonShadow)
 	if !b.Enabled() {
-		fg, bg = RealColor(tm, fg, ColorControlDisabledText), RealColor(tm, bg, ColorControlDisabledBack)
+		fg, bg = RealColor(tm, fg, ColorButtonDisabledText), RealColor(tm, bg, ColorButtonDisabledBack)
 	} else if b.Active() {
-		fg, bg = RealColor(tm, b.fgActive, ColorControlActiveText), RealColor(tm, b.bgActive, ColorControlActiveBack)
+		fg, bg = RealColor(tm, b.fgActive, ColorButtonActiveText), RealColor(tm, b.bgActive, ColorButtonActiveBack)
 	} else {
-		fg, bg = RealColor(tm, fg, ColorControlText), RealColor(tm, bg, ColorControlBack)
+		fg, bg = RealColor(tm, fg, ColorButtonText), RealColor(tm, bg, ColorButtonBack)
 	}
 
 	dy := int((h - 1) / 2)
