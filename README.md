@@ -16,7 +16,7 @@ The current list of controls:
 * Radio
 * RadioGroup
 
-Built-in theme support. Now it is very basic: no way to load any theme from file, only one predefined theme
+Built-in theme support.
 
 A set of global hotkeys
 
