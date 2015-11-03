@@ -73,7 +73,7 @@ type Event struct {
 
 // BorderStyle constants
 const (
-	BorderNone = iota
+	BorderNone BorderStyle = iota
 	BorderSingle
 	BorderDouble
 )
@@ -101,7 +101,7 @@ const (
 
 // HitResult constants
 const (
-	HitOutside = iota
+	HitOutside HitResult = iota
 	HitInside
 	HitBorder
 	HitButtonClose
@@ -112,7 +112,7 @@ const (
 // VeiwButton values - list of buttons available for using in View title
 const (
 	// ButtonDefault - no button
-	ButtonDefault = 0
+	ButtonDefault ViewButton = 0
 	// ButtonClose - button to close View
 	ButtonClose = 1 << 0
 	// ButtonBottom -  move Window to bottom of the View stack
@@ -123,7 +123,7 @@ const (
 
 // Alignment constants
 const (
-	AlignLeft = iota
+	AlignLeft Align = iota
 	AlignRight
 	AlignCenter
 )
@@ -261,7 +261,7 @@ var (
 // SelectDialogType constants
 const (
 	// SelectDialogList - all items are displayed in a ListBox
-	SelectDialogList = iota
+	SelectDialogList SelectDialogType = iota
 	// SelectDialogList - all items are displayed in a RadioGroup
 	SelectDialogRadio
 )
