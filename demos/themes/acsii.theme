@@ -12,7 +12,8 @@ ProgressText       = white
 ProgressActiveBack = black bold
 ProgressActiveText = white
 
-
+ViewText=ViewBack
+ViewBack=parent.ViewText
 //----------------- Objects -----------------
 SingleBorder=-|++++
 DoubleBorder==|++++
