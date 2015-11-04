@@ -1,10 +1,10 @@
 ﻿/*
 Demo includes:
-    - How to use Control's events (Button ones)
-    - How to create manual layout
-    - How to use Packers
     - How to intialize and run the application
     - How to stop the application
+    - How to use Control's events (Button ones)
+    - How to change theme on the fly
+    - How to use dialogs
 */
 package main
 
