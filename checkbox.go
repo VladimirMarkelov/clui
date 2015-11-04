@@ -147,3 +147,23 @@ func (c *CheckBox) SetAllow3State(enable bool) {
 func (c *CheckBox) Allow3State() bool {
 	return c.allow3state
 }
+
+// SetSize changes control size. Constant DoNotChange can be
+// used as placeholder to indicate that the control attrubute
+// should be unchanged.
+// Method does nothing if new size is less than minimal size
+// CheckBox height cannot be changed - it equals 1 always
+func (c *CheckBox) SetSize(width, height int) {
+	if width != DoNotChange && (width > 1000 || width < c.minW) {
+		return
+	}
+	if height != DoNotChange && (height > 200 || height < c.minH) {
+		return
+	}
+
+	if width != DoNotChange {
+		c.width = width
+	}
+
+	c.height = 1
+}

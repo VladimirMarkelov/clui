@@ -313,3 +313,23 @@ func (e *EditField) SetMaxWidth(w int) {
 func (e *EditField) MaxWidth() int {
 	return e.maxWidth
 }
+
+// SetSize changes control size. Constant DoNotChange can be
+// used as placeholder to indicate that the control attrubute
+// should be unchanged.
+// Method does nothing if new size is less than minimal size
+// EditField height cannot be changed - it equals 1 always
+func (e *EditField) SetSize(width, height int) {
+	if width != DoNotChange && (width > 1000 || width < e.minW) {
+		return
+	}
+	if height != DoNotChange && (height > 200 || height < e.minH) {
+		return
+	}
+
+	if width != DoNotChange {
+		e.width = width
+	}
+
+	e.height = 1
+}

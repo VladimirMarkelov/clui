@@ -83,6 +83,15 @@ func RepositionControls(dx, dy int, c Control) {
 	pk := c.Pack()
 	top, side, xx, yy := c.Paddings()
 
+	calcShift := func(height int, ctrl Control) int {
+		_, h := ctrl.Size()
+		if h < height {
+			return int((height - h) / 2)
+		}
+
+		return 0
+	}
+
 	currX, currY := top, side
 	if pk == Vertical {
 		delta := float64(yDiff) / float64(scale)
@@ -105,7 +114,9 @@ func RepositionControls(dx, dy int, c Control) {
 			}
 			cw = width - 2*side
 			child.SetSize(cw, ch)
-			child.SetPos(currX+dx, currY+dy)
+
+			yShift := calcShift(ch, child)
+			child.SetPos(currX+dx, currY+dy+yShift)
 			currY += ch + yy
 		}
 	} else {
@@ -130,7 +141,9 @@ func RepositionControls(dx, dy int, c Control) {
 			}
 			ch = height - 2*top
 			child.SetSize(cw, ch)
-			child.SetPos(currX+dx, currY+dy)
+
+			yShift := calcShift(ch, child)
+			child.SetPos(currX+dx, currY+dy+yShift)
 			// log.Printf("ChildH %v pos %v:%v width: %v", child.Title(), currX+dx, currY+dy, cw)
 			currX += cw + xx
 		}
