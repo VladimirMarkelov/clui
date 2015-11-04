@@ -70,6 +70,8 @@ type Theme interface {
 	// SetThemePath changes the directory that contains themes.
 	// If new path does not equal old one, theme list reloads
 	SetThemePath(string)
+	// CurrentTheme returns name of the current theme
+	CurrentTheme() string
 }
 
 // View is an interface that every object that is managed by

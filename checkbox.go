@@ -64,7 +64,7 @@ func (c *CheckBox) Repaint() {
 
 	parts := []rune(tm.SysObject(ObjCheckBox))
 
-	cOpen, cClose, cCheck, cEmpty, cUnknown := parts[0], parts[1], parts[2], parts[3], parts[4]
+	cOpen, cClose, cEmpty, cCheck, cUnknown := parts[0], parts[1], parts[2], parts[3], parts[4]
 	cState := []rune{cEmpty, cCheck, cUnknown}
 
 	canvas.FillRect(x, y, w, h, term.Cell{Ch: ' ', Bg: bg})

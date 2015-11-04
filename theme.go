@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 	"strings"
+	"unicode/utf8"
 )
 
 /*
@@ -24,6 +25,10 @@ Theme file is a simple text file that has similar to INI file format:
     key - the text before the first '=' in the line
     value - the text after the first '=' in the line (so, values can
         include '=')
+    key and value are trimmed - spaces are removed from both ends.
+    If line starts and ends with quote or double quote symbol then
+    these symbols are removed, too. It is done to be able to start
+    or finish the object with a space rune
 4. There is no mandatory keys - all of them are optional
 5. Avaiable system keys that used to describe the theme:
     'title' - the theme title
@@ -96,14 +101,14 @@ func (s *ThemeManager) Reset() {
 	s.current = defaultTheme
 	s.themes = make(map[string]theme, 0)
 
-	defTheme := theme{parent: "", title: "Default Theme", author: "V. Markelov", version: "1.0"}
+	defTheme := theme{parent: "", title: "Default Theme", author: "Vladimir V. Markelov", version: "1.0"}
 	defTheme.colors = make(map[string]term.Attribute, 0)
 	defTheme.objects = make(map[string]string, 0)
 
 	defTheme.objects[ObjSingleBorder] = "─│┌┐└┘"
 	defTheme.objects[ObjDoubleBorder] = "═║╔╗╚╝"
 	defTheme.objects[ObjEdit] = "←→V"
-	defTheme.objects[ObjScrollBar] = "|O^v"
+	defTheme.objects[ObjScrollBar] = "░■▲▼"
 	defTheme.objects[ObjViewButtons] = "^↓○[]"
 	defTheme.objects[ObjCheckBox] = "[] X?"
 	defTheme.objects[ObjRadio] = "() *"
@@ -125,7 +130,7 @@ func (s *ThemeManager) Reset() {
 	defTheme.colors[ColorControlDisabledBack] = ColorBlackBold
 
 	defTheme.colors[ColorButtonText] = ColorWhite
-	defTheme.colors[ColorButtonBack] = ColorBlack
+	defTheme.colors[ColorButtonBack] = ColorGreen
 	defTheme.colors[ColorButtonActiveText] = ColorWhite
 	defTheme.colors[ColorButtonActiveBack] = ColorMagenta
 	defTheme.colors[ColorButtonShadow] = ColorBlue
@@ -320,8 +325,14 @@ func (s *ThemeManager) LoadTheme(name string) {
 		}
 
 		parts := strings.SplitN(line, "=", 2)
-		key := strings.Trim(parts[0], " ")
-		value := strings.Trim(parts[1], " ")
+		key := strings.TrimSpace(parts[0])
+		value := strings.TrimSpace(parts[1])
+
+		if (strings.HasPrefix(value, "'") && strings.HasSuffix(value, "'")) ||
+			(strings.HasPrefix(value, "\"") && strings.HasSuffix(value, "\"")) {
+			toTrim, _ := utf8.DecodeRuneInString(value)
+			value = strings.Trim(value, string(toTrim))
+		}
 
 		low := strings.ToLower(key)
 		if low == "parent" {

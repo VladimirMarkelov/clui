@@ -1,0 +1,25 @@
+﻿//----------------- Theme properties -----------------
+title=ASCII
+author=Vladimir Markelov
+version=1.0 (2015-11-02)
+parent=default
+
+
+//----------------- Colors -----------------
+// all are defaults
+ProgressBack       = black bold
+ProgressText       = white
+ProgressActiveBack = black bold
+ProgressActiveText = white
+
+
+//----------------- Objects -----------------
+SingleBorder=-|++++
+DoubleBorder==|++++
+Edit=<>V
+ScrollBar=|O^V
+ViewButtons=^_X[]
+CheckBox=[] X?
+Radio=() *
+ProgressBar='| '
+
