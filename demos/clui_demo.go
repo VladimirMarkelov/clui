@@ -5,6 +5,7 @@ Demo includes:
     - How to use Control's events (Button ones)
     - How to change theme on the fly
     - How to use dialogs
+    - How to make composer refresh the screen
 */
 package main
 
@@ -47,6 +48,7 @@ func changeTheme(c *ui.Composer, lb *ui.ListBox, btn *ui.Button, tp int) {
 		}
 
 		btn.SetEnabled(true)
+		// ask the composer to repaint all windows
 		c.PutEvent(ui.Event{Type: ui.EventRedraw})
 	})
 }
