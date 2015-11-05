@@ -245,16 +245,9 @@ func (l *ListBox) processMouseClick(ev Event) bool {
 }
 
 func (l *ListBox) recalcPositionByScroll() {
-	if len(l.items) < 2 {
+	newPos := ItemByThumbPosition(l.buttonPos, len(l.items), l.height)
+	if newPos < 1 {
 		return
-	}
-
-	newPos := int(float32(len(l.items)-1)*float32(l.buttonPos-1)/float32(l.height-3) + 0.9)
-
-	if newPos < 0 {
-		newPos = 0
-	} else if newPos >= len(l.items) {
-		newPos = len(l.items) - 1
 	}
 
 	l.currSelection = newPos

@@ -249,3 +249,30 @@ func ThumbPosition(itemNo, itemCount, length int) int {
 	ydiff := int(float32(itemNo) / float32(itemCount-1.0) * float32(length-3))
 	return ydiff + 1
 }
+
+// ItemByThumbPosition calculates item number by scrollbar
+// thumb position. Position - thumb position inside scrollbar,
+// itemCount - total number of items, lenght - lenght or heigth
+// of scrollbar. Return -1 if it is not possible to calculate:
+// e.g, itemCount equals zero
+func ItemByThumbPosition(position, itemCount, length int) int {
+	if position < 1 {
+		return -1
+	}
+	if itemCount < 1 {
+		return -1
+	}
+	if itemCount == 1 {
+		return 1
+	}
+
+	newPos := int(float32(itemCount-1)*float32(position-1)/float32(length-3) + 0.9)
+
+	if newPos < 0 {
+		newPos = 0
+	} else if newPos >= itemCount {
+		newPos = itemCount - 1
+	}
+
+	return newPos
+}
