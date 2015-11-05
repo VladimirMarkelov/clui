@@ -49,6 +49,18 @@ type Canvas interface {
 	FillRect(x int, y int, width int, height int, symbol term.Cell)
 	// DrawFrame paints a frame inside Canvas with optional border rune set(by default, in case of border is empty string, the rune set equals "─│┌┐└┘" - single border). The inner area of frame is not filled - in other words it is transparent
 	DrawFrame(x int, y int, width int, height int, fg term.Attribute, bg term.Attribute, border string)
+	/*
+	   DrawScroll paints a scroll bar inside FrameBuffer.
+	   x, y - start position.
+	   w, h - width and height (if h equals 1 then horizontal scroll is drawn
+	   and vertical otherwise).
+	   pos - thumb position.
+	   fgScroll, bgScroll - scroll bar main attributes.
+	   fgThumb, bgThumb - thumb colors.
+	   scrollChars  - rune set(by default, in case of is is empty string, the
+	   rune set equals "░■▲▼")
+	*/
+	DrawScroll(x, y, w, h, pos int, fgScroll, bgScroll, fgThumb, bgThumb term.Attribute, scrollChars string)
 	// SetCursorPos sets text caret position. Used by controls like EditField
 	SetCursorPos(x int, y int)
 }

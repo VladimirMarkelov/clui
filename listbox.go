@@ -68,36 +68,24 @@ func NewListBox(view View, parent Control, width, height int, scale int) *ListBo
 }
 
 func (l *ListBox) redrawScroll(canvas Canvas, tm Theme) {
-	parts := []rune(tm.SysObject(ObjScrollBar))
-
-	chLine, chCursor, chUp, chDown := parts[0], parts[1], parts[2], parts[3]
-
 	fg, bg := RealColor(tm, l.fg, ColorScrollText), RealColor(tm, l.bg, ColorScrollBack)
 	fgThumb, bgThumb := RealColor(tm, l.fg, ColorThumbText), RealColor(tm, l.bg, ColorThumbBack)
 
-	canvas.PutSymbol(l.x+l.width-1, l.y, term.Cell{Ch: chUp, Fg: fg, Bg: bg})
-	canvas.PutSymbol(l.x+l.width-1, l.y+l.height-1, term.Cell{Ch: chDown, Fg: fg, Bg: bg})
-
-	if l.height > 2 {
-		for yy := 1; yy < l.height-1; yy++ {
-			canvas.PutSymbol(l.x+l.width-1, l.y+yy, term.Cell{Ch: chLine, Fg: fg, Bg: bg})
+	pos := -1
+	if l.currSelection != -1 {
+		if len(l.items) > 1 {
+			ydiff := int(float32(l.currSelection) / float32(len(l.items)-1.0) * float32(l.height-3))
+			l.buttonPos = ydiff + 1
+			if l.height == 3 {
+				pos = 1
+			} else {
+				pos = l.buttonPos
+			}
+		} else {
+			pos = 1
 		}
 	}
-
-	if l.currSelection == -1 {
-		return
-	}
-
-	if l.height == 3 || l.currSelection <= 0 {
-		canvas.PutSymbol(l.x+l.width-1, l.y+1, term.Cell{Ch: chCursor, Fg: fgThumb, Bg: bgThumb})
-		return
-	}
-
-	// if l.pressY == -1 {
-	ydiff := int(float32(l.currSelection) / float32(len(l.items)-1.0) * float32(l.height-3))
-	l.buttonPos = ydiff + 1
-	// }
-	canvas.PutSymbol(l.x+l.width-1, l.y+l.buttonPos, term.Cell{Ch: chCursor, Fg: fgThumb, Bg: bgThumb})
+	canvas.DrawScroll(l.x+l.width-1, l.y, 1, l.height, pos, fg, bg, fgThumb, bgThumb, tm.SysObject(ObjScrollBar))
 }
 
 func (l *ListBox) redrawItems(canvas Canvas, tm Theme) {

@@ -274,3 +274,55 @@ if you want to hide the caret. Used by controls like EditField
 func (fb *FrameBuffer) SetCursorPos(x, y int) {
 	term.SetCursor(x, y)
 }
+
+/*
+DrawScroll paints a scroll bar inside FrameBuffer.
+x, y - start position.
+w, h - width and height (if h equals 1 then horizontal scroll is drawn
+and vertical otherwise).
+pos - thumb position.
+fgScroll, bgScroll - scroll bar main attributes.
+fgThumb, bgThumb - thumb colors.
+scrollChars  - rune set(by default, in case of is is empty string, the
+rune set equals "░■▲▼")
+*/
+func (fb *FrameBuffer) DrawScroll(x, y, w, h, pos int, fgScroll, bgScroll, fgThumb, bgThumb term.Attribute, scrollChars string) {
+	if w < 1 || h < 1 {
+		return
+	}
+
+	if scrollChars == "" {
+		scrollChars = "░■▲▼"
+	}
+
+	parts := []rune(scrollChars)
+	chLine, chCursor, chUp, chDown := parts[0], parts[1], parts[2], parts[3]
+
+	if h == 1 {
+		fb.PutChar(x, y, chUp, fgScroll, bgScroll)
+		fb.PutChar(x+w-1, y, chDown, fgScroll, bgScroll)
+
+		if w > 2 {
+			for xx := 1; xx < w-1; xx++ {
+				fb.PutChar(x+xx, y, chLine, fgScroll, bgScroll)
+			}
+		}
+
+		if pos != -1 {
+			fb.PutChar(x+pos, y, chCursor, fgThumb, bgThumb)
+		}
+	} else {
+		fb.PutChar(x, y, chUp, fgScroll, bgScroll)
+		fb.PutChar(x, y+h-1, chDown, fgScroll, bgScroll)
+
+		if h > 2 {
+			for yy := 1; yy < h-1; yy++ {
+				fb.PutChar(x, y+yy, chLine, fgScroll, bgScroll)
+			}
+		}
+
+		if pos != -1 {
+			fb.PutChar(x, y+pos, chCursor, fgThumb, bgThumb)
+		}
+	}
+}
