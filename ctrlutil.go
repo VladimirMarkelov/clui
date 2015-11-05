@@ -228,3 +228,24 @@ func StringToColor(str string) term.Attribute {
 
 	return clr
 }
+
+// ThumbPosition returns a scrollbar thumb position depending
+// on currently active item(itemNo), total number of items
+// (itemCount), and length/height of the scrollbar(length)
+// including arrows. Returns position in interval of (1..lenght-2)
+// or -1 if the thumb is not visible
+func ThumbPosition(itemNo, itemCount, length int) int {
+	if itemNo < 0 {
+		return -1
+	}
+	if itemNo >= itemCount-1 {
+		return length - 2
+	}
+
+	if length < 4 {
+		return 1
+	}
+
+	ydiff := int(float32(itemNo) / float32(itemCount-1.0) * float32(length-3))
+	return ydiff + 1
+}

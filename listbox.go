@@ -71,20 +71,8 @@ func (l *ListBox) redrawScroll(canvas Canvas, tm Theme) {
 	fg, bg := RealColor(tm, l.fg, ColorScrollText), RealColor(tm, l.bg, ColorScrollBack)
 	fgThumb, bgThumb := RealColor(tm, l.fg, ColorThumbText), RealColor(tm, l.bg, ColorThumbBack)
 
-	pos := -1
-	if l.currSelection != -1 {
-		if len(l.items) > 1 {
-			ydiff := int(float32(l.currSelection) / float32(len(l.items)-1.0) * float32(l.height-3))
-			l.buttonPos = ydiff + 1
-			if l.height == 3 {
-				pos = 1
-			} else {
-				pos = l.buttonPos
-			}
-		} else {
-			pos = 1
-		}
-	}
+	pos := ThumbPosition(l.currSelection, len(l.items), l.height)
+	l.buttonPos = pos
 	canvas.DrawScroll(l.x+l.width-1, l.y, 1, l.height, pos, fg, bg, fgThumb, bgThumb, tm.SysObject(ObjScrollBar))
 }
 
