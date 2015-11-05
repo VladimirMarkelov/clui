@@ -2,6 +2,7 @@ package clui
 
 import (
 	"bufio"
+	"fmt"
 	term "github.com/nsf/termbox-go"
 	"io/ioutil"
 	"os"
@@ -40,7 +41,29 @@ Theme file is a simple text file that has similar to INI file format:
     Colors are the keys that end with 'Back' or 'Text' - background
         and text color, respectively. If theme manager cannot
         value to color it panics. See Color*Back * Color*Text constants,
-        just drop 'Color' at the beginning of key name
+        just drop 'Color' at the beginning of key name.
+        Rules of converting text to color:
+        1. If the value does not end neither with 'Back' nor with 'Text'
+            it is considered as raw attribute value(e.g, 'green bold')
+        2. If the value ends with 'Back' or 'Text' it means that one
+            of earlier defined attribute must be used. If the current
+            scheme does not have that attribute defined (e.g, it is
+            defined later in file) then parent theme attribute with
+            the same name is used. One can force using parent theme
+            colors - just add prefix 'parent.' to color name. This
+            may be useful if one wants some parent colors reversed.
+            Example:
+                ViewBack=ViewText
+                ViewText=ViewBack
+            this makes both colors the same because ViewBack is defined
+            before ViewText. Only ViewBack value is loaded from parent theme.
+            Better way is:
+                Viewback=parent.ViewText
+                ViewText=parent.ViewBack
+        Converting text to real color panics if a) the string does not look
+            like real color(e.g, typo as in 'grean bold'), b) parent theme
+            has not loaded yet, c) parent theme does not have the color
+            with the same name
     Other keys are considered as objects - see Obj* constants, just drop
         'Obj' at the beginning of the key name
     One is not limited with only predefined color and object names.
@@ -58,6 +81,7 @@ type ThemeManager struct {
 	version   string
 }
 
+const defaultTheme = "default"
 const themeSuffix = ".theme"
 
 // ThemeInfo is a detailed information about theme:
@@ -83,8 +107,6 @@ type theme struct {
 	colors  map[string]term.Attribute
 	objects map[string]string
 }
-
-const defaultTheme = "default"
 
 // NewThemeManager creates a new theme manager
 func NewThemeManager() *ThemeManager {
@@ -300,7 +322,7 @@ func (s *ThemeManager) LoadTheme(name string) {
 		return
 	}
 
-	theme := theme{parent: "", title: "", author: ""}
+	theme := theme{parent: defaultTheme, title: "", author: ""}
 	theme.colors = make(map[string]term.Attribute, 0)
 	theme.objects = make(map[string]string, 0)
 
@@ -344,18 +366,40 @@ func (s *ThemeManager) LoadTheme(name string) {
 		} else if low == "version" {
 			theme.version = value
 		} else if strings.HasSuffix(key, "Back") || strings.HasSuffix(key, "Text") {
-			c := StringToColor(value)
-			if c%32 == 0 {
-				panic("Failed to read color: " + value)
+			// the first case is a reference to existing color (of this or parent theme)
+			// the second is the real color
+			if strings.HasSuffix(value, "Back") || strings.HasSuffix(value, "Text") {
+				clr, ok := theme.colors[value]
+				if !ok {
+					v := value
+					// if color starts with 'parent.' it means the parent color
+					// must be used always. It may be useful to load inversed
+					// text and background colors of parent theme
+					if strings.HasPrefix(v, "parent.") {
+						v = strings.TrimPrefix(v, "parent.")
+					}
+					sch, sch_ok := s.themes[theme.parent]
+					if sch_ok {
+						clr, ok = sch.colors[v]
+					} else {
+						panic(fmt.Sprintf("%v: Parent theme '%v' not found", name, theme.parent))
+					}
+				}
+				if ok {
+					theme.colors[key] = clr
+				} else {
+					panic(fmt.Sprintf("%v: Failed to find color '%v' by reference", name, value))
+				}
+			} else {
+				c := StringToColor(value)
+				if c%32 == 0 {
+					panic("Failed to read color: " + value)
+				}
+				theme.colors[key] = c
 			}
-			theme.colors[key] = c
 		} else {
 			theme.objects[key] = value
 		}
-	}
-
-	if theme.parent == "" {
-		theme.parent = "default"
 	}
 
 	s.themes[name] = theme
