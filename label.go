@@ -112,7 +112,12 @@ func (l *Label) Repaint() {
 			if l.direction == Vertical {
 				max = l.height
 			}
-			canvas.PutColorizedText(l.x, l.y, max, l.title, fg, bg, l.direction, l.align)
+			shift, text := AlignColorizedText(l.title, max, l.align)
+			if l.direction == Vertical {
+				canvas.PutColorizedText(l.x, l.y+shift, max, text, fg, bg, l.direction)
+			} else {
+				canvas.PutColorizedText(l.x+shift, l.y, max, text, fg, bg, l.direction)
+			}
 		} else {
 			if l.direction == Horizontal {
 				shift, text := AlignText(l.title, l.width, l.align)

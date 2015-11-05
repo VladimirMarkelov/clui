@@ -229,6 +229,31 @@ func StringToColor(str string) term.Attribute {
 	return clr
 }
 
+// ColorToString returns string representation of the attribute
+func ColorToString(attr term.Attribute) string {
+	var out string
+	colors := []string{
+		"", "black", "red", "green", "yellow",
+		"blue", "magenta", "cyan", "white"}
+
+	rawClr := attr & 15
+	if rawClr < 8 {
+		out += colors[rawClr] + " "
+	}
+
+	if attr&term.AttrBold != 0 {
+		out += "bold "
+	}
+	if attr&term.AttrUnderline != 0 {
+		out += "underline "
+	}
+	if attr&term.AttrReverse != 0 {
+		out += "reverse "
+	}
+
+	return strings.TrimSpace(out)
+}
+
 // ThumbPosition returns a scrollbar thumb position depending
 // on currently active item(itemNo), total number of items
 // (itemCount), and length/height of the scrollbar(length)

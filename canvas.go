@@ -169,8 +169,7 @@ func (fb *FrameBuffer) PutVerticalText(x, y int, text string, fg, bg term.Attrib
 
 /*
 PutColorizedText draws multicolor string on Canvas clipping by Canvas boundaries.
-Multiline is not supported. Align feature is limited: the text is aligned only if it is
-shorter than maximum width, and displayed left aligned otherwise.
+Multiline is not supported.
 Various parts of text can be colorized with html-like tags. Every tag must start with '<'
 followed by tag type and colon(without space between them), atrribute in human redable form,
 and closing '>'.
@@ -184,21 +183,16 @@ empty string - reset the color to default value (that is passed as argument)
 'reversed' - reversed text and background
 other available attributes are color names: black, red, green, yellow, blue, magenta, cyan, white.
 
-Example: PutColorizedText(0, 0, 10, "<t:red bold><b:yellow>E<t:>xample, ColorBlack, ColorWhite, Horizontal, AlignLeft)
+Example: PutColorizedText(0, 0, 10, "<t:red bold><b:yellow>E<t:>xample, ColorBlack, ColorWhite, Horizontal)
 It displays red letter 'C' on a yellow background, then switch text color to default one and draws
 other letters in black text and yellow background colors. Default background color is not used, so
 it can be set as ColroDefault in a method call
 */
-func (fb *FrameBuffer) PutColorizedText(x, y, max int, text string, fg, bg term.Attribute, dir Direction, align Align) {
-	sReal := UnColorizeText(text)
+func (fb *FrameBuffer) PutColorizedText(x, y, max int, text string, fg, bg term.Attribute, dir Direction) {
 	var dx, dy int
 	if dir == Horizontal {
-		delta, _ := AlignText(sReal, max, align)
-		x += delta
 		dx = 1
 	} else {
-		delta, _ := AlignText(sReal, max, align)
-		y += delta
 		dy = 1
 	}
 

@@ -2,6 +2,7 @@ package clui
 
 import (
 	xs "github.com/huandu/xstrings"
+	term "github.com/nsf/termbox-go"
 	"regexp"
 )
 
@@ -58,6 +59,67 @@ func AlignText(str string, width int, align Align) (shift int, out string) {
 	}
 
 	return 0, str
+}
+
+// AlignColorizedText does the same as AlignText does but
+// it preserves the color of the letters byt adding correct
+// colro tags to the line beginning.
+// Note: function is ineffective and a bit slow - do not use
+// it everywhere
+func AlignColorizedText(str string, width int, align Align) (int, string) {
+	rawText := UnColorizeText(str)
+	length := xs.Len(rawText)
+
+	if length <= width {
+		shift, _ := AlignText(rawText, width, align)
+		return shift, str
+	}
+
+	skip := 0
+	if align == AlignRight {
+		skip = length - width
+	} else if align == AlignCenter {
+		skip = (length - width) / 2
+	}
+
+	fgChanged, bgChanged := false, false
+	curr := 0
+	parser := NewColorParser(str, term.ColorBlack, term.ColorBlack)
+	out := ""
+	for curr <= skip+width {
+		elem := parser.NextElement()
+
+		if elem.Type == ElemEndOfText {
+			break
+		}
+
+		if elem.Type == ElemPrintable {
+			curr++
+			if curr == skip+1 {
+				if fgChanged {
+					out += "<t:" + ColorToString(elem.Fg) + ">"
+				}
+				if bgChanged {
+					out += "<b:" + ColorToString(elem.Bg) + ">"
+				}
+				out += string(elem.Ch)
+			} else if curr > skip+1 {
+				out += string(elem.Ch)
+			}
+		} else if elem.Type == ElemTextColor {
+			fgChanged = true
+			if curr > skip+1 {
+				out += "<t:" + ColorToString(elem.Fg) + ">"
+			}
+		} else if elem.Type == ElemBackColor {
+			bgChanged = true
+			if curr > skip+1 {
+				out += "<b:" + ColorToString(elem.Bg) + ">"
+			}
+		}
+	}
+
+	return 0, out
 }
 
 // UnColorizeText removes all color-related tags from the

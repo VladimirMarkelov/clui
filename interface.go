@@ -37,10 +37,9 @@ type Canvas interface {
 	PutVerticalText(x int, y int, text string, fg term.Attribute, bg term.Attribute)
 	/*
 	   PutColorizedText draws multicolor string on Canvas clipping by Canvas boundaries.
-	   Multiline is not supported. Align feature is limited: the text is aligned only if it is
-	   shorter than maximum width, and displayed left aligned otherwise
+	   Multiline is not supported.
 	*/
-	PutColorizedText(x int, y int, maxWidth int, text string, fg term.Attribute, bg term.Attribute, dir Direction, align Align)
+	PutColorizedText(x int, y int, maxWidth int, text string, fg term.Attribute, bg term.Attribute, dir Direction)
 	// Symbol returns current Canvas cell value at given coordinates. If coordinates are outside Canvas ok is false
 	Symbol(x int, y int) (symbol term.Cell, ok bool)
 	// Clear fills Canvas with given background color
