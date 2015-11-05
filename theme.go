@@ -378,8 +378,8 @@ func (s *ThemeManager) LoadTheme(name string) {
 					if strings.HasPrefix(v, "parent.") {
 						v = strings.TrimPrefix(v, "parent.")
 					}
-					sch, sch_ok := s.themes[theme.parent]
-					if sch_ok {
+					sch, schOk := s.themes[theme.parent]
+					if schOk {
 						clr, ok = sch.colors[v]
 					} else {
 						panic(fmt.Sprintf("%v: Parent theme '%v' not found", name, theme.parent))
