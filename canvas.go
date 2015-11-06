@@ -286,15 +286,19 @@ func (fb *FrameBuffer) DrawScroll(x, y, w, h, pos int, fgScroll, bgScroll, fgThu
 	}
 
 	if scrollChars == "" {
-		scrollChars = "░■▲▼"
+		scrollChars = "░■▲▼◄►"
 	}
 
 	parts := []rune(scrollChars)
 	chLine, chCursor, chUp, chDown := parts[0], parts[1], parts[2], parts[3]
+	chLeft, chRight := '◄', '►'
+	if len(parts) > 4 {
+		chLeft, chRight = parts[4], parts[5]
+	}
 
 	if h == 1 {
-		fb.PutChar(x, y, chUp, fgScroll, bgScroll)
-		fb.PutChar(x+w-1, y, chDown, fgScroll, bgScroll)
+		fb.PutChar(x, y, chLeft, fgScroll, bgScroll)
+		fb.PutChar(x+w-1, y, chRight, fgScroll, bgScroll)
 
 		if w > 2 {
 			for xx := 1; xx < w-1; xx++ {

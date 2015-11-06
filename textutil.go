@@ -134,7 +134,7 @@ func SliceColorized(str string, start, end int) string {
 	parser := NewColorParser(str, term.ColorBlack, term.ColorBlack)
 	var out string
 	for {
-		if curr >= end {
+		if end != -1 && curr >= end {
 			break
 		}
 		elem := parser.NextElement()

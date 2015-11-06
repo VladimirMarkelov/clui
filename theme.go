@@ -130,7 +130,7 @@ func (s *ThemeManager) Reset() {
 	defTheme.objects[ObjSingleBorder] = "─│┌┐└┘"
 	defTheme.objects[ObjDoubleBorder] = "═║╔╗╚╝"
 	defTheme.objects[ObjEdit] = "←→V"
-	defTheme.objects[ObjScrollBar] = "░■▲▼"
+	defTheme.objects[ObjScrollBar] = "░■▲▼◄►"
 	defTheme.objects[ObjViewButtons] = "^↓○[]"
 	defTheme.objects[ObjCheckBox] = "[] X?"
 	defTheme.objects[ObjRadio] = "() *"

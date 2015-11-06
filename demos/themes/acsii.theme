@@ -16,7 +16,7 @@ ProgressActiveText = white
 SingleBorder=-|++++
 DoubleBorder==|++++
 Edit=<>V
-ScrollBar=|O^V
+ScrollBar=|O^V<>
 ViewButtons=^_X[]
 CheckBox=[] X?
 Radio=() *
