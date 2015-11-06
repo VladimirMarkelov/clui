@@ -122,6 +122,56 @@ func AlignColorizedText(str string, width int, align Align) (int, string) {
 	return 0, out
 }
 
+// SliceColorized returns a slice of text with correct color
+// tags. start and end are real printable rune indices
+func SliceColorized(str string, start, end int) string {
+	if str == "" {
+		return str
+	}
+
+	fgChanged, bgChanged := false, false
+	curr := 0
+	parser := NewColorParser(str, term.ColorBlack, term.ColorBlack)
+	var out string
+	for {
+		if curr >= end {
+			break
+		}
+		elem := parser.NextElement()
+		if elem.Type == ElemEndOfText {
+			break
+		}
+
+		switch elem.Type {
+		case ElemTextColor:
+			fgChanged = true
+			if out != "" {
+				out += "<t:" + ColorToString(elem.Fg) + ">"
+			}
+		case ElemBackColor:
+			bgChanged = true
+			if out != "" {
+				out += "<b:" + ColorToString(elem.Bg) + ">"
+			}
+		case ElemPrintable:
+			if curr == start {
+				if fgChanged {
+					out += "<t:" + ColorToString(elem.Fg) + ">"
+				}
+				if bgChanged {
+					out += "<b:" + ColorToString(elem.Bg) + ">"
+				}
+			}
+			if curr >= start {
+				out += string(elem.Ch)
+			}
+			curr++
+		}
+	}
+
+	return out
+}
+
 // UnColorizeText removes all color-related tags from the
 // string. Tags to remove: <(f|t|b):.*>
 func UnColorizeText(str string) string {

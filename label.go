@@ -112,6 +112,7 @@ func (l *Label) Repaint() {
 			if l.direction == Vertical {
 				max = l.height
 			}
+
 			shift, text := AlignColorizedText(l.title, max, l.align)
 			if l.direction == Vertical {
 				canvas.PutColorizedText(l.x, l.y+shift, max, text, fg, bg, l.direction)
@@ -145,8 +146,7 @@ func (l *Label) SetMultiline(multi bool) {
 
 // MultiColored returns if the label checks and applies any
 // color related tags inside its title. If MultiColores is
-// false then title is displayed as is. In multicolor mode
-// label has some limitations for alignment.
+// false then title is displayed as is.
 // To read about available color tags, please see ColorParser
 func (l *Label) MultiColored() bool {
 	return l.multicolor
