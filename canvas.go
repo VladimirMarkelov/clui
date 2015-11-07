@@ -137,7 +137,9 @@ func (fb *FrameBuffer) PutText(x, y int, text string, fg, bg term.Attribute) {
 	dx := 0
 	for _, char := range text {
 		s := term.Cell{Ch: char, Fg: fg, Bg: bg}
-		fb.buffer[y][x+dx] = s
+		if y >= 0 && y < fb.h && x+dx >= 0 && x+dx < fb.w {
+			fb.buffer[y][x+dx] = s
+		}
 		dx++
 	}
 }
