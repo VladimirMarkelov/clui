@@ -1,9 +1,11 @@
 package clui
 
 import (
+	"bufio"
 	xs "github.com/huandu/xstrings"
 	term "github.com/nsf/termbox-go"
-	// "strings"
+	"os"
+	"strings"
 )
 
 /*
@@ -326,28 +328,29 @@ func (l *TextView) ProcessEvent(event Event) bool {
 	}
 
 	switch event.Type {
-	// case EventKey:
-	// 	switch event.Key {
-	// 	case term.KeyHome:
-	// 		l.home()
-	// 		return true
-	// 	case term.KeyEnd:
-	// 		l.end()
-	// 		return true
-	// 	case term.KeyArrowUp:
-	// 		l.moveUp()
-	// 		return true
-	// 	case term.KeyArrowDown:
-	// 		l.moveDown()
-	// 		return true
-	// 	case term.KeyCtrlM:
-	// 		if l.currSelection != -1 && l.onSelectItem != nil {
-	// 			ev := Event{Y: l.currSelection, Msg: l.SelectedItemText()}
-	// 			go l.onSelectItem(ev)
-	// 		}
-	// 	default:
-	// 		return false
-	// 	}
+	case EventKey:
+		switch event.Key {
+		case term.KeyHome:
+			l.home()
+			return true
+		case term.KeyEnd:
+			l.end()
+			return true
+		case term.KeyArrowUp:
+			l.moveUp()
+			return true
+		case term.KeyArrowDown:
+			l.moveDown()
+			return true
+		case term.KeyArrowLeft:
+			l.moveLeft()
+			return true
+		case term.KeyArrowRight:
+			l.moveRight()
+			return true
+		default:
+			return false
+		}
 	case EventMouse:
 		return l.processMouseClick(event)
 	}
@@ -468,4 +471,26 @@ func (l *TextView) SetWordWrap(wrap bool) {
 		l.recalculateTopLine()
 		l.Repaint()
 	}
+}
+
+func (l *TextView) LoadFile(filename string) bool {
+	l.lines = make([]string, 0)
+
+	file, err := os.Open(filename)
+	if err != nil {
+		return false
+	}
+
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		line := scanner.Text()
+		line = strings.TrimSpace(line)
+		l.lines = append(l.lines, line)
+	}
+
+	l.calculateVirtualSize()
+
+	return true
 }

@@ -334,7 +334,7 @@ func (s *ThemeManager) LoadTheme(name string) {
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		line := scanner.Text()
-		line = strings.Trim(line, " ")
+		line = strings.TrimSpace(line)
 
 		// skip comments
 		if strings.HasPrefix(line, "#") || strings.HasPrefix(line, "/") {
