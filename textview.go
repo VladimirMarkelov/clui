@@ -225,22 +225,30 @@ func (l *TextView) end() {
 	l.topLine = l.virtualHeight - height
 }
 
-func (l *TextView) moveUp() {
+func (l *TextView) moveUp(dy int) {
 	if l.topLine == 0 {
 		return
 	}
 
-	l.topLine--
+	if l.topLine <= dy {
+		l.topLine = 0
+	} else {
+		l.topLine -= dy
+	}
 }
 
-func (l *TextView) moveDown() {
+func (l *TextView) moveDown(dy int) {
 	end := l.topLine + l.outputHeight()
 
 	if end >= l.virtualHeight {
 		return
 	}
 
-	l.topLine++
+	if l.topLine+dy+l.outputHeight() >= l.virtualHeight {
+		l.topLine = l.virtualHeight - l.outputHeight()
+	} else {
+		l.topLine += dy
+	}
 }
 
 func (l *TextView) moveLeft() {
@@ -288,9 +296,9 @@ func (l *TextView) processMouseClick(ev Event) bool {
 	// vertical scroll bar
 	if dx == l.width-1 {
 		if dy == 0 {
-			l.moveUp()
+			l.moveUp(1)
 		} else if dy == yy-1 {
-			l.moveDown()
+			l.moveDown(1)
 		} else {
 			newPos := ItemByThumbPosition(dy, l.virtualHeight-yy+1, yy)
 			if newPos >= 0 {
@@ -337,10 +345,10 @@ func (l *TextView) ProcessEvent(event Event) bool {
 			l.end()
 			return true
 		case term.KeyArrowUp:
-			l.moveUp()
+			l.moveUp(1)
 			return true
 		case term.KeyArrowDown:
-			l.moveDown()
+			l.moveDown(1)
 			return true
 		case term.KeyArrowLeft:
 			l.moveLeft()
@@ -348,6 +356,10 @@ func (l *TextView) ProcessEvent(event Event) bool {
 		case term.KeyArrowRight:
 			l.moveRight()
 			return true
+		case term.KeyPgup:
+			l.moveUp(l.outputHeight())
+		case term.KeyPgdn:
+			l.moveDown(l.outputHeight())
 		default:
 			return false
 		}
