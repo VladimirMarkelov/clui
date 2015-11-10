@@ -141,7 +141,7 @@ func (l *ListBox) end() {
 	}
 }
 
-func (l *ListBox) moveUp() {
+func (l *ListBox) moveUp(dy int) {
 	if l.topLine == 0 && l.currSelection == 0 {
 		return
 	}
@@ -153,18 +153,28 @@ func (l *ListBox) moveUp() {
 		return
 	}
 
-	l.currSelection--
+	if l.currSelection < dy {
+		l.currSelection = 0
+	} else {
+		l.currSelection -= dy
+	}
+
 	l.EnsureVisible()
 }
 
-func (l *ListBox) moveDown() {
+func (l *ListBox) moveDown(dy int) {
 	length := len(l.items)
 
 	if length == 0 || l.currSelection == length-1 {
 		return
 	}
 
-	l.currSelection++
+	if l.currSelection+dy >= length {
+		l.currSelection = length - 1
+	} else {
+		l.currSelection += dy
+	}
+
 	l.EnsureVisible()
 }
 
@@ -214,11 +224,11 @@ func (l *ListBox) processMouseClick(ev Event) bool {
 		}
 
 		if dy == 0 {
-			l.moveUp()
+			l.moveUp(1)
 			return true
 		}
 		if dy == l.height-1 {
-			l.moveDown()
+			l.moveDown(1)
 			return true
 		}
 
@@ -275,10 +285,16 @@ func (l *ListBox) ProcessEvent(event Event) bool {
 			l.end()
 			return true
 		case term.KeyArrowUp:
-			l.moveUp()
+			l.moveUp(1)
 			return true
 		case term.KeyArrowDown:
-			l.moveDown()
+			l.moveDown(1)
+			return true
+		case term.KeyPgdn:
+			l.moveDown(l.height)
+			return true
+		case term.KeyPgup:
+			l.moveUp(l.height)
 			return true
 		case term.KeyCtrlM:
 			if l.currSelection != -1 && l.onSelectItem != nil {
