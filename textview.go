@@ -9,15 +9,15 @@ import (
 )
 
 /*
-ListBox is control to display a list of items and allow to user to select any of them.
-Content is scrollable with arrow keys or by clicking up and bottom buttons
-on the scroll(now content is scrollable with mouse dragging only on Windows).
-
-ListBox calls onSelectItem item function after a user changes currently
-selected item with mouse or using keyboard (extra case: the event is emitted
-when a user presses Enter - the case is used in ComboBox to select an item
-from drop down list). Event structure has 2 fields filled: Y - selected
-item number in list(-1 if nothing is selected), Msg - text of the selected item.
+TextView is control to display a read-only text. Text can be
+loaded from a file or set manually. A portions of text can be
+added on the fly and if the autoscroll is enabled the control
+scroll down to the end - it may be useful to create a log
+viewer.
+Content is scrollable with arrow keys or by clicking buttons
+on the scrolls(a control can have upto 2 scrollbars: vertical
+and horizontal. The latter one is available only if WordWrap
+mode is off).
 */
 type TextView struct {
 	ControlBase
@@ -33,10 +33,12 @@ type TextView struct {
 	virtualHeight int
 	virtualWidth  int
 	multicolor    bool
+	autoscroll    bool
+	maxLines      int
 }
 
 /*
-NewListBox creates a new frame.
+NewTextView creates a new frame.
 view - is a View that manages the control
 parent - is container that keeps the control. The same View can be a view and a parent at the same time.
 width and heigth - are minimal size of the control.
@@ -59,6 +61,7 @@ func NewTextView(view View, parent Control, width, height int, scale int) *TextV
 	l.lines = make([]string, 0)
 	l.parent = parent
 	l.view = view
+	l.maxLines = 0
 
 	l.SetTabStop(true)
 
@@ -101,26 +104,26 @@ func (l *TextView) redrawText(canvas Canvas, tm Theme) {
 	}
 
 	if l.wordWrap {
-		lineId := l.posToItemNo(l.topLine)
-		linePos := l.itemNoToPos(lineId)
+		lineID := l.posToItemNo(l.topLine)
+		linePos := l.itemNoToPos(lineID)
 
 		y := 0
 		for {
-			if y >= maxHeight || lineId >= len(l.lines) {
+			if y >= maxHeight || lineID >= len(l.lines) {
 				break
 			}
 
-			remained := l.lengths[lineId]
+			remained := l.lengths[lineID]
 			start := 0
 			for remained > 0 {
 				var s string
 				if l.multicolor {
-					s = SliceColorized(l.lines[lineId], start, start+maxWidth)
+					s = SliceColorized(l.lines[lineID], start, start+maxWidth)
 				} else {
 					if remained <= maxWidth {
-						s = xs.Slice(l.lines[lineId], start, -1)
+						s = xs.Slice(l.lines[lineID], start, -1)
 					} else {
-						s = xs.Slice(l.lines[lineId], start, start+maxWidth)
+						s = xs.Slice(l.lines[lineID], start, start+maxWidth)
 					}
 				}
 
@@ -142,7 +145,7 @@ func (l *TextView) redrawText(canvas Canvas, tm Theme) {
 				}
 			}
 
-			lineId++
+			lineID++
 		}
 	} else {
 		y := 0
@@ -401,11 +404,17 @@ func (l *TextView) calculateVirtualSize() {
 	}
 }
 
+// SetText replaces existing content of the control
 func (l *TextView) SetText(text []string) {
 	l.lines = make([]string, len(text))
 	copy(l.lines, text)
 
+	l.applyLimit()
 	l.calculateVirtualSize()
+
+	if l.autoscroll {
+		l.end()
+	}
 }
 
 // MultiColored returns if the TextView checks and applies any
@@ -462,6 +471,11 @@ func (l *TextView) itemNoToPos(id int) int {
 	return pos
 }
 
+// WordWrap returns if the wordwrap is enabled. If the wordwrap
+// mode is enabled the control hides horizontal scrollbar and
+// draws long lines on a few control lines. There is no
+// visual indication if the line is new of it is the portion of
+// the previous line yet
 func (l *TextView) WordWrap() bool {
 	return l.wordWrap
 }
@@ -476,6 +490,7 @@ func (l *TextView) recalculateTopLine() {
 	}
 }
 
+// SetWordWrap enables or disables wordwrap mode
 func (l *TextView) SetWordWrap(wrap bool) {
 	if wrap != l.wordWrap {
 		l.wordWrap = wrap
@@ -485,6 +500,9 @@ func (l *TextView) SetWordWrap(wrap bool) {
 	}
 }
 
+// LoadFile loads a text from file and replace the control
+// text with the file one.
+// Function returns false if loading text from file fails
 func (l *TextView) LoadFile(filename string) bool {
 	l.lines = make([]string, 0)
 
@@ -502,7 +520,72 @@ func (l *TextView) LoadFile(filename string) bool {
 		l.lines = append(l.lines, line)
 	}
 
+	l.applyLimit()
 	l.calculateVirtualSize()
 
+	if l.autoscroll {
+		l.end()
+	}
+
 	return true
+}
+
+// AutoScroll returns if autoscroll mode is enabled.
+// If the autoscroll mode is enabled then the content always
+// scrolled to the end after adding a text
+func (l *TextView) AutoScroll() bool {
+	return l.autoscroll
+}
+
+// SetAutoScroll enables and disables autoscroll mode
+func (l *TextView) SetAutoScroll(auto bool) {
+	l.autoscroll = auto
+}
+
+// AddText appends a text to the end of the control content.
+// View position may be changed automatically depending on
+// value of AutoScroll
+func (l *TextView) AddText(text []string) {
+	l.lines = append(l.lines, text...)
+	l.applyLimit()
+	l.calculateVirtualSize()
+
+	if l.autoscroll {
+		l.end()
+	}
+}
+
+// MaxItems returns the maximum number of items that the
+// TextView can keep. 0 means unlimited. It makes a TextView
+// work like a FIFO queue: the oldest(the first) items are
+// deleted if one adds an item to a full TextView
+func (l *TextView) MaxItems() int {
+	return l.maxLines
+}
+
+// SetMaxItems sets the maximum items that TextView keeps
+func (l *TextView) SetMaxItems(max int) {
+	l.maxLines = max
+}
+
+// ItemCount returns the number of items in the TextView
+func (l *TextView) ItemCount() int {
+	return len(l.lines)
+}
+
+func (l *TextView) applyLimit() {
+	if l.maxLines == 0 {
+		return
+	}
+
+	delta := len(l.lines) - l.maxLines
+	if delta <= 0 {
+		return
+	}
+
+	l.lines = l.lines[delta:]
+	l.calculateVirtualSize()
+	if l.topLine+l.outputHeight() < len(l.lines) {
+		l.end()
+	}
 }

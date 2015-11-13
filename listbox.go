@@ -22,7 +22,6 @@ type ListBox struct {
 	items         []string
 	currSelection int
 	topLine       int
-	maxItems      int
 	buttonPos     int
 
 	onSelectItem func(Event)
@@ -53,7 +52,6 @@ func NewListBox(view View, parent Control, width, height int, scale int) *ListBo
 	l.topLine = 0
 	l.parent = parent
 	l.view = view
-	l.maxItems = 0
 	l.buttonPos = -1
 
 	l.SetTabStop(true)
@@ -313,15 +311,9 @@ func (l *ListBox) ProcessEvent(event Event) bool {
 
 // own methods
 
-// AddItem adds a new item to item list. If the maximun item
-// is greater than 0 and the number of item greater maximum
-// then the first item is deleted.
+// AddItem adds a new item to item list.
 // Returns true if the operation is successful
 func (l *ListBox) AddItem(item string) bool {
-	if l.maxItems > 0 && len(l.items) > l.maxItems {
-		l.RemoveItem(0)
-	}
-
 	l.items = append(l.items, item)
 	return true
 }
@@ -383,19 +375,6 @@ func (l *ListBox) RemoveItem(id int) bool {
 // the selected item is changed
 func (l *ListBox) OnSelectItem(fn func(Event)) {
 	l.onSelectItem = fn
-}
-
-// MaxItems returns the maximum number of items that the
-// ListBox can keep. 0 means unlimited. It makes a ListBox
-// work like a FIFO queue: the oldest(the first) items are
-// deleted if one adds an item to a full ListBox
-func (l *ListBox) MaxItems() int {
-	return l.maxItems
-}
-
-// SetMaxItems sets the maximum items that ListBox keeps
-func (l *ListBox) SetMaxItems(max int) {
-	l.maxItems = max
 }
 
 // ItemCount returns the number of items in the ListBox
