@@ -155,10 +155,10 @@ func RepositionControls(dx, dy int, c Control) {
 	}
 }
 
-// RealColor return attribute than should be applied to an
+// RealColor returns attribute that should be applied to an
 // object. By default all attributes equal ColorDefault and
 // the real color should be retrieved from the current theme.
-// Attribute selection word this way: if color is not ColorDefault,
+// Attribute selection work this way: if color is not ColorDefault,
 // it is returned as is, otherwise the function tries to load
 // color from the theme.
 // tm - the theme to retrieve color from
