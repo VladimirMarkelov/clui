@@ -311,8 +311,11 @@ func (e *EditField) ProcessEvent(event Event) bool {
 			clip.WriteAll(e.Title())
 			return true
 		case term.KeyCtrlV:
-			s, _ := clip.ReadAll()
-			e.SetTitle(s)
+			if !e.readonly {
+				s, _ := clip.ReadAll()
+				e.SetTitle(s)
+				e.end()
+			}
 			return true
 		default:
 			if event.Ch != 0 {
