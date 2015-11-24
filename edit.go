@@ -1,6 +1,7 @@
 package clui
 
 import (
+	clip "github.com/atotto/clipboard"
 	xs "github.com/huandu/xstrings"
 	term "github.com/nsf/termbox-go"
 )
@@ -287,6 +288,13 @@ func (e *EditField) ProcessEvent(event Event) bool {
 			return true
 		case term.KeyArrowRight:
 			e.charRight()
+			return true
+		case term.KeyCtrlC:
+			clip.WriteAll(e.Title())
+			return true
+		case term.KeyCtrlV:
+			s, _ := clip.ReadAll()
+			e.SetTitle(s)
 			return true
 		default:
 			if event.Ch != 0 {
