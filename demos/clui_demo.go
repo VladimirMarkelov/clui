@@ -6,12 +6,14 @@ Demo includes:
     - How to change theme on the fly
     - How to use dialogs
     - How to make composer refresh the screen
+    - How to intercept Enter key(term.KeyCtrlM) in EditField(ListBox is the same)
 */
 package main
 
 import (
 	"fmt"
 	ui "github.com/VladimirMarkelov/clui"
+	term "github.com/nsf/termbox-go"
 	"strconv"
 )
 
@@ -86,6 +88,16 @@ func createView(c *ui.Composer) {
 
 	view.ActivateControl(edit)
 
+	edit.OnKeyPress(func(key term.Key) bool {
+		if key == term.KeyCtrlM {
+			v := edit.Title()
+			logBox.AddItem(fmt.Sprintf("New PB value(KeyPress): %v", v))
+			logBox.SelectItem(logBox.ItemCount() - 1)
+			updateProgress(v, pb)
+			return true
+		}
+		return false
+	})
 	btnTheme.OnClick(func(ev ui.Event) {
 		btnTheme.SetEnabled(false)
 		tp := checkBox.State()

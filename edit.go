@@ -24,7 +24,8 @@ type EditField struct {
 	readonly bool
 	maxWidth int
 
-	onChange func(Event)
+	onChange   func(Event)
+	onKeyPress func(term.Key) bool
 }
 
 // NewEditField creates a new EditField control
@@ -66,6 +67,14 @@ func NewEditField(view View, parent Control, width int, text string, scale int) 
 // OnChange sets the callback that is called when EditField content is changed
 func (e *EditField) OnChange(fn func(Event)) {
 	e.onChange = fn
+}
+
+// OnKeyPress sets the callback that is called when a user presses a Key while
+// the controls is active. If a handler processes the key it should return
+// true. If handler returns false it means that the default handler will
+// process the key
+func (e *EditField) OnKeyPress(fn func(term.Key) bool) {
+	e.onKeyPress = fn
 }
 
 // SetTitle changes the EditField content and emits OnChage eventif the new value does not equal to old one
@@ -261,8 +270,17 @@ func (e *EditField) ProcessEvent(event Event) bool {
 		term.HideCursor()
 	}
 
-	if event.Type == EventKey && event.Key != term.KeyTab && event.Key != term.KeyEnter {
+	if event.Type == EventKey && event.Key != term.KeyTab {
+		if e.onKeyPress != nil {
+			res := e.onKeyPress(event.Key)
+			if res {
+				return true
+			}
+		}
+
 		switch event.Key {
+		case term.KeyEnter:
+			return false
 		case term.KeySpace:
 			e.insertRune(' ')
 			return true

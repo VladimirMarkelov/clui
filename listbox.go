@@ -25,6 +25,7 @@ type ListBox struct {
 	buttonPos     int
 
 	onSelectItem func(Event)
+	onKeyPress   func(term.Key) bool
 }
 
 /*
@@ -275,6 +276,13 @@ func (l *ListBox) ProcessEvent(event Event) bool {
 
 	switch event.Type {
 	case EventKey:
+		if l.onKeyPress != nil {
+			res := l.onKeyPress(event.Key)
+			if res {
+				return true
+			}
+		}
+
 		switch event.Key {
 		case term.KeyHome:
 			l.home()
@@ -375,6 +383,14 @@ func (l *ListBox) RemoveItem(id int) bool {
 // the selected item is changed
 func (l *ListBox) OnSelectItem(fn func(Event)) {
 	l.onSelectItem = fn
+}
+
+// OnKeyPress sets the callback that is called when a user presses a Key while
+// the controls is active. If a handler processes the key it should return
+// true. If handler returns false it means that the default handler will
+// process the key
+func (l *ListBox) OnKeyPress(fn func(term.Key) bool) {
+	l.onKeyPress = fn
 }
 
 // ItemCount returns the number of items in the ListBox
