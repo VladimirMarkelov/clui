@@ -3,6 +3,7 @@ Command Line User Interface (Console UI inspired by TurboVision) with built-in t
 
 ## Introduction
 The list of available controls:
+* View (Main control container - with maximize, window order and other window features)
 * Label (Horizontal and Vertical with basic color control tags)
 * Button (Simple push button control)
 * EditFiled (One line text edit control with basic clipboard control)
@@ -13,8 +14,10 @@ The list of available controls:
 * CheckBox (Simple check box)
 * Radio (Simple radio button. Useless alone - should be used along with RadioGroup)
 * RadioGroup (Non-visual control to manage a group of a few RadioButtons)
+* ConfirmationDialog (modal View to ask a user confirmation, button titles are custom)
+* SelectDialog (modal View to ask a user to select an item from the list - list can be ListBox or RadioGroup)
 
-### TODO
+#### TODO
 * BarChart (Horizontal bar chart without scroll)
 * Diagram (Show tabular data as a line graph or sparkle one)
 * GridView (Table to show structured data - only virtual and readonly mode with scroll support)
