@@ -197,6 +197,7 @@ const (
 	ColorProgressText       = "ProgressText"
 	ColorProgressActiveBack = "ProgressActiveBack"
 	ColorProgressActiveText = "ProgressActiveText"
+	ColorProgressTitleText  = "ProgressTitle"
 )
 
 // EventType is event that window or control may process

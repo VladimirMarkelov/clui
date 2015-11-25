@@ -1,7 +1,9 @@
 package clui
 
 import (
+	xs "github.com/huandu/xstrings"
 	term "github.com/nsf/termbox-go"
+	"strconv"
 	"strings"
 )
 
@@ -18,6 +20,7 @@ type ProgressBar struct {
 	min, max         int
 	value            int
 	emptyFg, emptyBg term.Attribute
+	titleFg          term.Attribute
 }
 
 /*
@@ -46,6 +49,7 @@ func NewProgressBar(view View, parent Control, width, height int, scale int) *Pr
 	b.direction = Horizontal
 	b.parent = parent
 	b.view = view
+	b.align = AlignCenter
 
 	if parent != nil {
 		parent.AddChild(b, scale)
@@ -54,7 +58,19 @@ func NewProgressBar(view View, parent Control, width, height int, scale int) *Pr
 	return b
 }
 
-// Repaint draws the control on its View surface
+// Repaint draws the control on its View surface.
+// Horizontal ProgressBar supports custom title over the bar.
+// One can set title using method SetTitle. There are a few
+// predefined variables that can be used inside title to
+// show value or total progress. Variable must be enclosed
+// with double curly brackets. Available variables:
+// percent - the current percentage rounded to closest integer
+// value - raw ProgressBar value
+// min - lower ProgressBar limit
+// max - upper ProgressBar limit
+// Examples:
+//      pb.SetTitle("{{value}} of {{max}}")
+//      pb.SetTitle("{{percent}}%")
 func (b *ProgressBar) Repaint() {
 	if b.max <= b.min {
 		return
@@ -76,6 +92,15 @@ func (b *ProgressBar) Repaint() {
 		prc = (100 * (b.value - b.min)) / (b.max - b.min)
 	}
 
+	var title string
+	if b.direction == Horizontal && b.Title() != "" {
+		title = b.Title()
+		title = strings.Replace(title, "{{percent}}", strconv.Itoa(prc), -1)
+		title = strings.Replace(title, "{{value}}", strconv.Itoa(b.value), -1)
+		title = strings.Replace(title, "{{min}}", strconv.Itoa(b.min), -1)
+		title = strings.Replace(title, "{{max}}", strconv.Itoa(b.max), -1)
+	}
+
 	x, y := b.Pos()
 	w, h := b.Size()
 
@@ -87,6 +112,27 @@ func (b *ProgressBar) Repaint() {
 		for yy := y; yy < y+h; yy++ {
 			canvas.PutText(x, yy, sFilled, fgOn, bgOn)
 			canvas.PutText(x+filled, yy, sEmpty, fgOff, bgOff)
+		}
+
+		if title != "" {
+			shift, str := AlignText(title, w, b.align)
+			titleClr := RealColor(tm, b.titleFg, ColorProgressTitleText)
+			var sOn, sOff string
+			if filled == 0 || shift >= filled {
+				sOff = str
+			} else if w == filled || shift+xs.Len(str) < filled {
+				sOn = str
+			} else {
+				r := filled - shift
+				sOn = xs.Slice(str, 0, r)
+				sOff = xs.Slice(str, r, -1)
+			}
+			if sOn != "" {
+				canvas.PutText(x+shift, y, sOn, titleClr, bgOn)
+			}
+			if sOff != "" {
+				canvas.PutText(x+shift+xs.Len(sOn), y, sOff, titleClr, bgOff)
+			}
 		}
 	} else {
 		filled := prc * h / 100
@@ -161,4 +207,17 @@ func (b *ProgressBar) SecondaryColors() (term.Attribute, term.Attribute) {
 // empty part of the ProgressBar
 func (b *ProgressBar) SetSecondaryColors(fg, bg term.Attribute) {
 	b.emptyFg, b.emptyBg = fg, bg
+}
+
+// TitleColor returns text color of ProgressBar's title. Title
+// background color always equals background color of the
+// part of the ProgressBar on which it is displayed. In other
+// words, background color of title is transparent
+func (b *ProgressBar) TitleColor() term.Attribute {
+	return b.titleFg
+}
+
+// SetTitleColor sets text color of ProgressBar's title
+func (b *ProgressBar) SetTitleColor(clr term.Attribute) {
+	b.titleFg = clr
 }

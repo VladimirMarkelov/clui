@@ -73,6 +73,7 @@ func createView(c *ui.Composer) {
 	ui.NewLabel(view, frmPb, 1, 1, "[", ui.DoNotScale)
 	pb := ui.NewProgressBar(view, frmPb, 20, 1, 1)
 	pb.SetLimits(0, 10)
+	pb.SetTitle("{{value}} of {{max}}")
 	ui.NewLabel(view, frmPb, 1, 1, "]", ui.DoNotScale)
 
 	edit := ui.NewEditField(view, frmLeft, 5, "0", ui.DoNotScale)
@@ -113,6 +114,7 @@ func createView(c *ui.Composer) {
 		go pb.Step()
 		logBox.AddItem("ProgressBar step")
 		logBox.SelectItem(logBox.ItemCount() - 1)
+		c.PutEvent(ui.Event{Type: ui.EventRedraw})
 	})
 	btnQuit.OnClick(func(ev ui.Event) {
 		go c.Stop()

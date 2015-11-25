@@ -175,6 +175,7 @@ func (s *ThemeManager) Reset() {
 	defTheme.colors[ColorProgressBack] = ColorBlackBold
 	defTheme.colors[ColorProgressActiveText] = ColorBlack
 	defTheme.colors[ColorProgressActiveBack] = ColorBlueBold
+	defTheme.colors[ColorProgressTitleText] = ColorWhite
 
 	s.themes[defaultTheme] = defTheme
 }
