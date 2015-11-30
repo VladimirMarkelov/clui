@@ -13,6 +13,8 @@ type CheckBox struct {
 	ControlBase
 	state       int
 	allow3state bool
+
+	onChange func(int)
 }
 
 /*
@@ -40,6 +42,7 @@ func NewCheckBox(view View, parent Control, width int, title string, scale int) 
 	c.SetTitle(title)
 	c.SetTabStop(true)
 	c.allow3state = false
+	c.onChange = nil
 
 	if parent != nil {
 		parent.AddChild(c, scale)
@@ -95,14 +98,14 @@ func (c *CheckBox) ProcessEvent(event Event) bool {
 
 	if (event.Type == EventKey && event.Key == term.KeySpace) || event.Type == EventMouse {
 		if c.state == 0 {
-			c.state = 1
+			c.SetState(1)
 		} else if c.state == 2 {
-			c.state = 0
+			c.SetState(0)
 		} else {
 			if c.allow3state {
-				c.state = 2
+				c.SetState(2)
 			} else {
-				c.state = 0
+				c.SetState(0)
 			}
 		}
 		return true
@@ -115,6 +118,10 @@ func (c *CheckBox) ProcessEvent(event Event) bool {
 // Value must be 0 or 1 if Allow3State is off,
 // and 0, 1, or 2 if Allow3State is on
 func (c *CheckBox) SetState(val int) {
+	if val == c.state {
+		return
+	}
+
 	if val < 0 {
 		val = 0
 	}
@@ -126,6 +133,10 @@ func (c *CheckBox) SetState(val int) {
 	}
 
 	c.state = val
+
+	if c.onChange != nil {
+		go c.onChange(val)
+	}
 }
 
 // State returns current state of CheckBox
@@ -166,4 +177,11 @@ func (c *CheckBox) SetSize(width, height int) {
 	}
 
 	c.height = 1
+}
+
+// OnChange sets the callback that is called whenever the state
+// of the CheckBox is changed. Argument of callback is the current
+// CheckBox state: 0 - off, 1 - on, 2 - third state
+func (c *CheckBox) OnChange(fn func(int)) {
+	c.onChange = fn
 }
