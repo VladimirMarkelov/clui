@@ -6,7 +6,7 @@ import (
 )
 
 /*
-CheckBox control. It can be two-state one(on and off) - it is default mode - or tree-state.
+CheckBox control. It can be two-state one(on and off) - it is default mode - or three-state.
 State values are 0=off, 1=on, 2=third state
 */
 type CheckBox struct {
