@@ -23,6 +23,7 @@ type ListBox struct {
 	currSelection int
 	topLine       int
 	buttonPos     int
+	multicolor    bool
 
 	onSelectItem func(Event)
 	onKeyPress   func(term.Key) bool
@@ -95,8 +96,12 @@ func (l *ListBox) redrawItems(canvas Canvas, tm Theme) {
 		}
 
 		canvas.FillRect(l.x, l.y+dy, l.width-1, 1, term.Cell{Bg: b, Ch: ' ', Fg: f})
-		_, text := AlignText(l.items[curr], maxWidth, AlignLeft)
-		canvas.PutText(l.x, l.y+dy, text, f, b)
+		if l.multicolor {
+			canvas.PutColorizedText(l.x, l.y+dy, maxWidth, l.items[curr], f, b, Horizontal)
+		} else {
+			_, text := AlignText(l.items[curr], maxWidth, AlignLeft)
+			canvas.PutText(l.x, l.y+dy, text, f, b)
+		}
 
 		curr++
 		dy++
@@ -396,4 +401,18 @@ func (l *ListBox) OnKeyPress(fn func(term.Key) bool) {
 // ItemCount returns the number of items in the ListBox
 func (l *ListBox) ItemCount() int {
 	return len(l.items)
+}
+
+// MultiColored returns if the listbox checks and applies any
+// color related tags inside its title. If MultiColores is
+// false then title is displayed as is.
+// To read about available color tags, please see ColorParser
+func (l *ListBox) MultiColored() bool {
+	return l.multicolor
+}
+
+// SetMultiColored changes how the listbox output its title: as is
+// or parse and apply all internal color tags
+func (l *ListBox) SetMultiColored(multi bool) {
+	l.multicolor = multi
 }
