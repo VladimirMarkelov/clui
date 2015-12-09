@@ -1,7 +1,6 @@
 ﻿package clui
 
 import (
-	"fmt"
 	term "github.com/nsf/termbox-go"
 	"log"
 )
@@ -46,13 +45,22 @@ func (c *ControlBase) Size() (int, int) {
 // SetSize changes control size. Constant DoNotChange can be
 // used as placeholder to indicate that the control attrubute
 // should be unchanged.
-// Method panics if new size is less than minimal size
 func (c *ControlBase) SetSize(width, height int) {
-	if width != DoNotChange && (width > 1000 || width < c.minW) {
-		panic(fmt.Sprintf("Invalid width: %v", width))
+	if width != DoNotChange {
+		if width > 1000 {
+			width = 1000
+		}
+		if width < c.minW {
+			width = c.minW
+		}
 	}
-	if height != DoNotChange && (height > 200 || height < c.minH) {
-		panic(fmt.Sprintf("Invalid height: %v", height))
+	if height != DoNotChange {
+		if height > 200 {
+			height = 200
+		}
+		if height < c.minH {
+			height = c.minH
+		}
 	}
 
 	if width != DoNotChange {

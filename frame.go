@@ -119,7 +119,8 @@ func (f *Frame) RecalculateConstraints() {
 // its minimal size
 func (f *Frame) AddChild(c Control, scale int) {
 	if f.view.ChildExists(c) {
-		panic("Frame: Cannot add the same control twice")
+		// Frame: Cannot add the same control twice
+		return
 	}
 
 	c.SetScale(scale)
@@ -135,10 +136,11 @@ func (f *Frame) Children() []Control {
 
 // SetPack changes the direction of children packing.
 // Changing pack type on the fly is not always possible:
-// it panics if a frame already contains children
+// it does nothing if a frame already contains children
 func (f *Frame) SetPack(pk PackType) {
 	if len(f.children) > 0 {
-		panic("Control already has children")
+		// Control already has children
+		return
 	}
 
 	f.pack = pk

@@ -40,8 +40,8 @@ Theme file is a simple text file that has similar to INI file format:
 6. Non-system keys are divided into two groups: Colors and Objects
     Colors are the keys that end with 'Back' or 'Text' - background
         and text color, respectively. If theme manager cannot
-        value to color it panics. See Color*Back * Color*Text constants,
-        just drop 'Color' at the beginning of key name.
+        value to color it uses black color. See Color*Back * Color*Text
+        constants, just drop 'Color' at the beginning of key name.
         Rules of converting text to color:
         1. If the value does not end neither with 'Back' nor with 'Text'
             it is considered as raw attribute value(e.g, 'green bold')
@@ -60,9 +60,10 @@ Theme file is a simple text file that has similar to INI file format:
             Better way is:
                 Viewback=parent.ViewText
                 ViewText=parent.ViewBack
-        Converting text to real color panics if a) the string does not look
-            like real color(e.g, typo as in 'grean bold'), b) parent theme
-            has not loaded yet, c) parent theme does not have the color
+        Converting text to real color fails and retuns black color if
+            a) the string does not look like real color(e.g, typo as in
+            'grean bold'), b) parent theme has not loaded yet, c) parent
+            theme does not have the color
             with the same name
     Other keys are considered as objects - see Obj* constants, just drop
         'Obj' at the beginning of the key name
@@ -180,7 +181,9 @@ func (s *ThemeManager) Reset() {
 	s.themes[defaultTheme] = defTheme
 }
 
-// SysColor returns attribute by its id for the current theme
+// SysColor returns attribute by its id for the current theme.
+// The method panics if theme loop is detected - check if
+// parent attribute is correct
 func (s *ThemeManager) SysColor(color string) term.Attribute {
 	sch, ok := s.themes[s.current]
 	if !ok {
@@ -216,7 +219,9 @@ func (s *ThemeManager) SysColor(color string) term.Attribute {
 }
 
 // SysObject returns object look by its id for the current
-// theme. E.g, border lines for frame or arrows for scrollbar
+// theme. E.g, border lines for frame or arrows for scrollbar.
+// The method panics if theme loop is detected - check if
+// parent attribute is correct
 func (s *ThemeManager) SysObject(object string) string {
 	sch, ok := s.themes[s.current]
 	if !ok {

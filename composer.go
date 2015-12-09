@@ -36,11 +36,12 @@ func (c *Composer) initBuffer() {
 	c.canvas.Clear(ColorBlack)
 }
 
-// InitLibrary initializes library and starts console management
+// InitLibrary initializes library and starts console management.
+// Retuns nil in case of error
 func InitLibrary() *Composer {
 	err := term.Init()
 	if err != nil {
-		panic(err)
+		return nil
 	}
 
 	c := new(Composer)
@@ -128,13 +129,13 @@ func (c *Composer) checkWindowUnderMouse(screenX, screenY int) (View, HitResult)
 	return nil, HitOutside
 }
 
-func (c *Composer) activateView(view View) {
+func (c *Composer) activateView(view View) bool {
 	if c.topView() == view {
 		for _, v := range c.views {
 			v.SetActive(false)
 		}
 		view.SetActive(true)
-		return
+		return true
 	}
 
 	var wList []View
@@ -150,11 +151,12 @@ func (c *Composer) activateView(view View) {
 	}
 
 	if !found {
-		panic("Invalid view to activate")
+		return false
 	}
 
 	view.SetActive(true)
 	c.views = append(wList, view)
+	return true
 }
 
 func (c *Composer) moveActiveWindowToBottom() bool {
@@ -176,7 +178,9 @@ func (c *Composer) moveActiveWindowToBottom() bool {
 	}
 
 	c.views[0] = last
-	c.activateView(c.topView())
+	if !c.activateView(c.topView()) {
+		return false
+	}
 
 	event = Event{Type: EventActivate, X: 1} // send 'activated'
 	c.sendEventToActiveView(event)

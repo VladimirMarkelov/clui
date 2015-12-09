@@ -1,7 +1,6 @@
 package clui
 
 import (
-	"fmt"
 	xs "github.com/huandu/xstrings"
 	term "github.com/nsf/termbox-go"
 )
@@ -18,8 +17,11 @@ type FrameBuffer struct {
 
 // NewFrameBuffer creates new buffer. Width and height of a new buffer cannot be less than 3
 func NewFrameBuffer(w, h int) *FrameBuffer {
-	if w < 3 || h < 3 {
-		panic(fmt.Sprintf("Invalid size: %vx%v.", w, h))
+	if w < 3 {
+		w = 3
+	}
+	if h < 3 {
+		h = 3
 	}
 
 	c := new(FrameBuffer)
@@ -39,12 +41,15 @@ FrameBuffer is recreated and cleared with default colors. Both FrameBuffer width
 height must be greater than 2
 */
 func (fb *FrameBuffer) SetSize(w, h int) {
-	if w == fb.w && h == fb.h {
-		return
+	if w < 3 {
+		w = 3
+	}
+	if h < 3 {
+		h = 3
 	}
 
-	if w < 3 || h < 3 {
-		panic(fmt.Sprintf("Invalid size: %vx%v.", w, h))
+	if w == fb.w && h == fb.h {
+		return
 	}
 
 	fb.w, fb.h = w, h
@@ -223,15 +228,11 @@ func (fb *FrameBuffer) DrawFrame(x, y, w, h int, fg, bg term.Attribute, frameCha
 		return
 	}
 
-	if frameChars == "" {
+	if xs.Len(frameChars) < 6 {
 		frameChars = "─│┌┐└┘"
 	}
 
 	parts := []rune(frameChars)
-	if len(parts) < 6 {
-		panic("Invalid theme: single border")
-	}
-
 	H, V, UL, UR, DL, DR := parts[0], parts[1], parts[2], parts[3], parts[4], parts[5]
 
 	if h == 1 {

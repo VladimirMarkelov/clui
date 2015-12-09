@@ -104,7 +104,6 @@ type View interface {
 	// SetSize changes control size. Constant DoNotChange can be
 	// used as placeholder to indicate that the control attrubute
 	// should be unchanged.
-	// Method panics if new size is less than minimal size
 	SetSize(int, int)
 	// Pos returns the current control position: X and Y.
 	// For View the position's origin is top left corner of console window,
@@ -173,7 +172,7 @@ type View interface {
 	SetPaddings(int, int, int, int)
 	// AddChild add control to a list of view children. Minimal size
 	// of the view calculated as a sum of sizes of its children.
-	// Method panics if the same control is added twice
+	// Method does nothing if the control is already added
 	AddChild(Control, int)
 	// SetPack changes the direction of children packing
 	SetPack(PackType)
@@ -251,7 +250,6 @@ type Control interface {
 	// SetSize changes control size. Constant DoNotChange can be
 	// used as placeholder to indicate that the control attrubute
 	// should be unchanged.
-	// Method panics if new size is less than minimal size
 	SetSize(int, int)
 	// Scale return scale coefficient that is used to calculate
 	// new control size after its parent resizes.

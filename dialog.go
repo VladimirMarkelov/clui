@@ -151,11 +151,13 @@ func (d *ConfirmationDialog) Result() int {
 // selectedItem is the index of the item that is selected after
 //  the dialog is created
 // typ is a selection type: ListBox or RadioGroup
+// Returns nil in case of creation process fails, e.g, if item list is empty
 func NewSelectDialog(c *Composer, title string, items []string, selectedItem int, typ SelectDialogType) *SelectDialog {
 	dlg := new(SelectDialog)
 
 	if len(items) == 0 {
-		panic("Item list must contain at least 1 item")
+		// Item list must contain at least 1 item
+		return nil
 	}
 
 	cw, ch := term.Size()

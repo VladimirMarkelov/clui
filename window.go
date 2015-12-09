@@ -1,7 +1,6 @@
 package clui
 
 import (
-	"fmt"
 	term "github.com/nsf/termbox-go"
 	"log"
 )
@@ -62,18 +61,27 @@ func NewWindow(parent Screen, x, y, w, h int, title string) *Window {
 // SetSize changes control size. Constant DoNotChange can be
 // used as placeholder to indicate that the control attrubute
 // should be unchanged.
-// Method panics if new size is less than minimal size.
 // View automatically recalculates position and size of its children after changing its size
 func (w *Window) SetSize(width, height int) {
 	if width == w.width && height == w.height {
 		return
 	}
 
-	if width != DoNotChange && (width > 1000 || width < w.minW) {
-		panic(fmt.Sprintf("Invalid width: %v", width))
+	if width != DoNotChange {
+		if width > 1000 {
+			width = 1000
+		}
+		if width < w.minW {
+			width = w.minW
+		}
 	}
-	if height != DoNotChange && (height > 200 || height < w.minH) {
-		panic(fmt.Sprintf("Invalid height: %v", height))
+	if height != DoNotChange {
+		if height > 200 {
+			height = 200
+		}
+		if height < w.minH {
+			height = w.minH
+		}
 	}
 
 	if width != DoNotChange {
@@ -120,16 +128,14 @@ func (w *Window) SetConstraints(width, height int) {
 }
 
 // Draw paints the view screen buffer to a canvas. It does not
-// repaint all view children
+// repaint all view children.
+// Method does nothing if coordinates are outside canvas
 func (w *Window) Draw(canvas Canvas) {
 	for y := 0; y < w.height; y++ {
 		for x := 0; x < w.width; x++ {
 			s, ok := w.canvas.Symbol(x, y)
 			if ok {
 				canvas.PutSymbol(x+w.x, y+w.y, s)
-			} else {
-				wx, wy := w.Size()
-				panic(fmt.Sprintf("Invalid x, y: %vx%v of %vx%v", x, y, wx, wy))
 			}
 		}
 	}
@@ -242,11 +248,12 @@ func (w *Window) Buttons() ViewButton {
 	return w.buttons
 }
 
-// SetPack changes the direction of children packing. Call the method only before any child is added to view. Otherwise, the method
-// panics if a view already contains children
+// SetPack changes the direction of children packing. Call the method
+// only before any child is added to view. Otherwise, the method
+// does nothing
 func (w *Window) SetPack(pk PackType) {
 	if len(w.children) > 0 {
-		panic("Control already has children")
+		return
 	}
 
 	w.pack = pk
@@ -289,10 +296,10 @@ func (w *Window) RegisterControl(c Control) {
 
 // AddChild add control to a list of view children. Minimal size
 // of the view calculated as a sum of sizes of its children.
-// Method panics if the same control is added twice
+// Method does nothing if the control is already added
 func (w *Window) AddChild(c Control, scale int) {
 	if w.ChildExists(c) {
-		panic("Cannot add the same control twice")
+		return
 	}
 
 	c.SetScale(scale)
