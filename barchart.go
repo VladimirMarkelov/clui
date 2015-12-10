@@ -6,6 +6,10 @@ import (
 	term "github.com/nsf/termbox-go"
 )
 
+// BarData is info about one bar in the chart. Every
+// bar can be customized by setting its own colors and
+// rune to draw the bar. Use ColorDefault for Fg and Bg,
+// and 0 for Ch to draw with BarChart defaults
 type BarData struct {
 	Value float64
 	Title string
@@ -14,23 +18,40 @@ type BarData struct {
 	Ch    rune
 }
 
+// BarDataCell is used in callback to user to draw with
+// customized colors and runes
 type BarDataCell struct {
-	Item     string
-	Id       int
-	Value    float64
+	// Title of the bar
+	Item string
+	// order number of the bar
+	ID int
+	// value of the bar that is currently drawn
+	Value float64
+	// maximum value of the bar
 	MaxValue float64
-	Fg       term.Attribute
-	Bg       term.Attribute
-	Ch       rune
+	// Default attributes and rune to draw the bar
+	Fg term.Attribute
+	Bg term.Attribute
+	Ch rune
 }
 
 /*
-Label is a decorative control that can display text in horizontal
-or vertical direction. Other available text features are alignment
-and multi-line ability. Text can be single- or multi-colored with
-tags inside the text. Multi-colored strings have limited support
-of alignment feature: if text is longer than Label width the text
-is always left aligned
+BarChart is a chart that represents grouped data with
+rectangular bars. It can be monochrome - defaut behavior.
+One can assign individual color to each bar and even use
+custom drawn bars to display multicolored bars depending
+on bar value.
+All bars have the same width: either constant BarSize - in
+case of AutoSize is false, or automatically calculated but
+cannot be less than BarSize. Bars that do not fit the chart
+area are not displayed.
+BarChart displays vertical axis with values on the chart left
+if ValueWidth greater than 0, horizontal axis with bar titles
+if ShowTitles is true (to enable displaying marks on horizontal
+axis, set ShowMarks to true), and chart legend on the right if
+LegendWidth is greater than 3.
+If LegendWidth is greater than half of the chart it is not
+displayed. The same is applied to ValueWidth
 */
 type BarChart struct {
 	ControlBase
@@ -47,11 +68,10 @@ type BarChart struct {
 }
 
 /*
-NewLabel creates a new label.
+NewBarChart creates a new bar chart.
 view - is a View that manages the control
 parent - is container that keeps the control. The same View can be a view and a parent at the same time.
 w and h - are minimal size of the control.
-title - is Label title.
 scale - the way of scaling the control when the parent is resized. Use DoNotScale constant if the
 control should keep its original size.
 */
@@ -103,9 +123,8 @@ func (b *BarChart) Repaint() {
 func (b *BarChart) barHeight() int {
 	if b.showTitles {
 		return b.height - 2
-	} else {
-		return b.height
 	}
+	return b.height
 }
 
 func (b *BarChart) drawBars(tm Theme, fg, bg term.Attribute) {
@@ -123,7 +142,7 @@ func (b *BarChart) drawBars(tm Theme, fg, bg term.Attribute) {
 		return
 	}
 
-	coeff, max := b.calculateMultiplier()
+	coeff, _ := b.calculateMultiplier()
 	if coeff == 0.0 {
 		return
 	}
@@ -155,7 +174,7 @@ func (b *BarChart) drawBars(tm Theme, fg, bg term.Attribute) {
 			cell := term.Cell{Ch: ch, Fg: fg, Bg: bg}
 			canvas.FillRect(b.x+pos, b.y+h-barH, barW, barH, cell)
 		} else {
-			cellDef := BarDataCell{Item: d.Title, Id: idx, Value: d.Value, MaxValue: max, Fg: fg, Bg: bg, Ch: ch}
+			cellDef := BarDataCell{Item: d.Title, ID: idx, Value: d.Value * coeff, MaxValue: d.Value, Fg: fg, Bg: bg, Ch: ch}
 			for dy := 0; dy < barH; dy++ {
 				req := cellDef
 				b.onDrawCell(&req)
@@ -301,7 +320,12 @@ func (b *BarChart) calculateBarWidth() int {
 		return b.barWidth
 	}
 
-	return (w - (dataCount-1)*b.gap) / dataCount
+	sz := (w - (dataCount-1)*b.gap) / dataCount
+	if sz == 0 {
+		sz = 1
+	}
+
+	return sz
 }
 
 func (b *BarChart) calculateMultiplier() (float64, float64) {
@@ -328,75 +352,110 @@ func (b *BarChart) calculateMultiplier() (float64, float64) {
 	return float64(h) / max, max
 }
 
+// AddData appends a new bar to a chart
 func (b *BarChart) AddData(val BarData) {
 	b.data = append(b.data, val)
 }
 
+// ClearData removes all bar from chart
 func (b *BarChart) ClearData() {
 	b.data = make([]BarData, 0)
 }
 
+// SetData assign a new bar list to a chart
 func (b *BarChart) SetData(data []BarData) {
 	b.data = make([]BarData, len(data))
 	copy(b.data, data)
 }
 
+// AutoSize returns whether automatic bar width
+// calculation is on. If AutoSize is false then all
+// bars have width BarWidth. If AutoSize is true then
+// bar width is the maximum of three values: BarWidth,
+// calculated width that makes all bars fit the
+// bar chart area, and 1
 func (b *BarChart) AutoSize() bool {
 	return b.autosize
 }
 
+// SetAutoSize enables or disables automatic bar
+// width calculation
 func (b *BarChart) SetAutoSize(auto bool) {
 	b.autosize = auto
 }
 
+// Gap returns width of visual gap between two adjacent bars
 func (b *BarChart) Gap() int {
 	return b.gap
 }
 
+// SetGap sets the space width between two adjacent bars
 func (b *BarChart) SetGap(gap int) {
 	b.gap = gap
 }
 
-func (b *BarChart) MinBarSize() int {
+// MinBarWidth returns current minimal bar width
+func (b *BarChart) MinBarWidth() int {
 	return b.barWidth
 }
 
-func (b *BarChart) SetMinBarSize(size int) {
+// SetMinBarWidth changes the minimal bar width
+func (b *BarChart) SetMinBarWidth(size int) {
 	b.barWidth = size
 }
 
+// ValueWidth returns the width of the area at the left of
+// chart used to draw values. Set it to 0 to turn off the
+// value panel
 func (b *BarChart) ValueWidth() int {
 	return b.valueWidth
 }
 
+// SetValueWidth changes width of the value panel on the left
 func (b *BarChart) SetValueWidth(width int) {
 	b.valueWidth = width
 }
 
+// ShowTitles returns if chart displays horizontal axis and
+// bar titles under it
 func (b *BarChart) ShowTitles() bool {
 	return b.showTitles
 }
 
+// SetShowTitles turns on and off horizontal axis and bar titles
 func (b *BarChart) SetShowTitles(show bool) {
 	b.showTitles = show
 }
 
+// LegendWidth returns width of chart legend displayed at the
+// right side of the chart. Set it to 0 to disable legend
 func (b *BarChart) LegendWidth() int {
 	return b.legendWidth
 }
 
+// SetLegendWidth sets new legend panel width
 func (b *BarChart) SetLegendWidth(width int) {
 	b.legendWidth = width
 }
 
+// OnDrawCell sets callback that allows to draw multicolored
+// bars. BarChart sends the current attrubutes and rune that
+// it is going to use to display as well as the current value
+// of the bar. A user can change the values of BarDataCell
+// depending on some external data or calculations - only
+// changing colors and rune makes sense. Changing anything else
+// does not affect the chart
 func (b *BarChart) OnDrawCell(fn func(*BarDataCell)) {
 	b.onDrawCell = fn
 }
 
+// ShowMarks returns if horizontal axis has mark under each
+// bar. To show marks, ShowTitles must be enabled.
 func (b *BarChart) ShowMarks() bool {
 	return b.showMarks
 }
 
+// SetShowMarks turns on and off marks under horizontal axis
 func (b *BarChart) SetShowMarks(show bool) {
 	b.showMarks = show
 }
