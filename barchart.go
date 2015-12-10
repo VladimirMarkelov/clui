@@ -28,7 +28,9 @@ type BarDataCell struct {
 	// value of the bar that is currently drawn
 	Value float64
 	// maximum value of the bar
-	MaxValue float64
+	BarMax float64
+	// value of the highest bar
+	TotalMax float64
 	// Default attributes and rune to draw the bar
 	Fg term.Attribute
 	Bg term.Attribute
@@ -62,7 +64,6 @@ type BarChart struct {
 	legendWidth int
 	valueWidth  int
 	showMarks   bool
-	showTicks   bool
 	showTitles  bool
 	onDrawCell  func(*BarDataCell)
 }
@@ -142,7 +143,7 @@ func (b *BarChart) drawBars(tm Theme, fg, bg term.Attribute) {
 		return
 	}
 
-	coeff, _ := b.calculateMultiplier()
+	coeff, max := b.calculateMultiplier()
 	if coeff == 0.0 {
 		return
 	}
@@ -153,7 +154,7 @@ func (b *BarChart) drawBars(tm Theme, fg, bg term.Attribute) {
 	parts := []rune(tm.SysObject(ObjBarChart))
 
 	for idx, d := range b.data {
-		if pos+barW >= start+width {
+		if pos+barW > start+width {
 			break
 		}
 
@@ -171,12 +172,15 @@ func (b *BarChart) drawBars(tm Theme, fg, bg term.Attribute) {
 
 		barH := int(d.Value * coeff)
 		if b.onDrawCell == nil {
-			cell := term.Cell{Ch: ch, Fg: fg, Bg: bg}
+			cell := term.Cell{Ch: ch, Fg: fColor, Bg: bColor}
 			canvas.FillRect(b.x+pos, b.y+h-barH, barW, barH, cell)
 		} else {
-			cellDef := BarDataCell{Item: d.Title, ID: idx, Value: d.Value * coeff, MaxValue: d.Value, Fg: fg, Bg: bg, Ch: ch}
+			cellDef := BarDataCell{Item: d.Title, ID: idx,
+				Value: 0, BarMax: d.Value, TotalMax: max,
+				Fg: fColor, Bg: bColor, Ch: ch}
 			for dy := 0; dy < barH; dy++ {
 				req := cellDef
+				req.Value = max * float64(dy+1) / float64(h)
 				b.onDrawCell(&req)
 				cell := term.Cell{Ch: req.Ch, Fg: req.Fg, Bg: req.Bg}
 				for dx := 0; dx < barW; dx++ {
@@ -186,7 +190,7 @@ func (b *BarChart) drawBars(tm Theme, fg, bg term.Attribute) {
 		}
 
 		if b.showTitles {
-			if b.showTicks {
+			if b.showMarks {
 				c := parts[7]
 				canvas.PutSymbol(b.x+pos+barW/2, b.y+h, term.Cell{Ch: c, Bg: bg, Fg: fg})
 			}
@@ -211,18 +215,28 @@ func (b *BarChart) drawLegend(tm Theme, fg, bg term.Attribute) {
 	}
 
 	canvas := b.view.Canvas()
+	parts := []rune(tm.SysObject(ObjBarChart))
+	defRune := parts[0]
 	for idx, d := range b.data {
 		if idx >= b.height {
 			break
 		}
 
-		canvas.PutSymbol(b.x+pos+width, b.y+idx, term.Cell{Ch: d.Ch, Fg: d.Fg, Bg: d.Bg})
+		c := d.Ch
+		if c == 0 {
+			c = defRune
+		}
+		canvas.PutSymbol(b.x+pos+width, b.y+idx, term.Cell{Ch: c, Fg: d.Fg, Bg: d.Bg})
 		s := CutText(fmt.Sprintf(" - %v", d.Title), b.legendWidth)
 		canvas.PutText(b.x+pos+width+1, b.y+idx, s, fg, bg)
 	}
 }
 
 func (b *BarChart) drawValues(tm Theme, fg, bg term.Attribute) {
+	if b.valueWidth <= 0 {
+		return
+	}
+
 	pos, _ := b.calculateBarArea()
 	if pos == 0 {
 		return
@@ -236,7 +250,7 @@ func (b *BarChart) drawValues(tm Theme, fg, bg term.Attribute) {
 
 	canvas := b.view.Canvas()
 	dy := 0
-	format := fmt.Sprintf("%%%vf", b.valueWidth)
+	format := fmt.Sprintf("%%%v.2f", b.valueWidth)
 	for dy < h-1 {
 		v := float64(h-dy) / float64(h) * max
 		s := fmt.Sprintf(format, v)
