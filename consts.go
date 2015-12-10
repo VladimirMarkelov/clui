@@ -146,6 +146,7 @@ const (
 	ObjCheckBox     = "CheckBox"
 	ObjRadio        = "Radio"
 	ObjProgressBar  = "ProgressBar"
+	ObjBarChart     = "BarChart"
 )
 
 // Available color identifiers that can be used in themes
@@ -198,6 +199,10 @@ const (
 	ColorProgressActiveBack = "ProgressActiveBack"
 	ColorProgressActiveText = "ProgressActiveText"
 	ColorProgressTitleText  = "ProgressTitle"
+
+	// barchart colors
+	ColorBarChartBack = "BarChartBack"
+	ColorBarChartText = "BarChartText"
 )
 
 // EventType is event that window or control may process

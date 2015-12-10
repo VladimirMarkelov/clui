@@ -136,6 +136,7 @@ func (s *ThemeManager) Reset() {
 	defTheme.objects[ObjCheckBox] = "[] X?"
 	defTheme.objects[ObjRadio] = "() *"
 	defTheme.objects[ObjProgressBar] = "░▒"
+	defTheme.objects[ObjBarChart] = "█─│┌┐└┘┬┴├┤┼"
 
 	defTheme.colors[ColorDisabledText] = ColorBlackBold
 	defTheme.colors[ColorDisabledBack] = ColorWhite
@@ -177,6 +178,9 @@ func (s *ThemeManager) Reset() {
 	defTheme.colors[ColorProgressActiveText] = ColorBlack
 	defTheme.colors[ColorProgressActiveBack] = ColorBlueBold
 	defTheme.colors[ColorProgressTitleText] = ColorWhite
+
+	defTheme.colors[ColorBarChartBack] = ColorBlack
+	defTheme.colors[ColorBarChartText] = ColorWhite
 
 	s.themes[defaultTheme] = defTheme
 }
