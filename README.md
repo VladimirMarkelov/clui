@@ -16,9 +16,9 @@ The list of available controls:
 * RadioGroup (Non-visual control to manage a group of a few RadioButtons)
 * ConfirmationDialog (modal View to ask a user confirmation, button titles are custom)
 * SelectDialog (modal View to ask a user to select an item from the list - list can be ListBox or RadioGroup)
+* BarChart (Horizontal bar chart without scroll)
 
 #### TODO
-* BarChart (Horizontal bar chart without scroll)
 * Diagram (Show tabular data as a line graph or sparkle one)
 * GridView (Table to show structured data - only virtual and readonly mode with scroll support)
 
