@@ -137,6 +137,7 @@ func (s *ThemeManager) Reset() {
 	defTheme.objects[ObjRadio] = "() *"
 	defTheme.objects[ObjProgressBar] = "░▒"
 	defTheme.objects[ObjBarChart] = "█─│┌┐└┘┬┴├┤┼"
+	defTheme.objects[ObjSparkChart] = "█"
 
 	defTheme.colors[ColorDisabledText] = ColorBlackBold
 	defTheme.colors[ColorDisabledBack] = ColorWhite
@@ -181,6 +182,13 @@ func (s *ThemeManager) Reset() {
 
 	defTheme.colors[ColorBarChartBack] = ColorBlack
 	defTheme.colors[ColorBarChartText] = ColorWhite
+
+	defTheme.colors[ColorSparkChartBack] = ColorBlack
+	defTheme.colors[ColorSparkChartText] = ColorWhite
+	defTheme.colors[ColorSparkChartBarBack] = ColorBlack
+	defTheme.colors[ColorSparkChartBarText] = ColorCyan
+	defTheme.colors[ColorSparkChartMaxBack] = ColorBlack
+	defTheme.colors[ColorSparkChartMaxText] = ColorCyanBold
 
 	s.themes[defaultTheme] = defTheme
 }

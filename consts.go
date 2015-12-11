@@ -147,6 +147,7 @@ const (
 	ObjRadio        = "Radio"
 	ObjProgressBar  = "ProgressBar"
 	ObjBarChart     = "BarChart"
+	ObjSparkChart   = "SparkChart"
 )
 
 // Available color identifiers that can be used in themes
@@ -203,6 +204,14 @@ const (
 	// barchart colors
 	ColorBarChartBack = "BarChartBack"
 	ColorBarChartText = "BarChartText"
+
+	// sparkchart colors
+	ColorSparkChartBack    = "SparkChartBack"
+	ColorSparkChartText    = "SparkChartText"
+	ColorSparkChartBarBack = "SparkChartBarBack"
+	ColorSparkChartBarText = "SparkChartBarText"
+	ColorSparkChartMaxBack = "SparkChartMaxBack"
+	ColorSparkChartMaxText = "SparkChartMaxText"
 )
 
 // EventType is event that window or control may process
