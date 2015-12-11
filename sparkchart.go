@@ -7,22 +7,23 @@ import (
 )
 
 /*
-BarChart is a chart that represents grouped data with
-rectangular bars. It can be monochrome - defaut behavior.
-One can assign individual color to each bar and even use
-custom drawn bars to display multicolored bars depending
-on bar value.
-All bars have the same width: either constant BarSize - in
-case of AutoSize is false, or automatically calculated but
-cannot be less than BarSize. Bars that do not fit the chart
-area are not displayed.
-BarChart displays vertical axis with values on the chart left
-if ValueWidth greater than 0, horizontal axis with bar titles
-if ShowTitles is true (to enable displaying marks on horizontal
-axis, set ShowMarks to true), and chart legend on the right if
-LegendWidth is greater than 3.
-If LegendWidth is greater than half of the chart it is not
-displayed. The same is applied to ValueWidth
+SparkChart is a chart that represents a live data that
+is continuously added to the chart. Or it can be static
+element that displays predefined set of data - in this
+case it looks like BarChart. At a moment SparkChart
+keeps only th enumber of last data that is enough to
+fill the control area. So, if you enlarge the control,
+it will show partially filled area until it gets new data.
+SparkChart displays vertical axis with values on the chart left
+if ValueWidth greater than 0, horizontal axis with bar titles.
+Maximum peaks(maximum of the the data that control keeps)
+can be hilited with different color.
+By default the data is autoscaled to make the highest bar
+fit the full height of the control. But it maybe useful
+to disable autoscale and set the Top value to have more
+handy diagram. E.g, for CPU load in % you can set
+AutoScale to false and Top value to 100.
+Note: negative and zero values are displayed as empty bar
 */
 type SparkChart struct {
 	ControlBase
@@ -201,9 +202,8 @@ func (b *SparkChart) calculateMultiplier() (float64, float64) {
 
 	if b.autosize || b.topValue == 0 {
 		return float64(h) / max, max
-	} else {
-		return float64(h) / b.topValue, max
 	}
+	return float64(h) / b.topValue, max
 }
 
 // AddData appends a new bar to a chart
