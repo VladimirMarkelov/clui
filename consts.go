@@ -148,6 +148,7 @@ const (
 	ObjProgressBar  = "ProgressBar"
 	ObjBarChart     = "BarChart"
 	ObjSparkChart   = "SparkChart"
+	ObjTableView    = "TableView"
 )
 
 // Available color identifiers that can be used in themes
@@ -212,6 +213,17 @@ const (
 	ColorSparkChartBarText = "SparkChartBarText"
 	ColorSparkChartMaxBack = "SparkChartMaxBack"
 	ColorSparkChartMaxText = "SparkChartMaxText"
+
+	// tableview colors
+	ColorTableText           = "TableText"
+	ColorTableBack           = "TableBack"
+	ColorTableSelectedText   = "TableSelectedText"
+	ColorTableSelectedBack   = "TableSelectedBack"
+	ColorTableActiveCellText = "TableActiveCellText"
+	ColorTableActiveCellBack = "TableActiveCellBack"
+	ColorTableLineText       = "TableLineText"
+	ColorTableHeaderText     = "TableHeaderText"
+	ColorTableHeaderBack     = "TableHeaderBack"
 )
 
 // EventType is event that window or control may process

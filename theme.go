@@ -138,6 +138,7 @@ func (s *ThemeManager) Reset() {
 	defTheme.objects[ObjProgressBar] = "░▒"
 	defTheme.objects[ObjBarChart] = "█─│┌┐└┘┬┴├┤┼"
 	defTheme.objects[ObjSparkChart] = "█"
+	defTheme.objects[ObjTableView] = "─│┼"
 
 	defTheme.colors[ColorDisabledText] = ColorBlackBold
 	defTheme.colors[ColorDisabledBack] = ColorWhite
@@ -190,6 +191,16 @@ func (s *ThemeManager) Reset() {
 	defTheme.colors[ColorSparkChartMaxBack] = ColorBlack
 	defTheme.colors[ColorSparkChartMaxText] = ColorCyanBold
 
+	defTheme.colors[ColorTableText] = ColorWhite
+	defTheme.colors[ColorTableBack] = ColorBlack
+	defTheme.colors[ColorTableSelectedText] = ColorWhite
+	defTheme.colors[ColorTableSelectedBack] = ColorBlackBold
+	defTheme.colors[ColorTableActiveCellText] = ColorWhiteBold
+	defTheme.colors[ColorTableActiveCellBack] = ColorBlackBold
+	defTheme.colors[ColorTableLineText] = ColorWhite
+	defTheme.colors[ColorTableHeaderText] = ColorWhite
+	defTheme.colors[ColorTableHeaderBack] = ColorBlack
+
 	s.themes[defaultTheme] = defTheme
 }
 
@@ -211,6 +222,9 @@ func (s *ThemeManager) SysColor(color string) term.Attribute {
 		}
 
 		for {
+			if sch.parent == "" {
+				break
+			}
 			s.LoadTheme(sch.parent)
 			sch = s.themes[sch.parent]
 			clr, okclr = sch.colors[color]
@@ -249,6 +263,10 @@ func (s *ThemeManager) SysObject(object string) string {
 		}
 
 		for {
+			if sch.parent == "" {
+				break
+			}
+
 			s.LoadTheme(sch.parent)
 			sch = s.themes[sch.parent]
 			obj, okobj = sch.objects[object]
