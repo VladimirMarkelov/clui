@@ -115,18 +115,15 @@ func (l *TableView) redrawHeader(canvas Canvas, tm Theme) {
 
 	pos := 0
 	if l.showRowNo {
-		s := fmt.Sprintf("%v", l.rowCount)
-		if s == "" {
-			s = " "
-		}
-		shift, str := AlignText("#", len(s), AlignRight)
+		cW := l.counterWidth()
+		shift, str := AlignText("#", cW, AlignRight)
 		canvas.PutText(x+pos+shift, y, str, fg, bg)
 		if l.showVLines {
-			canvas.PutSymbol(x+pos+len(s), y, term.Cell{Ch: parts[1], Fg: fgLine, Bg: bg})
-			canvas.PutSymbol(x+pos+len(s), y+1, term.Cell{Ch: parts[2], Fg: fgLine, Bg: bg})
+			canvas.PutSymbol(x+pos+cW, y, term.Cell{Ch: parts[1], Fg: fgLine, Bg: bg})
+			canvas.PutSymbol(x+pos+cW, y+1, term.Cell{Ch: parts[2], Fg: fgLine, Bg: bg})
 			pos++
 		}
-		pos = len(s) + dx
+		pos = cW + dx
 	}
 
 	idx := l.topCol
@@ -153,6 +150,20 @@ func (l *TableView) redrawHeader(canvas Canvas, tm Theme) {
 	}
 }
 
+func (l *TableView) counterWidth() int {
+	width := 0
+
+	if l.showRowNo {
+		s := fmt.Sprintf("%v", l.rowCount)
+		if s == "" {
+			s = " "
+		}
+		width = len(s)
+	}
+
+	return width
+}
+
 func (l *TableView) redrawScroll(canvas Canvas, tm Theme) {
 	fg, bg := RealColor(tm, l.fg, ColorScrollText), RealColor(tm, l.bg, ColorScrollBack)
 	fgThumb, bgThumb := RealColor(tm, l.fg, ColorThumbText), RealColor(tm, l.bg, ColorThumbBack)
@@ -169,7 +180,7 @@ func (l *TableView) redrawCells(canvas Canvas, tm Theme) {
 	maxRow := l.rowCount - 1
 	rowNo := l.topRow
 	dy := 2
-	maxDy := l.height - 1
+	maxDy := l.height - 2
 
 	fg, bg := RealColor(tm, l.fg, ColorTableText), RealColor(tm, l.bg, ColorTableBack)
 	fgRow, bgRow := RealColor(tm, l.fg, ColorTableSelectedText), RealColor(tm, l.bg, ColorTableSelectedBack)
@@ -179,16 +190,12 @@ func (l *TableView) redrawCells(canvas Canvas, tm Theme) {
 
 	start := 0
 	if l.showRowNo {
-		s := fmt.Sprintf("%v", l.rowCount)
-		if s == "" {
-			s = " "
-		}
-		start = len(s)
-		for idx := 1; idx < l.height; idx++ {
+		start = l.counterWidth()
+		for idx := 1; idx < l.height-2; idx++ {
 			if l.topRow+idx > l.rowCount {
 				break
 			}
-			s = fmt.Sprintf("%v", idx)
+			s := fmt.Sprintf("%v", idx+l.topRow)
 			shift, str := AlignText(s, start, AlignRight)
 			canvas.PutText(l.x+shift, l.y+dy+idx-1, str, fg, bg)
 			if l.showVLines {
@@ -262,83 +269,204 @@ func (l *TableView) Repaint() {
 }
 
 func (l *TableView) home() {
-	// if len(l.columns) > 0 {
-	// 	l.selectedCol = 0
-	// }
-	// l.topCol = 0
+	if len(l.columns) > 0 {
+		l.selectedCol = 0
+	}
+	l.topCol = 0
+	l.EnsureColVisible()
 }
 
 func (l *TableView) end() {
-	// length := len(l.columns)
+	length := len(l.columns)
 
-	// if length == 0 {
-	// 	return
-	// }
+	if length == 0 {
+		return
+	}
 
-	// l.selectedCol = length - 1
-	// l.topCol = l.calculateTopCol()
+	l.selectedCol = length - 1
+	l.EnsureColVisible()
+}
+
+func (l *TableView) firstRow() {
+	if l.rowCount > 0 {
+		l.selectedRow = 0
+	}
+	l.topRow = 0
+	l.EnsureRowVisible()
+}
+
+func (l *TableView) lastRow() {
+	if l.rowCount == 0 {
+		return
+	}
+
+	l.selectedRow = l.rowCount - 1
+	l.EnsureColVisible()
 }
 
 func (l *TableView) moveUp(dy int) {
-	// if l.topLine == 0 && l.currSelection == 0 {
-	// 	return
-	// }
+	if l.topRow == 0 && l.selectedRow == 0 {
+		return
+	}
 
-	// if l.currSelection == -1 {
-	// 	if len(l.items) != 0 {
-	// 		l.currSelection = 0
-	// 	}
-	// 	return
-	// }
+	if l.selectedRow == -1 {
+		if l.rowCount != 0 {
+			l.selectedRow = 0
+		}
+		return
+	}
 
-	// if l.currSelection < dy {
-	// 	l.currSelection = 0
-	// } else {
-	// 	l.currSelection -= dy
-	// }
+	if l.selectedRow < dy {
+		l.selectedRow = 0
+	} else {
+		l.selectedRow -= dy
+	}
 
-	// l.EnsureVisible()
+	l.EnsureRowVisible()
 }
 
 func (l *TableView) moveDown(dy int) {
-	// length := len(l.items)
+	length := l.rowCount
 
-	// if length == 0 || l.currSelection == length-1 {
-	// 	return
-	// }
+	if length == 0 || l.selectedRow == length-1 {
+		return
+	}
 
-	// if l.currSelection+dy >= length {
-	// 	l.currSelection = length - 1
-	// } else {
-	// 	l.currSelection += dy
-	// }
+	if l.selectedRow+dy >= length {
+		l.selectedRow = length - 1
+	} else {
+		l.selectedRow += dy
+	}
 
-	// l.EnsureVisible()
+	l.EnsureRowVisible()
 }
 
-// EnsureVisible makes the currently selected item visible and scrolls the item list if it is required
-func (l *TableView) EnsureVisible() {
-	// length := len(l.items)
+func (l *TableView) moveRight(dx int) {
+	colCnt := len(l.columns)
+	if l.selectedCol == colCnt-1 || colCnt == 0 {
+		return
+	}
 
-	// if length <= l.height || l.currSelection == -1 {
-	// 	return
-	// }
+	if l.selectedCol == -1 {
+		l.selectedCol = 0
+	} else {
+		if l.selectedCol+dx >= colCnt {
+			l.selectedCol = colCnt - 1
+		} else {
+			l.selectedCol += dx
+		}
+	}
 
-	// diff := l.currSelection - l.topLine
-	// if diff >= 0 && diff < l.height {
-	// 	return
-	// }
+	l.EnsureColVisible()
+}
 
-	// if diff < 0 {
-	// 	l.topLine = l.currSelection
-	// } else {
-	// 	top := l.currSelection - l.height + 1
-	// 	if length-top > l.height {
-	// 		l.topLine = top
-	// 	} else {
-	// 		l.topLine = length - l.height
-	// 	}
-	// }
+func (l *TableView) moveLeft(dx int) {
+	colCnt := len(l.columns)
+	if l.selectedCol == 0 || colCnt == 0 {
+		return
+	}
+
+	if l.selectedCol == -1 {
+		l.selectedCol = 0
+	} else {
+		if l.selectedCol-dx < 0 {
+			l.selectedCol = 0
+		} else {
+			l.selectedCol -= dx
+		}
+	}
+
+	l.EnsureColVisible()
+}
+
+func (l *TableView) isColVisible(idx int) bool {
+	if idx < l.topCol {
+		return false
+	}
+
+	width := l.width - 1
+	width -= l.counterWidth()
+	if l.showVLines && l.showRowNo {
+		width--
+	}
+
+	for i := l.topCol; i < len(l.columns); i++ {
+		if i == idx && l.columns[i].Width <= width {
+			return true
+		}
+
+		width -= l.columns[i].Width
+	}
+
+	return false
+}
+
+func (l *TableView) EnsureColVisible() {
+	if l.isColVisible(l.selectedCol) {
+		return
+	}
+
+	if l.selectedCol < l.topCol {
+		l.topCol = l.selectedCol
+		return
+	}
+
+	width := l.width - 1 - l.counterWidth()
+	if l.showRowNo && l.showVLines {
+		width--
+	}
+
+	toShow := l.selectedCol
+	for width > 0 {
+		if l.columns[toShow].Width > width {
+			if toShow == l.selectedCol {
+				break
+			} else {
+				toShow++
+				break
+			}
+		} else if l.columns[toShow].Width == width {
+			break
+		} else {
+			width -= l.columns[toShow].Width
+			if width < 0 {
+				break
+			}
+			toShow--
+			if toShow == 0 {
+				break
+			}
+		}
+	}
+
+	l.topCol = toShow
+}
+
+// EnsureRowVisible makes the currently selected row is visible and scrolls the item list if it is required
+func (l *TableView) EnsureRowVisible() {
+	length := l.rowCount
+
+	hgt := l.height - 3
+
+	if length <= hgt || l.selectedRow == -1 {
+		return
+	}
+
+	diff := l.selectedRow - l.topRow
+	if diff >= 0 && diff < hgt {
+		return
+	}
+
+	if diff < 0 {
+		l.topRow = l.selectedRow
+	} else {
+		top := l.selectedRow - hgt + 1
+		if length-top > hgt {
+			l.topRow = top
+		} else {
+			l.topRow = length - hgt
+		}
+	}
 }
 
 // Clear deletes all TableView items
@@ -400,7 +528,7 @@ func (l *TableView) recalcPositionByScroll() {
 	// }
 
 	// l.currSelection = newPos
-	// l.EnsureVisible()
+	// l.EnsureRowVisible()
 }
 
 /*
@@ -414,45 +542,61 @@ func (l *TableView) ProcessEvent(event Event) bool {
 		return false
 	}
 
-	// switch event.Type {
-	// case EventKey:
-	// 	if l.onKeyPress != nil {
-	// 		res := l.onKeyPress(event.Key)
-	// 		if res {
-	// 			return true
-	// 		}
-	// 	}
+	switch event.Type {
+	case EventKey:
+		if l.onKeyPress != nil {
+			res := l.onKeyPress(event.Key)
+			if res {
+				return true
+			}
+		}
 
-	// 	switch event.Key {
-	// 	case term.KeyHome:
-	// 		l.home()
-	// 		return true
-	// 	case term.KeyEnd:
-	// 		l.end()
-	// 		return true
-	// 	case term.KeyArrowUp:
-	// 		l.moveUp(1)
-	// 		return true
-	// 	case term.KeyArrowDown:
-	// 		l.moveDown(1)
-	// 		return true
-	// 	case term.KeyPgdn:
-	// 		l.moveDown(l.height)
-	// 		return true
-	// 	case term.KeyPgup:
-	// 		l.moveUp(l.height)
-	// 		return true
-	// 	case term.KeyCtrlM:
-	// 		if l.currSelection != -1 && l.onSelectItem != nil {
-	// 			ev := Event{Y: l.currSelection, Msg: l.SelectedItemText()}
-	// 			go l.onSelectItem(ev)
-	// 		}
-	// 	default:
-	// 		return false
-	// 	}
-	// case EventMouse:
-	// 	return l.processMouseClick(event)
-	// }
+		switch event.Key {
+		case term.KeyHome:
+			if event.Mod == term.ModAlt {
+				l.selectedRow = 0
+				l.EnsureRowVisible()
+			} else {
+				l.home()
+			}
+			return true
+		case term.KeyEnd:
+			if event.Mod == term.ModAlt {
+				l.selectedRow = l.rowCount - 1
+				l.EnsureRowVisible()
+			} else {
+				l.end()
+			}
+			return true
+		case term.KeyArrowUp:
+			l.moveUp(1)
+			return true
+		case term.KeyArrowDown:
+			l.moveDown(1)
+			return true
+		case term.KeyArrowLeft:
+			l.moveLeft(1)
+			return true
+		case term.KeyArrowRight:
+			l.moveRight(1)
+			return true
+		case term.KeyPgdn:
+			l.moveDown(l.height - 3)
+			return true
+		case term.KeyPgup:
+			l.moveUp(l.height - 3)
+			return true
+			// 	case term.KeyCtrlM:
+			// 		if l.currSelection != -1 && l.onSelectItem != nil {
+			// 			ev := Event{Y: l.currSelection, Msg: l.SelectedItemText()}
+			// 			go l.onSelectItem(ev)
+			// 		}
+			// 	default:
+			// 		return false
+		}
+		// case EventMouse:
+		// 	return l.processMouseClick(event)
+	}
 
 	return false
 }
