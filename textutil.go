@@ -128,6 +128,9 @@ func SliceColorized(str string, start, end int) string {
 	if str == "" {
 		return str
 	}
+	if start < 0 {
+		start = 0
+	}
 
 	fgChanged, bgChanged := false, false
 	curr := 0
