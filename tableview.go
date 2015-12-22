@@ -2,7 +2,6 @@ package clui
 
 import (
 	"fmt"
-	// xs "github.com/huandu/xstrings"
 	term "github.com/nsf/termbox-go"
 )
 
@@ -477,58 +476,112 @@ func (l *TableView) Clear() {
 	l.topCol = 0
 }
 
-func (l *TableView) processMouseClick(ev Event) bool {
-	// if ev.Key != term.MouseLeft {
-	// 	return false
-	// }
+func (l *TableView) mouseToCol(dx int) int {
+	shift := l.counterWidth()
+	if l.showVLines {
+		shift++
+	}
 
-	// dx := ev.X - l.x
-	// dy := ev.Y - l.y
+	if dx < shift {
+		return l.selectedCol
+	}
 
-	// if dx == l.width-1 {
-	// 	if dy < 0 || dy >= l.height || len(l.items) < 2 {
-	// 		return true
-	// 	}
+	idx := l.topCol
+	selectedCol := l.selectedCol
+	for {
+		if shift+l.columns[idx].Width > dx {
+			selectedCol = idx
+			break
+		}
 
-	// 	if dy == 0 {
-	// 		l.moveUp(1)
-	// 		return true
-	// 	}
-	// 	if dy == l.height-1 {
-	// 		l.moveDown(1)
-	// 		return true
-	// 	}
+		if idx == len(l.columns)-1 {
+			selectedCol = idx
+			break
+		}
 
-	// 	l.buttonPos = dy
-	// 	l.recalcPositionByScroll()
-	// 	return true
-	// }
+		shift += l.columns[idx].Width
+		if l.showVLines {
+			shift++
+		}
+		idx++
+	}
 
-	// if dx < 0 || dx >= l.width || dy < 0 || dy >= l.height {
-	// 	return true
-	// }
-
-	// if dy >= len(l.items) {
-	// 	return true
-	// }
-
-	// l.SelectItem(l.topLine + dy)
-	// if l.onSelectItem != nil {
-	// 	ev := Event{Y: l.topLine + dy, Msg: l.SelectedItemText()}
-	// 	go l.onSelectItem(ev)
-	// }
-
-	return true
+	return selectedCol
 }
 
-func (l *TableView) recalcPositionByScroll() {
-	// newPos := ItemByThumbPosition(l.buttonPos, len(l.items), l.height)
-	// if newPos < 1 {
-	// 	return
-	// }
+func (l *TableView) horizontalScrollClick(dx int) {
+	if dx == 0 {
+		l.moveLeft(1)
+		return
+	} else if dx == l.width-2 {
+		l.moveRight(1)
+	} else if dx > 0 && dx < l.width-2 {
+		pos := ThumbPosition(l.selectedCol, len(l.columns), l.width-1)
+		if pos < dx {
+			l.moveRight(1)
+		} else if pos > dx {
+			l.moveLeft(1)
+		}
+	}
+}
 
-	// l.currSelection = newPos
-	// l.EnsureRowVisible()
+func (l *TableView) verticalScrollClick(dy int) {
+	if dy == 0 {
+		l.moveUp(1)
+		return
+	} else if dy == l.height-2 {
+		l.moveDown(1)
+	} else if dy > 0 && dy < l.height-2 {
+		pos := ThumbPosition(l.selectedRow, l.rowCount, l.height-1)
+		l.Logger().Printf("POS: %v, DY: %v", pos, dy)
+		if pos > dy {
+			l.moveUp(l.height - 3)
+		} else if pos < dy {
+			l.moveDown(l.height - 3)
+		}
+	}
+}
+
+func (l *TableView) processMouseClick(ev Event) bool {
+	if ev.Key != term.MouseLeft {
+		return false
+	}
+
+	dx := ev.X - l.x
+	dy := ev.Y - l.y
+
+	if dy == l.height-1 && dx == l.width-1 {
+		l.selectedRow = l.rowCount - 1
+		l.selectedCol = len(l.columns) - 1
+		return true
+	}
+
+	if dy == l.height-1 {
+		l.horizontalScrollClick(dx)
+		return true
+	}
+
+	if dx == l.width-1 {
+		l.verticalScrollClick(dy)
+		return true
+	}
+
+	if dy < 2 {
+		// Header - no action now
+		return true
+	}
+
+	dy -= 2
+	l.selectedRow = l.topRow + dy
+
+	oldCol := l.selectedCol
+	l.selectedCol = l.mouseToCol(dx)
+
+	if oldCol != l.selectedCol {
+		l.EnsureColVisible()
+	}
+
+	return true
 }
 
 /*
@@ -594,8 +647,8 @@ func (l *TableView) ProcessEvent(event Event) bool {
 			// 	default:
 			// 		return false
 		}
-		// case EventMouse:
-		// 	return l.processMouseClick(event)
+	case EventMouse:
+		return l.processMouseClick(event)
 	}
 
 	return false
