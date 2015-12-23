@@ -10,6 +10,7 @@ type Column struct {
 	Width     int
 	Alignment Align
 	Fg, Bg    term.Attribute
+	Sort      SortOrder
 }
 
 type ColumnDrawInfo struct {
@@ -22,6 +23,13 @@ type ColumnDrawInfo struct {
 	CellSelected bool
 	Fg           term.Attribute
 	Bg           term.Attribute
+}
+
+type TableEvent struct {
+	Action TableAction
+	Col    int
+	Row    int
+	Sort   SortOrder
 }
 
 /*
@@ -49,9 +57,12 @@ type TableView struct {
 	showVLines    bool
 
 	onDrawCell   func(*ColumnDrawInfo)
-	onAction     func()
+	onAction     func(TableEvent)
 	onKeyPress   func(term.Key) bool
 	onSelectCell func(int, int)
+
+	lastEventCol int
+	lastEventRow int
 }
 
 /*
@@ -86,6 +97,8 @@ func NewTableView(view View, parent Control, width, height int, scale int) *Tabl
 	l.onAction = nil
 	l.onKeyPress = nil
 	l.onSelectCell = nil
+	l.lastEventCol = -1
+	l.lastEventRow = -1
 
 	if parent != nil {
 		parent.AddChild(l, scale)
@@ -128,14 +141,24 @@ func (l *TableView) redrawHeader(canvas Canvas, tm Theme) {
 	idx := l.topCol
 	for pos < w && idx < len(l.columns) {
 		w := l.columns[idx].Width
-		if l.width-pos < w {
-			w = l.width - pos
+		if l.width-1-pos < w {
+			w = l.width - 1 - pos
 		}
 		if w <= 0 {
 			break
 		}
 
-		shift, str := AlignText(l.columns[idx].Title, w, l.columns[idx].Alignment)
+		dw := 0
+		if l.columns[idx].Sort != SortNone {
+			dw = -1
+			ch := parts[3]
+			if l.columns[idx].Sort == SortDesc {
+				ch = parts[4]
+			}
+			canvas.PutSymbol(x+pos+w-1, y, term.Cell{Ch: ch, Fg: fg, Bg: bg})
+		}
+
+		shift, str := AlignText(l.columns[idx].Title, w+dw, l.columns[idx].Alignment)
 		canvas.PutText(x+pos+shift, y, str, fg, bg)
 		pos += w
 
@@ -267,12 +290,25 @@ func (l *TableView) Repaint() {
 	l.redrawCells(canvas, tm)
 }
 
+func (l *TableView) emitSelectionChange() {
+	if l.lastEventRow == l.selectedRow && l.lastEventCol == l.selectedCol {
+		return
+	}
+
+	if l.selectedCol != -1 && l.selectedRow != -1 && l.onSelectCell != nil {
+		l.onSelectCell(l.selectedCol, l.selectedRow)
+		l.lastEventRow = l.selectedRow
+		l.lastEventCol = l.selectedCol
+	}
+}
+
 func (l *TableView) home() {
 	if len(l.columns) > 0 {
 		l.selectedCol = 0
 	}
 	l.topCol = 0
 	l.EnsureColVisible()
+	l.emitSelectionChange()
 }
 
 func (l *TableView) end() {
@@ -284,6 +320,7 @@ func (l *TableView) end() {
 
 	l.selectedCol = length - 1
 	l.EnsureColVisible()
+	l.emitSelectionChange()
 }
 
 func (l *TableView) firstRow() {
@@ -292,6 +329,7 @@ func (l *TableView) firstRow() {
 	}
 	l.topRow = 0
 	l.EnsureRowVisible()
+	l.emitSelectionChange()
 }
 
 func (l *TableView) lastRow() {
@@ -301,6 +339,7 @@ func (l *TableView) lastRow() {
 
 	l.selectedRow = l.rowCount - 1
 	l.EnsureColVisible()
+	l.emitSelectionChange()
 }
 
 func (l *TableView) moveUp(dy int) {
@@ -311,6 +350,7 @@ func (l *TableView) moveUp(dy int) {
 	if l.selectedRow == -1 {
 		if l.rowCount != 0 {
 			l.selectedRow = 0
+			l.emitSelectionChange()
 		}
 		return
 	}
@@ -322,6 +362,7 @@ func (l *TableView) moveUp(dy int) {
 	}
 
 	l.EnsureRowVisible()
+	l.emitSelectionChange()
 }
 
 func (l *TableView) moveDown(dy int) {
@@ -338,6 +379,7 @@ func (l *TableView) moveDown(dy int) {
 	}
 
 	l.EnsureRowVisible()
+	l.emitSelectionChange()
 }
 
 func (l *TableView) moveRight(dx int) {
@@ -357,6 +399,7 @@ func (l *TableView) moveRight(dx int) {
 	}
 
 	l.EnsureColVisible()
+	l.emitSelectionChange()
 }
 
 func (l *TableView) moveLeft(dx int) {
@@ -376,6 +419,7 @@ func (l *TableView) moveLeft(dx int) {
 	}
 
 	l.EnsureColVisible()
+	l.emitSelectionChange()
 }
 
 func (l *TableView) isColVisible(idx int) bool {
@@ -483,7 +527,7 @@ func (l *TableView) mouseToCol(dx int) int {
 	}
 
 	if dx < shift {
-		return l.selectedCol
+		return -1
 	}
 
 	idx := l.topCol
@@ -533,7 +577,6 @@ func (l *TableView) verticalScrollClick(dy int) {
 		l.moveDown(1)
 	} else if dy > 0 && dy < l.height-2 {
 		pos := ThumbPosition(l.selectedRow, l.rowCount, l.height-1)
-		l.Logger().Printf("POS: %v, DY: %v", pos, dy)
 		if pos > dy {
 			l.moveUp(l.height - 3)
 		} else if pos < dy {
@@ -567,21 +610,51 @@ func (l *TableView) processMouseClick(ev Event) bool {
 	}
 
 	if dy < 2 {
-		// Header - no action now
+		l.headerClicked(dx)
 		return true
 	}
 
 	dy -= 2
 	l.selectedRow = l.topRow + dy
 
-	oldCol := l.selectedCol
-	l.selectedCol = l.mouseToCol(dx)
-
-	if oldCol != l.selectedCol {
+	newCol := l.mouseToCol(dx)
+	if newCol != l.selectedCol {
+		l.selectedCol = newCol
 		l.EnsureColVisible()
+		l.emitSelectionChange()
 	}
 
 	return true
+}
+
+func (l *TableView) headerClicked(dx int) {
+	colID := l.mouseToCol(dx)
+	if colID == -1 {
+		if l.onAction != nil {
+			ev := TableEvent{Action: TableActionSort, Col: -1, Row: -1}
+			l.onAction(ev)
+		}
+	} else {
+		sort := l.columns[colID].Sort
+
+		for idx, _ := range l.columns {
+			l.columns[idx].Sort = SortNone
+		}
+
+		if sort == SortAsc {
+			sort = SortDesc
+		} else if sort == SortNone {
+			sort = SortAsc
+		} else {
+			sort = SortNone
+		}
+		l.columns[colID].Sort = sort
+
+		if l.onAction != nil {
+			ev := TableEvent{Action: TableActionSort, Col: -1, Row: -1, Sort: sort}
+			l.onAction(ev)
+		}
+	}
 }
 
 /*
@@ -609,6 +682,7 @@ func (l *TableView) ProcessEvent(event Event) bool {
 			if event.Mod == term.ModAlt {
 				l.selectedRow = 0
 				l.EnsureRowVisible()
+				l.emitSelectionChange()
 			} else {
 				l.home()
 			}
@@ -617,6 +691,7 @@ func (l *TableView) ProcessEvent(event Event) bool {
 			if event.Mod == term.ModAlt {
 				l.selectedRow = l.rowCount - 1
 				l.EnsureRowVisible()
+				l.emitSelectionChange()
 			} else {
 				l.end()
 			}
@@ -639,13 +714,24 @@ func (l *TableView) ProcessEvent(event Event) bool {
 		case term.KeyPgup:
 			l.moveUp(l.height - 3)
 			return true
-			// 	case term.KeyCtrlM:
-			// 		if l.currSelection != -1 && l.onSelectItem != nil {
-			// 			ev := Event{Y: l.currSelection, Msg: l.SelectedItemText()}
-			// 			go l.onSelectItem(ev)
-			// 		}
-			// 	default:
-			// 		return false
+		case term.KeyCtrlM:
+		case term.KeyF2:
+			if l.selectedRow != -1 && l.selectedCol != -1 && l.onAction != nil {
+				ev := TableEvent{Action: TableActionEdit, Col: l.selectedCol, Row: l.selectedRow}
+				go l.onAction(ev)
+			}
+		case term.KeyDelete:
+			if l.selectedRow != 1 && l.onAction != nil {
+				ev := TableEvent{Action: TableActionDelete, Col: l.selectedCol, Row: l.selectedRow}
+				go l.onAction(ev)
+			}
+		case term.KeyInsert:
+			if l.onAction != nil {
+				ev := TableEvent{Action: TableActionDelete, Col: l.selectedCol, Row: l.selectedRow}
+				go l.onAction(ev)
+			}
+		default:
+			return false
 		}
 	case EventMouse:
 		return l.processMouseClick(event)
@@ -720,4 +806,8 @@ func (l *TableView) OnKeyPress(fn func(term.Key) bool) {
 
 func (l *TableView) OnDrawCell(fn func(*ColumnDrawInfo)) {
 	l.onDrawCell = fn
+}
+
+func (l *TableView) OnAction(fn func(TableEvent)) {
+	l.onAction = fn
 }

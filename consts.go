@@ -42,6 +42,10 @@ type (
 	// SelectDialogType sets the way of choosing an item from a list for
 	// SelectionDialog control: a list-based selections, or radio group one
 	SelectDialogType uint
+	// TableAction is a type of user-generated event for TableView
+	TableAction int
+	// SortOrder is a way of sorting rows in TableView
+	SortOrder int
 )
 
 // Event is structure used by Views and controls to communicate with Composer
@@ -291,4 +295,26 @@ const (
 	SelectDialogList SelectDialogType = iota
 	// SelectDialogList - all items are displayed in a RadioGroup
 	SelectDialogRadio
+)
+
+// TableAction constants
+const (
+	// A user pressed F2 or Enter key in TableView
+	TableActionEdit TableAction = iota
+	// A user pressed Insert key in TableView
+	TableActionNew
+	// A user pressed Delete key in TableView
+	TableActionDelete
+	// A user clicked on a column header in TableView
+	TableActionSort
+)
+
+// SortOrder constants
+const (
+	// Do not sort
+	SortNone SortOrder = iota
+	// Sort ascending
+	SortAsc
+	// Sort descending
+	SortDesc
 )

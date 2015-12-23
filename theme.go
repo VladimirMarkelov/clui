@@ -138,7 +138,7 @@ func (s *ThemeManager) Reset() {
 	defTheme.objects[ObjProgressBar] = "░▒"
 	defTheme.objects[ObjBarChart] = "█─│┌┐└┘┬┴├┤┼"
 	defTheme.objects[ObjSparkChart] = "█"
-	defTheme.objects[ObjTableView] = "─│┼"
+	defTheme.objects[ObjTableView] = "─│┼▼▲"
 
 	defTheme.colors[ColorDisabledText] = ColorBlackBold
 	defTheme.colors[ColorDisabledBack] = ColorWhite
