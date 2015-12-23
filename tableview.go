@@ -5,43 +5,39 @@ import (
 	term "github.com/nsf/termbox-go"
 )
 
-type Column struct {
-	Title     string
-	Width     int
-	Alignment Align
-	Fg, Bg    term.Attribute
-	Sort      SortOrder
-}
-
-type ColumnDrawInfo struct {
-	Row          int
-	Col          int
-	Width        int
-	Text         string
-	Alignment    Align
-	RowSelected  bool
-	CellSelected bool
-	Fg           term.Attribute
-	Bg           term.Attribute
-}
-
-type TableEvent struct {
-	Action TableAction
-	Col    int
-	Row    int
-	Sort   SortOrder
-}
-
 /*
-TableView is control to display a list of items and allow to user to select any of them.
-Content is scrollable with arrow keys or by clicking up and bottom buttons
-on the scroll(now content is scrollable with mouse dragging only on Windows).
+TableView is control to display a list of items in a table(grid).
+Content is scrollable with arrow keys and mouse.
+TableView always works in virtual mode - it does not keep table
+data and always asks for the cell value using callback OnDrawCell.
 
-TableView calls onSelectItem item function after a user changes currently
-selected item with mouse or using keyboard (extra case: the event is emitted
-when a user presses Enter - the case is used in ComboBox to select an item
-from drop down list). Event structure has 2 fields filled: Y - selected
-item number in list(-1 if nothing is selected), Msg - text of the selected item.
+Predefined hotkeys:
+  Arrows - move cursor
+  Home, End - move cursor to first and last column, respectively
+  Alt+Home, Alt+End - move cursor to first and last row, respectively
+  PgDn, PgUp - move cursor to a screen down and up
+  Enter, F2 - emits event TableActionEdit (
+  Insert - emits event TableActionNew
+  Delete - emits event TableActionDelete
+
+Events:
+  OnDrawCell - called every time the table is going to draw a cell.
+        The argument is ColumnDrawInfo prefilled with the current
+        cell attributes. Callback should fill at least the field
+        Title. Filling Bg, Fg, and Alignment are optional. Changing
+        other fields in callback does not make any difference - they
+        are only for caller convenience
+  OnAction - called when a user pressed some hotkey(please, see
+        above) or clicks any column header(in this case, the control
+        sends TableActionSort event and fills column number and
+        sorting type - no sort, ascending, descending)
+  OnKeyPress - called every time a user presses a key. Callback should
+        return true if TableView must skip internal key processing.
+        E.g, a user can disable emitting TableActionDelete event by
+        adding callback OnKeyPress and retun true in case of Delete
+        key is pressed
+  OnSelectCell - called in case of the currently selected row or
+        column is changed
 */
 type TableView struct {
 	ControlBase
@@ -61,8 +57,63 @@ type TableView struct {
 	onKeyPress   func(term.Key) bool
 	onSelectCell func(int, int)
 
+	// internal variable to avoid sending onSelectCell twice or more
+	// in case of current cell is unchanged
 	lastEventCol int
 	lastEventRow int
+}
+
+// Column is a information about a table column.
+// When one sets a column list, it the fields Title
+// and Width should be set. All other fields can be
+// undefined.
+type Column struct {
+	Title     string
+	Width     int
+	Alignment Align
+	Fg, Bg    term.Attribute
+	Sort      SortOrder
+}
+
+// ColumnDrawInfo is a structure used in OnDrawCell event.
+// A callback should assign Text field otherwise the cell
+// will be empty. In addition to it, the callback can
+// change Bg, Fg, and Alignment to display customizes
+// info. All other non-mentioned fields are for a user
+// convinience and used to describe the cell more detailed,
+// changing that fields affects nothing
+type ColumnDrawInfo struct {
+	// row number
+	Row int
+	// column number
+	Col int
+	// width of the cell
+	Width int
+	// cell displayed text
+	Text string
+	// text alignment
+	Alignment Align
+	// is the row that contains the cell selected(active)
+	RowSelected bool
+	// is the column that contains the cell selected(active)
+	CellSelected bool
+	// current text color
+	Fg term.Attribute
+	// current background color
+	Bg term.Attribute
+}
+
+// TableEvent is structure to describe the common action that a
+// TableView ask for while a user is interacting with the table
+type TableEvent struct {
+	// requested action: Add, Edit, Delete, Sort data
+	Action TableAction
+	// Currently selected column
+	Col int
+	// Currently selected row (it is not used for TableActionSort)
+	Row int
+	// Sort order (it is used only in TableActionSort event)
+	Sort SortOrder
 }
 
 /*
@@ -444,6 +495,8 @@ func (l *TableView) isColVisible(idx int) bool {
 	return false
 }
 
+// EnsureColVisible scrolls the table horizontally
+// to make the curently selected column fully visible
 func (l *TableView) EnsureColVisible() {
 	if l.isColVisible(l.selectedCol) {
 		return
@@ -485,7 +538,8 @@ func (l *TableView) EnsureColVisible() {
 	l.topCol = toShow
 }
 
-// EnsureRowVisible makes the currently selected row is visible and scrolls the item list if it is required
+// EnsureRowVisible scrolls the table vertically
+// to make the curently selected row visible
 func (l *TableView) EnsureRowVisible() {
 	length := l.rowCount
 
@@ -510,14 +564,6 @@ func (l *TableView) EnsureRowVisible() {
 			l.topRow = length - hgt
 		}
 	}
-}
-
-// Clear deletes all TableView items
-func (l *TableView) Clear() {
-	l.selectedRow = 0
-	l.selectedCol = 0
-	l.topRow = 0
-	l.topCol = 0
 }
 
 func (l *TableView) mouseToCol(dx int) int {
@@ -637,7 +683,7 @@ func (l *TableView) headerClicked(dx int) {
 	} else {
 		sort := l.columns[colID].Sort
 
-		for idx, _ := range l.columns {
+		for idx := range l.columns {
 			l.columns[idx].Sort = SortNone
 		}
 
@@ -651,7 +697,7 @@ func (l *TableView) headerClicked(dx int) {
 		l.columns[colID].Sort = sort
 
 		if l.onAction != nil {
-			ev := TableEvent{Action: TableActionSort, Col: -1, Row: -1, Sort: sort}
+			ev := TableEvent{Action: TableActionSort, Col: colID, Row: -1, Sort: sort}
 			l.onAction(ev)
 		}
 	}
@@ -727,7 +773,7 @@ func (l *TableView) ProcessEvent(event Event) bool {
 			}
 		case term.KeyInsert:
 			if l.onAction != nil {
-				ev := TableEvent{Action: TableActionDelete, Col: l.selectedCol, Row: l.selectedRow}
+				ev := TableEvent{Action: TableActionNew, Col: l.selectedCol, Row: l.selectedRow}
 				go l.onAction(ev)
 			}
 		default:
@@ -742,72 +788,148 @@ func (l *TableView) ProcessEvent(event Event) bool {
 
 // own methods
 
+// ShowLines returns true if table displays vertical
+// lines to separate columns
 func (l *TableView) ShowLines() bool {
 	return l.showVLines
 }
 
+// SetShowLines disables and enables displaying vertical
+// lines inside TableView
 func (l *TableView) SetShowLines(show bool) {
 	l.showVLines = show
 }
 
+// ShowRowNumber returns true if the table shows the
+// row number as the first table column. This virtual
+// column is always fixed and a user cannot change
+// displayed text
 func (l *TableView) ShowRowNumber() bool {
 	return l.showRowNo
 }
 
+// SetShowRowNumber turns on and off the first fixed
+// column of the table that displays the row number
 func (l *TableView) SetShowRowNumber(show bool) {
 	l.showRowNo = show
 }
 
+// Columns returns the current list of table columns
 func (l *TableView) Columns() []Column {
 	c := make([]Column, len(l.columns))
 	copy(c, l.columns)
 	return c
 }
 
+// SetColumns replaces existing table column list with
+// a new one. Be sure that every item has correct
+// Title and Width, all other column properties may
+// be undefined
 func (l *TableView) SetColumns(cols []Column) {
 	l.columns = cols
 }
 
+// SetColumnInfo replaces the existing column info
 func (l *TableView) SetColumnInfo(id int, col Column) {
 	if id < len(l.columns) {
 		l.columns[id] = col
 	}
 }
 
+// RowCount returns current row count
 func (l *TableView) RowCount() int {
 	return l.rowCount
 }
 
+// SetRowCount sets the new row count
 func (l *TableView) SetRowCount(count int) {
 	l.rowCount = count
 }
 
+// FullRowSelect returns if TableView hilites the selected
+// cell only or the whole row that contains the selected
+// cell. By default the colors for selected row and cell
+// are different
 func (l *TableView) FullRowSelect() bool {
 	return l.fullRowSelect
 }
 
+// SetFullRowSelect enables or disables hiliting of the
+// full row that contains the selected cell
 func (l *TableView) SetFullRowSelect(fullRow bool) {
 	l.fullRowSelect = fullRow
 }
 
-// OnSelectItem sets a callback that is called every time
-// the selected item is changed
+// OnSelectCell sets a callback that is called every time
+// the selected cell is changed
 func (l *TableView) OnSelectCell(fn func(int, int)) {
 	l.onSelectCell = fn
 }
 
 // OnKeyPress sets the callback that is called when a user presses a Key while
 // the controls is active. If a handler processes the key it should return
-// true. If handler returns false it means that the default handler will
+// true. If handler returns false it means that the default handler has to
 // process the key
 func (l *TableView) OnKeyPress(fn func(term.Key) bool) {
 	l.onKeyPress = fn
 }
 
+// OnDrawCell is called every time the table is going to display
+// a cell
 func (l *TableView) OnDrawCell(fn func(*ColumnDrawInfo)) {
 	l.onDrawCell = fn
 }
 
+// OnAction is called when the table wants a user application to
+// do some job like add, delete, edit or sort data
 func (l *TableView) OnAction(fn func(TableEvent)) {
 	l.onAction = fn
+}
+
+// SelectedRow returns currently selected row number or
+// -1 if no row is selected
+func (l *TableView) SelectedRow() int {
+	return l.selectedRow
+}
+
+// SelectedCol returns currently selected column number or
+// -1 if no column is selected
+func (l *TableView) SelectedCol() int {
+	return l.selectedCol
+}
+
+// SetSelectedRow changes the currently selected row.
+// If row is greater than number of row the last row
+// is selected. Set row to -1 to turn off selection.
+// The table scrolls automatically to display the column
+func (l *TableView) SetSelectedRow(row int) {
+	oldSelection := l.selectedRow
+	if row >= l.rowCount {
+		l.selectedRow = l.rowCount - 1
+	} else if row < -1 {
+		l.selectedRow = -1
+	}
+
+	if l.selectedRow != oldSelection {
+		l.EnsureRowVisible()
+		l.emitSelectionChange()
+	}
+}
+
+// SetSelectedCol changes the currently selected column.
+// If column is greater than number of columns the last
+// column is selected. Set row to -1 to turn off selection.
+// The table scrolls automatically to display the column
+func (l *TableView) SetSelectedCol(col int) {
+	oldSelection := l.selectedCol
+	if col >= len(l.columns) {
+		l.selectedCol = len(l.columns) - 1
+	} else if col < -1 {
+		l.selectedCol = -1
+	}
+
+	if l.selectedCol != oldSelection {
+		l.EnsureColVisible()
+		l.emitSelectionChange()
+	}
 }
