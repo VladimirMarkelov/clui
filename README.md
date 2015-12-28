@@ -18,9 +18,10 @@ The list of available controls:
 * SelectDialog (modal View to ask a user to select an item from the list - list can be ListBox or RadioGroup)
 * BarChart (Horizontal bar chart without scroll)
 * SparkChart (Show tabular data as a bar graph)
+* GridView (Table to show structured data - only virtual and readonly mode with scroll support)
 
 #### TODO
-* GridView (Table to show structured data - only virtual and readonly mode with scroll support)
+* More to come
 
 ## Screenshots
 The screencast of demo (based on custom termbox-go Window build) included in the library:
