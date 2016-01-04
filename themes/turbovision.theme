@@ -1,7 +1,7 @@
 ﻿//----------------- Theme properties -----------------
 title=TurboVision
 author=Vladimir Markelov
-version=1.0 (2015-11-02)
+version=1.0 (2016-01-04)
 parent=default
 
 
@@ -46,7 +46,7 @@ ProgressText       = yellow
 ProgressActiveBack = blue bold
 ProgressActiveText = yellow bold
 
-// button coltrol
+// button control
 ButtonBack=green bold
 ButtonText=black
 ButtonActiveBack=green bold
@@ -54,6 +54,29 @@ ButtonActiveText=white bold
 ButtonShadowBack=black
 ButtonDisabledText=black bold
 ButtonDisabledBack=white
+
+// bar chart control
+BarChartBack=black
+BarChartText=white
+
+// spark chart
+SparkChartBack=black
+SparkChartText=white
+SparkChartBarBack=black
+SparkChartBarText=cyan
+SparkChartMaxBack=black
+SparkChartMaxText=cyan bold
+
+// table view
+TableText=white
+TableBack=black
+TableSelectedText=white
+TableSelectedBack=black bold
+TableActiveCellText=white bold
+TableActiveCellBack=black bold
+TableLineText=white
+TableHeaderText=white
+TableHeaderBack=black
 
 //----------------- Objects -----------------
 SingleBorder=─│┌┐└┘
@@ -64,4 +87,7 @@ ViewButtons=^↓○[]
 CheckBox=[] X?
 Radio=() *
 ProgressBar=░▒
+BarChart=█─│┌┐└┘┬┴├┤┼
+SparkChart=█
+TableView=─│┼▼▲
 
