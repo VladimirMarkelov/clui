@@ -24,6 +24,10 @@ The list of available controls:
 * More to come
 
 ## Screenshots
+The main demo (theme changing and radio group control)
+
+<img src="./demos/clui_demo_main.gif" alt="Main Demo">
+
 The screencast of demo (based on custom termbox-go Window build) included in the library:
 
 <img src="./demos/demo.gif" alt="Library Demo">
