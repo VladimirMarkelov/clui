@@ -1,7 +1,7 @@
 package clui
 
 import (
-	clip "github.com/atotto/clipboard"
+	"github.com/atotto/clipboard"
 	xs "github.com/huandu/xstrings"
 	term "github.com/nsf/termbox-go"
 )
@@ -16,7 +16,7 @@ maximun then the text is automatically truncated.
 EditField calls onChage in case of its text is changed. Event field Msg contains the new text
 */
 type EditField struct {
-	ControlBase
+	BaseControl
 	// cursor position in edit text
 	cursorPos int
 	// the number of the first displayed text character - it is used in case of text is longer than edit width
@@ -35,7 +35,7 @@ type EditField struct {
 // text - text to edit.
 // scale - the way of scaling the control when the parent is resized. Use DoNotScale constant if the
 //  control should keep its original size.
-func NewEditField(view View, parent Control, width int, text string, scale int) *EditField {
+func CreateEditField(parent Control, width int, text string, scale int) *EditField {
 	e := new(EditField)
 	e.onChange = nil
 	e.SetTitle(text)
@@ -49,16 +49,16 @@ func NewEditField(view View, parent Control, width int, text string, scale int) 
 	e.cursorPos = xs.Len(text)
 	e.offset = 0
 	e.parent = parent
-	e.view = view
 	e.parent = parent
 	e.readonly = false
+	e.SetScale(scale)
 
 	e.SetConstraints(width, 1)
 
 	e.end()
 
 	if parent != nil {
-		parent.AddChild(e, scale)
+		parent.AddChild(e)
 	}
 
 	return e
@@ -82,21 +82,21 @@ func (e *EditField) SetTitle(title string) {
 	if e.title != title {
 		e.title = title
 		if e.onChange != nil {
-			ev := Event{Msg: title, Sender: e}
+			ev := Event{Msg: title}
 			go e.onChange(ev)
 		}
 	}
 }
 
 // Repaint draws the control on its View surface
-func (e *EditField) Repaint() {
-	canvas := e.view.Canvas()
+func (e *EditField) Draw() {
+	PushAttributes()
+	defer PopAttributes()
 
 	x, y := e.Pos()
 	w, _ := e.Size()
 
-	tm := e.view.Screen().Theme()
-	parts := []rune(tm.SysObject(ObjEdit))
+	parts := []rune(SysObject(ObjEdit))
 	chLeft, chRight := string(parts[0]), string(parts[1])
 
 	var textOut string
@@ -122,19 +122,19 @@ func (e *EditField) Repaint() {
 		}
 	}
 
-	fg, bg := RealColor(tm, e.fg, ColorEditText), RealColor(tm, e.bg, ColorEditBack)
+	fg, bg := RealColor(e.fg, ColorEditText), RealColor(e.bg, ColorEditBack)
 	if !e.Enabled() {
-		fg, bg = RealColor(tm, e.fg, ColorDisabledText), RealColor(tm, e.fg, ColorDisabledBack)
+		fg, bg = RealColor(e.fg, ColorDisabledText), RealColor(e.fg, ColorDisabledBack)
 	} else if e.Active() {
-		fg, bg = RealColor(tm, e.fg, ColorEditActiveText), RealColor(tm, e.bg, ColorEditActiveBack)
-
+		fg, bg = RealColor(e.fg, ColorEditActiveText), RealColor(e.bg, ColorEditActiveBack)
 	}
 
-	canvas.FillRect(x, y, w, 1, term.Cell{Ch: ' ', Bg: bg})
-	canvas.PutText(x, y, textOut, fg, bg)
-	if e.active {
-		wx, wy := e.view.Pos()
-		canvas.SetCursorPos(e.cursorPos+curOff+wx+e.x, wy+e.y)
+	SetTextColor(fg)
+	SetBackColor(bg)
+	FillRect(x, y, w, 1, ' ')
+	DrawRawText(x, y, textOut)
+	if e.Active() {
+		SetCursorPos(e.cursorPos+e.x+curOff, e.y)
 	}
 }
 
@@ -308,11 +308,11 @@ func (e *EditField) ProcessEvent(event Event) bool {
 			e.charRight()
 			return true
 		case term.KeyCtrlC:
-			clip.WriteAll(e.Title())
+			clipboard.WriteAll(e.Title())
 			return true
 		case term.KeyCtrlV:
 			if !e.readonly {
-				s, _ := clip.ReadAll()
+				s, _ := clipboard.ReadAll()
 				e.SetTitle(s)
 				e.end()
 			}
@@ -349,14 +349,14 @@ func (e *EditField) MaxWidth() int {
 // Method does nothing if new size is less than minimal size
 // EditField height cannot be changed - it equals 1 always
 func (e *EditField) SetSize(width, height int) {
-	if width != DoNotChange && (width > 1000 || width < e.minW) {
+	if width != KeepValue && (width > 1000 || width < e.minW) {
 		return
 	}
-	if height != DoNotChange && (height > 200 || height < e.minH) {
+	if height != KeepValue && (height > 200 || height < e.minH) {
 		return
 	}
 
-	if width != DoNotChange {
+	if width != KeepValue {
 		e.width = width
 	}
 

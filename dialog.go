@@ -11,8 +11,7 @@ import (
 // The dialog is modal, so a user cannot interact other
 // Views until the user closes the dialog
 type ConfirmationDialog struct {
-	view    View
-	parent  *Composer
+	view    *Window
 	result  int
 	onClose func()
 }
@@ -23,8 +22,7 @@ type ConfirmationDialog struct {
 // The dialog is modal, so a user cannot interact other
 // Views until the user closes the dialog
 type SelectDialog struct {
-	view    View
-	parent  *Composer
+	view    *Window
 	result  int
 	value   int
 	rg      *RadioGroup
@@ -43,7 +41,7 @@ type SelectDialog struct {
 // defaultButton is the number of button that is active right after
 //  dialog is created. If the number is greater than the number of
 //  buttons, no button is active
-func NewConfirmationDialog(c *Composer, title, question string, buttons []string, defaultButton int) *ConfirmationDialog {
+func CreateConfirmationDialog(title, question string, buttons []string, defaultButton int) *ConfirmationDialog {
 	dlg := new(ConfirmationDialog)
 
 	if len(buttons) == 0 {
@@ -52,72 +50,72 @@ func NewConfirmationDialog(c *Composer, title, question string, buttons []string
 
 	cw, ch := term.Size()
 
-	dlg.parent = c
-	dlg.view = c.CreateView(cw/2-12, ch/2-8, 20, 10, title)
+	dlg.view = AddWindow(cw/2-12, ch/2-8, 30, 3, title)
+	dlg.view.SetConstraints(30, 3)
 	dlg.view.SetModal(true)
 	dlg.view.SetPack(Vertical)
-	NewFrame(dlg.view, dlg.view, 1, 1, BorderNone, DoNotScale)
+	CreateFrame(dlg.view, 1, 1, BorderNone, Fixed)
 
-	fbtn := NewFrame(dlg.view, dlg.view, 1, 1, BorderNone, 1)
-	NewFrame(dlg.view, fbtn, 1, 1, BorderNone, DoNotScale)
-	lb := NewLabel(dlg.view, fbtn, 10, 3, question, 1)
-	NewFrame(dlg.view, fbtn, 1, 1, BorderNone, DoNotScale)
+	fbtn := CreateFrame(dlg.view, 1, 1, BorderNone, 1)
+	CreateFrame(fbtn, 1, 1, BorderNone, Fixed)
+	lb := CreateLabel(fbtn, 10, 3, question, 1)
 	lb.SetMultiline(true)
+	CreateFrame(fbtn, 1, 1, BorderNone, Fixed)
 
-	NewFrame(dlg.view, dlg.view, 1, 1, BorderNone, DoNotScale)
-	frm1 := NewFrame(dlg.view, dlg.view, 16, 4, BorderNone, DoNotScale)
-	NewFrame(dlg.view, frm1, 1, 1, BorderNone, 1)
+	CreateFrame(dlg.view, 1, 1, BorderNone, Fixed)
+	frm1 := CreateFrame(dlg.view, 16, 4, BorderNone, Fixed)
+	CreateFrame(frm1, 1, 1, BorderNone, 1)
 
 	bText := buttons[0]
-	btn1 := NewButton(dlg.view, frm1, AutoSize, AutoSize, bText, DoNotScale)
+	btn1 := CreateButton(frm1, AutoSize, AutoSize, bText, Fixed)
 	btn1.OnClick(func(ev Event) {
 		dlg.result = DialogButton1
-		c.DestroyView(dlg.view)
+		composer().DestroyWindow(dlg.view)
 		if dlg.onClose != nil {
 			go dlg.onClose()
 		}
 	})
 	if defaultButton == DialogButton1 {
-		dlg.view.ActivateControl(btn1)
+		ActivateControl(dlg.view, btn1)
 	}
 	var btn2, btn3 *Button
 
 	if len(buttons) > 1 {
-		NewFrame(dlg.view, frm1, 1, 1, BorderNone, 1)
-		btn2 = NewButton(dlg.view, frm1, AutoSize, AutoSize, buttons[1], DoNotScale)
+		CreateFrame(frm1, 1, 1, BorderNone, 1)
+		btn2 = CreateButton(frm1, AutoSize, AutoSize, buttons[1], Fixed)
 		btn2.OnClick(func(ev Event) {
 			dlg.result = DialogButton2
-			c.DestroyView(dlg.view)
+			composer().DestroyWindow(dlg.view)
 			if dlg.onClose != nil {
 				go dlg.onClose()
 			}
 		})
 		if defaultButton == DialogButton2 {
-			dlg.view.ActivateControl(btn2)
+			ActivateControl(dlg.view, btn2)
 		}
 	}
 	if len(buttons) > 2 {
-		NewFrame(dlg.view, frm1, 1, 1, BorderNone, 1)
-		btn3 = NewButton(dlg.view, frm1, AutoSize, AutoSize, buttons[2], DoNotScale)
+		CreateFrame(frm1, 1, 1, BorderNone, 1)
+		btn3 = CreateButton(frm1, AutoSize, AutoSize, buttons[2], Fixed)
 		btn3.OnClick(func(ev Event) {
 			dlg.result = DialogButton3
-			c.DestroyView(dlg.view)
+			composer().DestroyWindow(dlg.view)
 			if dlg.onClose != nil {
 				go dlg.onClose()
 			}
 		})
 		if defaultButton == DialogButton3 {
-			dlg.view.ActivateControl(btn3)
+			ActivateControl(dlg.view, btn3)
 		}
 	}
 
-	NewFrame(dlg.view, frm1, 1, 1, BorderNone, 1)
+	CreateFrame(frm1, 1, 1, BorderNone, 1)
 
 	dlg.view.OnClose(func(ev Event) {
 		if dlg.result == DialogAlive {
 			dlg.result = DialogClosed
 			if ev.X != 1 {
-				c.DestroyView(dlg.view)
+				composer().DestroyWindow(dlg.view)
 			}
 			if dlg.onClose != nil {
 				go dlg.onClose()
@@ -152,7 +150,7 @@ func (d *ConfirmationDialog) Result() int {
 //  the dialog is created
 // typ is a selection type: ListBox or RadioGroup
 // Returns nil in case of creation process fails, e.g, if item list is empty
-func NewSelectDialog(c *Composer, title string, items []string, selectedItem int, typ SelectDialogType) *SelectDialog {
+func CreateSelectDialog(title string, items []string, selectedItem int, typ SelectDialogType) *SelectDialog {
 	dlg := new(SelectDialog)
 
 	if len(items) == 0 {
@@ -162,16 +160,16 @@ func NewSelectDialog(c *Composer, title string, items []string, selectedItem int
 
 	cw, ch := term.Size()
 
-	dlg.parent = c
 	dlg.typ = typ
-	dlg.view = c.CreateView(cw/2-12, ch/2-8, 20, 10, title)
+	dlg.view = AddWindow(cw/2-12, ch/2-8, 20, 10, title)
 	dlg.view.SetModal(true)
 	dlg.view.SetPack(Vertical)
 
 	if typ == SelectDialogList {
-		fList := NewFrame(dlg.view, dlg.view, 1, 1, BorderNone, 1)
-		fList.SetPaddings(1, 1, 0, 0)
-		dlg.list = NewListBox(dlg.view, fList, 15, 5, 1)
+		fList := CreateFrame(dlg.view, 1, 1, BorderNone, 1)
+		fList.SetPaddings(1, 1)
+		fList.SetGaps(0, 0)
+		dlg.list = CreateListBox(fList, 15, 5, 1)
 		for _, item := range items {
 			dlg.list.AddItem(item)
 		}
@@ -179,12 +177,13 @@ func NewSelectDialog(c *Composer, title string, items []string, selectedItem int
 			dlg.list.SelectItem(selectedItem)
 		}
 	} else {
-		fRadio := NewFrame(dlg.view, dlg.view, 1, 1, BorderNone, DoNotScale)
-		fRadio.SetPaddings(1, 1, 0, 0)
+		fRadio := CreateFrame(dlg.view, 1, 1, BorderNone, Fixed)
+		fRadio.SetPaddings(1, 1)
+		fRadio.SetGaps(0, 0)
 		fRadio.SetPack(Vertical)
-		dlg.rg = NewRadioGroup()
+		dlg.rg = CreateRadioGroup()
 		for _, item := range items {
-			r := NewRadio(dlg.view, fRadio, AutoSize, item, DoNotScale)
+			r := CreateRadio(fRadio, AutoSize, item, Fixed)
 			dlg.rg.AddItem(r)
 		}
 		if selectedItem >= 0 && selectedItem < len(items) {
@@ -192,9 +191,9 @@ func NewSelectDialog(c *Composer, title string, items []string, selectedItem int
 		}
 	}
 
-	frm1 := NewFrame(dlg.view, dlg.view, 16, 4, BorderNone, DoNotScale)
-	NewFrame(dlg.view, frm1, 1, 1, BorderNone, 1)
-	btn1 := NewButton(dlg.view, frm1, AutoSize, AutoSize, "OK", DoNotScale)
+	frm1 := CreateFrame(dlg.view, 16, 4, BorderNone, Fixed)
+	CreateFrame(frm1, 1, 1, BorderNone, 1)
+	btn1 := CreateButton(frm1, AutoSize, AutoSize, "OK", Fixed)
 	btn1.OnClick(func(ev Event) {
 		dlg.result = DialogButton1
 		if dlg.typ == SelectDialogList {
@@ -202,30 +201,30 @@ func NewSelectDialog(c *Composer, title string, items []string, selectedItem int
 		} else {
 			dlg.value = dlg.rg.Selected()
 		}
-		c.DestroyView(dlg.view)
+		composer().DestroyWindow(dlg.view)
 		if dlg.onClose != nil {
 			go dlg.onClose()
 		}
 	})
 
-	NewFrame(dlg.view, frm1, 1, 1, BorderNone, 1)
-	btn2 := NewButton(dlg.view, frm1, AutoSize, AutoSize, "Cancel", DoNotScale)
+	CreateFrame(frm1, 1, 1, BorderNone, 1)
+	btn2 := CreateButton(frm1, AutoSize, AutoSize, "Cancel", Fixed)
 	btn2.OnClick(func(ev Event) {
 		dlg.result = DialogButton2
 		dlg.value = -1
-		c.DestroyView(dlg.view)
+		composer().DestroyWindow(dlg.view)
 		if dlg.onClose != nil {
 			go dlg.onClose()
 		}
 	})
-	dlg.view.ActivateControl(btn2)
-	NewFrame(dlg.view, frm1, 1, 1, BorderNone, 1)
+	ActivateControl(dlg.view, btn2)
+	CreateFrame(frm1, 1, 1, BorderNone, 1)
 
 	dlg.view.OnClose(func(ev Event) {
 		if dlg.result == DialogAlive {
 			dlg.result = DialogClosed
 			if ev.X != 1 {
-				c.DestroyView(dlg.view)
+				composer().DestroyWindow(dlg.view)
 			}
 			if dlg.onClose != nil {
 				go dlg.onClose()

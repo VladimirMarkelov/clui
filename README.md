@@ -1,6 +1,9 @@
 # clui
 Command Line User Interface (Console UI inspired by TurboVision) with built-in theme support.
 
+## Current version
+The current version is 0.5 and it has a lot of breaking changes coparing to previous one. The library was refactored and added support for new termbox features like mouse move event. Some constants and function changes their names. Please see details in [changelog](./changelog).
+
 ## Introduction
 The list of available controls:
 * View (Main control container - with maximize, window order and other window features)

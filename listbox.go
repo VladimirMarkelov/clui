@@ -17,13 +17,12 @@ from drop down list). Event structure has 2 fields filled: Y - selected
 item number in list(-1 if nothing is selected), Msg - text of the selected item.
 */
 type ListBox struct {
-	ControlBase
+	BaseControl
 	// own listbox members
 	items         []string
 	currSelection int
 	topLine       int
 	buttonPos     int
-	multicolor    bool
 
 	onSelectItem func(Event)
 	onKeyPress   func(term.Key) bool
@@ -37,7 +36,7 @@ width and heigth - are minimal size of the control.
 scale - the way of scaling the control when the parent is resized. Use DoNotScale constant if the
 control should keep its original size.
 */
-func NewListBox(view View, parent Control, width, height int, scale int) *ListBox {
+func CreateListBox(parent Control, width, height int, scale int) *ListBox {
 	l := new(ListBox)
 
 	if height == AutoSize {
@@ -53,41 +52,45 @@ func NewListBox(view View, parent Control, width, height int, scale int) *ListBo
 	l.items = make([]string, 0)
 	l.topLine = 0
 	l.parent = parent
-	l.view = view
 	l.buttonPos = -1
 
 	l.SetTabStop(true)
+	l.SetScale(scale)
 
 	l.onSelectItem = nil
 
 	if parent != nil {
-		parent.AddChild(l, scale)
+		parent.AddChild(l)
 	}
 
 	return l
 }
 
-func (l *ListBox) redrawScroll(canvas Canvas, tm Theme) {
-	fg, bg := RealColor(tm, l.fg, ColorScrollText), RealColor(tm, l.bg, ColorScrollBack)
-	fgThumb, bgThumb := RealColor(tm, l.fg, ColorThumbText), RealColor(tm, l.bg, ColorThumbBack)
+func (l *ListBox) drawScroll() {
+	PushAttributes()
+	defer PopAttributes()
 
 	pos := ThumbPosition(l.currSelection, len(l.items), l.height)
 	l.buttonPos = pos
-	canvas.DrawScroll(l.x+l.width-1, l.y, 1, l.height, pos, fg, bg, fgThumb, bgThumb, tm.SysObject(ObjScrollBar))
+
+	DrawScrollBar(l.x+l.width-1, l.y, 1, l.height, pos)
 }
 
-func (l *ListBox) redrawItems(canvas Canvas, tm Theme) {
+func (l *ListBox) drawItems() {
+	PushAttributes()
+	defer PopAttributes()
+
 	maxCurr := len(l.items) - 1
 	curr := l.topLine
 	dy := 0
 	maxDy := l.height - 1
 	maxWidth := l.width - 1
 
-	fg, bg := RealColor(tm, l.fg, ColorEditText), RealColor(tm, l.bg, ColorEditBack)
+	fg, bg := RealColor(l.fg, ColorEditText), RealColor(l.bg, ColorEditBack)
 	if l.Active() {
-		fg, bg = RealColor(tm, l.fg, ColorEditActiveText), RealColor(tm, l.bg, ColorEditActiveBack)
+		fg, bg = RealColor(l.fg, ColorEditActiveText), RealColor(l.bg, ColorEditActiveBack)
 	}
-	fgSel, bgSel := RealColor(tm, l.fgActive, ColorSelectionText), RealColor(tm, l.bgActive, ColorSelectionBack)
+	fgSel, bgSel := RealColor(l.fgActive, ColorSelectionText), RealColor(l.bgActive, ColorSelectionBack)
 
 	for curr <= maxCurr && dy <= maxDy {
 		f, b := fg, bg
@@ -95,13 +98,11 @@ func (l *ListBox) redrawItems(canvas Canvas, tm Theme) {
 			f, b = fgSel, bgSel
 		}
 
-		canvas.FillRect(l.x, l.y+dy, l.width-1, 1, term.Cell{Bg: b, Ch: ' ', Fg: f})
-		if l.multicolor {
-			canvas.PutColorizedText(l.x, l.y+dy, maxWidth, l.items[curr], f, b, Horizontal)
-		} else {
-			_, text := AlignText(l.items[curr], maxWidth, AlignLeft)
-			canvas.PutText(l.x, l.y+dy, text, f, b)
-		}
+		SetTextColor(f)
+		SetBackColor(b)
+		FillRect(l.x, l.y+dy, l.width-1, 1, ' ')
+		str := SliceColorized(l.items[curr], 0, maxWidth)
+		DrawText(l.x, l.y+dy, str)
 
 		curr++
 		dy++
@@ -109,20 +110,22 @@ func (l *ListBox) redrawItems(canvas Canvas, tm Theme) {
 }
 
 // Repaint draws the control on its View surface
-func (l *ListBox) Repaint() {
-	canvas := l.view.Canvas()
-	tm := l.view.Screen().Theme()
+func (l *ListBox) Draw() {
+	PushAttributes()
+	defer PopAttributes()
 
 	x, y := l.Pos()
 	w, h := l.Size()
 
-	bg := RealColor(tm, l.bg, ColorEditBack)
+	fg, bg := RealColor(l.fg, ColorEditText), RealColor(l.bg, ColorEditBack)
 	if l.Active() {
-		bg = RealColor(tm, l.bg, ColorEditActiveBack)
+		fg, bg = RealColor(l.fg, ColorEditActiveText), RealColor(l.bg, ColorEditActiveBack)
 	}
-	canvas.FillRect(x, y, w, h, term.Cell{Bg: bg, Ch: ' '})
-	l.redrawItems(canvas, tm)
-	l.redrawScroll(canvas, tm)
+	SetTextColor(fg)
+	SetBackColor(bg)
+	FillRect(x, y, w, h, ' ')
+	l.drawItems()
+	l.drawScroll()
 }
 
 func (l *ListBox) home() {
@@ -401,18 +404,4 @@ func (l *ListBox) OnKeyPress(fn func(term.Key) bool) {
 // ItemCount returns the number of items in the ListBox
 func (l *ListBox) ItemCount() int {
 	return len(l.items)
-}
-
-// MultiColored returns if the listbox checks and applies any
-// color related tags inside its title. If MultiColores is
-// false then title is displayed as is.
-// To read about available color tags, please see ColorParser
-func (l *ListBox) MultiColored() bool {
-	return l.multicolor
-}
-
-// SetMultiColored changes how the listbox output its title: as is
-// or parse and apply all internal color tags
-func (l *ListBox) SetMultiColored(multi bool) {
-	l.multicolor = multi
 }

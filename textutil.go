@@ -4,6 +4,7 @@ import (
 	xs "github.com/huandu/xstrings"
 	term "github.com/nsf/termbox-go"
 	"regexp"
+	"strings"
 )
 
 // Ellipsize truncates text to maxWidth by replacing a
@@ -62,8 +63,8 @@ func AlignText(str string, width int, align Align) (shift int, out string) {
 }
 
 // AlignColorizedText does the same as AlignText does but
-// it preserves the color of the letters byt adding correct
-// colro tags to the line beginning.
+// it preserves the color of the letters by adding correct
+// color tags to the line beginning.
 // Note: function is ineffective and a bit slow - do not use
 // it everywhere
 func AlignColorizedText(str string, width int, align Align) (int, string) {
@@ -86,7 +87,7 @@ func AlignColorizedText(str string, width int, align Align) (int, string) {
 	curr := 0
 	parser := NewColorParser(str, term.ColorBlack, term.ColorBlack)
 	out := ""
-	for curr <= skip+width {
+	for curr < skip+width {
 		elem := parser.NextElement()
 
 		if elem.Type == ElemEndOfText {
@@ -176,13 +177,87 @@ func SliceColorized(str string, start, end int) string {
 }
 
 // UnColorizeText removes all color-related tags from the
-// string. Tags to remove: <(f|t|b):.*>
+// string. Tags to remove: <(f|t|b|c):.*>
 func UnColorizeText(str string) string {
-	r1 := regexp.MustCompile("<f:[^>]*>")
-	r2 := regexp.MustCompile("<t:[^>]*>")
-	r3 := regexp.MustCompile("<b:[^>]*>")
+	rx := regexp.MustCompile("<(f|c|t|b):[^>]*>")
 
-	str = r1.ReplaceAllString(str, "")
-	str = r2.ReplaceAllString(str, "")
-	return r3.ReplaceAllString(str, "")
+	return rx.ReplaceAllString(str, "")
+}
+
+// StringToColor returns attribute by its string description.
+// Description is the list of attributes separated with
+// spaces, plus or pipe symbols. You can use 8 base colors:
+// black, white, red, green, blue, magenta, yellow, cyan
+// and a few modifiers:
+// bold or bright, underline or underlined, reverse
+// Note: some terminals do not support all modifiers, e.g,
+// Windows one understands only bold/bright - it makes the
+// color brighter with the modidierA
+// Examples: "red bold", "green+underline+bold"
+func StringToColor(str string) term.Attribute {
+	var parts []string
+	if strings.ContainsRune(str, '+') {
+		parts = strings.Split(str, "+")
+	} else if strings.ContainsRune(str, '|') {
+		parts = strings.Split(str, "|")
+	} else if strings.ContainsRune(str, ' ') {
+		parts = strings.Split(str, " ")
+	} else {
+		parts = append(parts, str)
+	}
+
+	var cmap = map[string]term.Attribute{
+		"default":    term.ColorDefault,
+		"black":      term.ColorBlack,
+		"red":        term.ColorRed,
+		"green":      term.ColorGreen,
+		"yellow":     term.ColorYellow,
+		"blue":       term.ColorBlue,
+		"magenta":    term.ColorMagenta,
+		"cyan":       term.ColorCyan,
+		"white":      term.ColorWhite,
+		"bold":       term.AttrBold,
+		"bright":     term.AttrBold, // windows make color brighter when it is bold
+		"underline":  term.AttrUnderline,
+		"underlined": term.AttrUnderline,
+		"reverse":    term.AttrReverse,
+	}
+
+	var clr term.Attribute
+	for _, item := range parts {
+		item = strings.Trim(item, " ")
+		item = strings.ToLower(item)
+
+		c, ok := cmap[item]
+		if ok {
+			clr |= c
+		}
+	}
+
+	return clr
+}
+
+// ColorToString returns string representation of the attribute
+func ColorToString(attr term.Attribute) string {
+	var out string
+	colors := []string{
+		"", "black", "red", "green", "yellow",
+		"blue", "magenta", "cyan", "white"}
+
+	rawClr := attr & 15
+	if rawClr < 8 {
+		out += colors[rawClr] + " "
+	}
+
+	if attr&term.AttrBold != 0 {
+		out += "bold "
+	}
+	if attr&term.AttrUnderline != 0 {
+		out += "underline "
+	}
+	if attr&term.AttrReverse != 0 {
+		out += "reverse "
+	}
+
+	return strings.TrimSpace(out)
 }

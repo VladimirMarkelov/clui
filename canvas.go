@@ -3,327 +3,518 @@ package clui
 import (
 	xs "github.com/huandu/xstrings"
 	term "github.com/nsf/termbox-go"
+	"strings"
 )
 
-/*
-FrameBuffer represents an object visible content. Used by Composer to
-keep all screen info and by View. All methods of FrameBuffer use relative
-corrdinate system that starts at left top FrameBuffer corner as 0,0
-*/
-type FrameBuffer struct {
-	buffer [][]term.Cell
-	w, h   int
+type attr struct {
+	text term.Attribute
+	back term.Attribute
 }
 
-// NewFrameBuffer creates new buffer. Width and height of a new buffer cannot be less than 3
-func NewFrameBuffer(w, h int) *FrameBuffer {
-	if w < 3 {
-		w = 3
-	}
-	if h < 3 {
-		h = 3
-	}
-
-	c := new(FrameBuffer)
-	c.SetSize(w, h)
-
-	return c
-}
-
-// Size returns current size
-func (fb *FrameBuffer) Size() (width int, height int) {
-	return fb.w, fb.h
+type rect struct {
+	x, y, w, h int
 }
 
 /*
-SetSize sets the new FrameBuffer size. If new size does not equal old size then
-FrameBuffer is recreated and cleared with default colors. Both FrameBuffer width and
-height must be greater than 2
+Canvas is a 'graphical' engine to draw primitives.
 */
-func (fb *FrameBuffer) SetSize(w, h int) {
-	if w < 3 {
-		w = 3
-	}
-	if h < 3 {
-		h = 3
-	}
-
-	if w == fb.w && h == fb.h {
-		return
-	}
-
-	fb.w, fb.h = w, h
-
-	fb.buffer = make([][]term.Cell, h)
-	for i := 0; i < h; i++ {
-		fb.buffer[i] = make([]term.Cell, w)
-	}
+type Canvas struct {
+	width     int
+	height    int
+	textColor term.Attribute
+	backColor term.Attribute
+	clipX     int
+	clipY     int
+	clipW     int
+	clipH     int
+	attrStack []attr
+	clipStack []rect
 }
 
-// Clear fills FrameBuffer with given background color
-func (fb *FrameBuffer) Clear(bg term.Attribute) {
-	s := term.Cell{Ch: ' ', Fg: ColorWhite, Bg: bg}
-	for y := 0; y < fb.h; y++ {
-		for x := 0; x < fb.w; x++ {
-			fb.buffer[y][x] = s
-		}
-	}
-}
+var (
+	canvas *Canvas
+)
 
-// FillRect fills area of FrameBuffer with user-defined rune and colors
-func (fb *FrameBuffer) FillRect(x, y, w, h int, s term.Cell) {
-	if x < 0 {
-		w += x
-		x = 0
-	}
-	if y < 0 {
-		h += y
-		y = 0
-	}
-	if x+w >= fb.w {
-		w = fb.w - x
-	}
-	if y+h >= fb.h {
-		h = fb.h - y
-	}
-
-	for yy := y; yy < y+h; yy++ {
-		for xx := x; xx < x+w; xx++ {
-			fb.buffer[yy][xx] = s
-		}
-	}
-}
-
-// Symbol returns current FrameBuffer cell value at given coordinates.
-// If coordinates are outside FrameBuffer ok is false
-func (fb *FrameBuffer) Symbol(x, y int) (term.Cell, bool) {
-	if x >= fb.w || x < 0 || y >= fb.h || y < 0 {
-		return term.Cell{Ch: ' '}, false
-	}
-
-	return fb.buffer[y][x], true
-}
-
-// PutSymbol sets value for the FrameBuffer cell: rune and its colors. Returns result of operation: e.g, if the symbol position is outside FrameBuffer the operation fails and the function returns false
-func (fb *FrameBuffer) PutSymbol(x, y int, s term.Cell) bool {
-	if x < 0 || x >= fb.w || y < 0 || y >= fb.h {
+func initCanvas() bool {
+	err := term.Init()
+	if err != nil {
 		return false
 	}
+	term.SetInputMode(term.InputEsc | term.InputMouse)
 
-	fb.buffer[y][x] = s
+	canvas = new(Canvas)
+	Reset()
+
 	return true
 }
 
-// PutChar sets value for the FrameBuffer cell: rune and its colors. Returns result of operation: e.g, if the symbol position is outside FrameBuffer the operation fails and the function returns false
-func (fb *FrameBuffer) PutChar(x, y int, c rune, fg, bg term.Attribute) bool {
-	if x < 0 || x >= fb.w || y < 0 || y >= fb.h {
-		return false
-	}
-
-	fb.buffer[y][x] = term.Cell{Ch: c, Fg: fg, Bg: bg}
-	return true
+// PushAttributes saves the current back and fore colors. Useful when used with
+// PopAttributes: you can save colors then change them to anything you like and
+// as the final step just restore original colors
+func PushAttributes() {
+	p := attr{text: canvas.textColor, back: canvas.backColor}
+	canvas.attrStack = append(canvas.attrStack, p)
 }
 
-// PutText draws horizontal string on FrameBuffer clipping by FrameBuffer boundaries. x and y are starting point, text is a string to display, fg and bg are text and background attributes
-func (fb *FrameBuffer) PutText(x, y int, text string, fg, bg term.Attribute) {
-	width := fb.w
+// PopAttributes restores saved with PushAttributes colors. Function does
+// nothing if there is no saved colors
+func PopAttributes() {
+	if len(canvas.attrStack) == 0 {
+		return
+	}
+	a := canvas.attrStack[len(canvas.attrStack)-1]
+	canvas.attrStack = canvas.attrStack[:len(canvas.attrStack)-1]
+	SetTextColor(a.text)
+	SetBackColor(a.back)
+}
 
-	if (x < 0 && xs.Len(text) <= -x) || x >= fb.w || y < 0 || y >= fb.h {
+// PushClip saves the current clipping window
+func PushClip() {
+	c := rect{x: canvas.clipX, y: canvas.clipY, w: canvas.clipW, h: canvas.clipH}
+	canvas.clipStack = append(canvas.clipStack, c)
+}
+
+// PopClip restores saved with PushClip clipping window
+func PopClip() {
+	if len(canvas.clipStack) == 0 {
+		return
+	}
+	c := canvas.clipStack[len(canvas.clipStack)-1]
+	canvas.clipStack = canvas.clipStack[:len(canvas.clipStack)-1]
+	SetClipRect(c.x, c.y, c.w, c.h)
+}
+
+// Reset reinitializes canvas: set clipping rectangle to the whole
+// terminal window, clears clip and color saved data, sets colors
+// to default ones
+func Reset() {
+	canvas.width, canvas.height = term.Size()
+	canvas.clipX, canvas.clipY = 0, 0
+	canvas.clipW, canvas.clipH = canvas.width, canvas.height
+	canvas.textColor = ColorWhite
+	canvas.backColor = ColorBlack
+
+	canvas.attrStack = make([]attr, 0)
+	canvas.clipStack = make([]rect, 0)
+}
+
+// InClipRect returns true if x and y position is inside current clipping
+// rectangle
+func InClipRect(x, y int) bool {
+	return x >= canvas.clipX && y >= canvas.clipY &&
+		x < canvas.clipX+canvas.clipW &&
+		y < canvas.clipY+canvas.clipH
+}
+
+func clip(x, y, w, h int) (cx int, cy int, cw int, ch int) {
+	if x+w < canvas.clipX || x > canvas.clipX+canvas.clipW ||
+		y+h < canvas.clipY || y > canvas.clipY+canvas.clipH {
+		return 0, 0, 0, 0
+	}
+
+	if x < canvas.clipX {
+		w = w - (canvas.clipX - x)
+		x = canvas.clipX
+	}
+	if y < canvas.clipY {
+		h = h - (canvas.clipY - y)
+		y = canvas.clipY
+	}
+	if x+w > canvas.clipX+canvas.clipW {
+		w = canvas.clipW - (x - canvas.clipX)
+	}
+	if y+h > canvas.clipY+canvas.clipH {
+		h = canvas.clipH - (y - canvas.clipY)
+	}
+
+	return x, y, w, h
+}
+
+// Flush makes termbox to draw everything to screen
+func Flush() {
+	term.Flush()
+}
+
+// SetSize sets the new Canvas size. If new size does not
+// equal old size then Canvas is recreated and cleared
+// with default colors. Both Canvas width and height must
+// be greater than 2
+func SetScreenSize(width int, height int) {
+	if canvas.width == width && canvas.height == height {
 		return
 	}
 
+	canvas.width = width
+	canvas.height = height
+
+	canvas.clipStack = make([]rect, 0)
+	SetClipRect(0, 0, width, height)
+}
+
+// Size returns current Canvas size
+func ScreenSize() (width int, height int) {
+	return canvas.width, canvas.height
+}
+
+// SetCursorPos sets text caret position. Used by controls like EditField
+func SetCursorPos(x int, y int) {
+	term.SetCursor(x, y)
+}
+
+// PutChar sets value for the Canvas cell: rune and its colors. Returns result of
+// operation: e.g, if the symbol position is outside Canvas the operation fails
+// and the function returns false
+func PutChar(x, y int, r rune) bool {
+	if InClipRect(x, y) {
+		term.SetCell(x, y, r, canvas.textColor, canvas.backColor)
+		return true
+	}
+
+	return false
+}
+
+func putCharUnsafe(x, y int, r rune) {
+	term.SetCell(x, y, r, canvas.textColor, canvas.backColor)
+}
+
+// Symbol returns the character and its attributes by its coordinates
+func Symbol(x, y int) (term.Cell, bool) {
+	if x >= 0 && x < canvas.width && y >= 0 && y < canvas.height {
+		cells := term.CellBuffer()
+		return cells[y*canvas.width+x], true
+	}
+	return term.Cell{Ch: ' '}, false
+}
+
+// SetTextColor changes current text color
+func SetTextColor(clr term.Attribute) {
+	canvas.textColor = clr
+}
+
+// SetBackColor changes current background color
+func SetBackColor(clr term.Attribute) {
+	canvas.backColor = clr
+}
+
+func TextColor() term.Attribute {
+	return canvas.textColor
+}
+
+func BackColor() term.Attribute {
+	return canvas.backColor
+}
+
+// SetClipRect defines a new clipping rect. Maybe useful with PopClip and
+// PushClip functions
+func SetClipRect(x, y, w, h int) {
 	if x < 0 {
-		xx := -x
 		x = 0
-		text = xs.Slice(text, xx, -1)
 	}
-	text = CutText(text, width)
+	if y < 0 {
+		y = 0
+	}
+	if x+w > canvas.width {
+		w = canvas.width - x
+	}
+	if y+h > canvas.height {
+		h = canvas.height - h
+	}
 
-	dx := 0
-	for _, char := range text {
-		s := term.Cell{Ch: char, Fg: fg, Bg: bg}
-		if y >= 0 && y < fb.h && x+dx >= 0 && x+dx < fb.w {
-			fb.buffer[y][x+dx] = s
-		}
-		dx++
-	}
+	canvas.clipX = x
+	canvas.clipY = y
+	canvas.clipW = w
+	canvas.clipH = h
 }
 
-// PutVerticalText draws vertical string on FrameBuffer clipping by
-// FrameBuffer boundaries. x and y are starting point, text is a string
-// to display, fg and bg are text and background attributes
-func (fb *FrameBuffer) PutVerticalText(x, y int, text string, fg, bg term.Attribute) {
-	height := fb.h
+// ClipRect returns the current clipping rectangle
+func ClipRect() (x int, y int, w int, h int) {
+	return canvas.clipX, canvas.clipY, canvas.clipW, canvas.clipH
+}
 
-	if (y < 0 && xs.Len(text) <= -y) || x < 0 || y < 0 || x >= fb.w {
+// DrawHorizontalLine draws the part of the horizontal line that is inside
+// current clipping rectangle
+func DrawHorizontalLine(x, y, w int, r rune) {
+	x, y, w, _ = clip(x, y, w, 1)
+	if w == 0 {
 		return
 	}
 
-	if y < 0 {
-		yy := -y
-		y = 0
-		text = xs.Slice(text, yy, -1)
-	}
-	text = CutText(text, height)
-
-	dy := 0
-	for _, char := range text {
-		s := term.Cell{Ch: char, Fg: fg, Bg: bg}
-		fb.buffer[y+dy][x] = s
-		dy++
+	for i := x; i < x+w; i++ {
+		putCharUnsafe(i, y, r)
 	}
 }
 
-/*
-PutColorizedText draws multicolor string on Canvas clipping by Canvas boundaries.
-Multiline is not supported.
-Various parts of text can be colorized with html-like tags. Every tag must start with '<'
-followed by tag type and colon(without space between them), atrribute in human redable form,
-and closing '>'.
-Available tags are:
-'f' & 't' - sets new text color
-'b' - sets new background color
-Available attributes (it is possible to write a few attributes for one tag separated with space):
-empty string - reset the color to default value (that is passed as argument)
-'bold' or 'bright' - bold or brigther color(depends on terminal)
-'underline' and 'underlined' - underined text(not every terminal can do it)
-'reversed' - reversed text and background
-other available attributes are color names: black, red, green, yellow, blue, magenta, cyan, white.
-
-Example: PutColorizedText(0, 0, 10, "<t:red bold><b:yellow>E<t:>xample, ColorBlack, ColorWhite, Horizontal)
-It displays red letter 'C' on a yellow background, then switch text color to default one and draws
-other letters in black text and yellow background colors. Default background color is not used, so
-it can be set as ColroDefault in a method call
-*/
-func (fb *FrameBuffer) PutColorizedText(x, y, max int, text string, fg, bg term.Attribute, dir Direction) {
-	var dx, dy int
-	if dir == Horizontal {
-		dx = 1
-	} else {
-		dy = 1
+// DrawVerticalLine draws the part of the vertical line that is inside current
+// clipping rectangle
+func DrawVerticalLine(x, y, h int, r rune) {
+	x, y, _, h = clip(x, y, 1, h)
+	if h == 0 {
+		return
 	}
 
-	parser := NewColorParser(text, fg, bg)
+	for i := y; i < y+h; i++ {
+		putCharUnsafe(x, i, r)
+	}
+}
+
+// DrawText draws the part of text that is inside the current clipping
+// rectangle. DrawText always paints colorized string. If you want to draw
+// raw string then use DrawRawText function
+func DrawText(x, y int, text string) {
+	PushAttributes()
+	defer PopAttributes()
+
+	defText, defBack := TextColor(), BackColor()
+	firstdrawn := InClipRect(x, y)
+
+	parser := NewColorParser(text, defText, defBack)
 	elem := parser.NextElement()
-	for elem.Type != ElemEndOfText && max > 0 {
+	for elem.Type != ElemEndOfText {
 		if elem.Type == ElemPrintable {
-			fb.PutChar(x, y, elem.Ch, elem.Fg, elem.Bg)
-			x += dx
-			y += dy
-			max--
+			SetTextColor(elem.Fg)
+			SetBackColor(elem.Bg)
+			drawn := PutChar(x, y, elem.Ch)
+			x += 1
+			if firstdrawn && !drawn {
+				break
+			}
 		}
 
 		elem = parser.NextElement()
 	}
 }
 
-/*
-DrawFrame paints a frame inside FrameBuffer with optional border
-rune set(by default, in case of border is empty string, the rune set
-equals "─│┌┐└┘" - single border). The inner area of frame is not
-filled - in other words it is transparent
-*/
-func (fb *FrameBuffer) DrawFrame(x, y, w, h int, fg, bg term.Attribute, frameChars string) {
-	if h < 1 || w < 1 {
+// DrawRawText draws the part of text that is inside the current clipping
+// rectangle. DrawRawText always paints string as is - no color changes.
+// If you want to draw string with color changing commands included then
+// use DrawText function
+func DrawRawText(x, y int, text string) {
+	cx, cy, cw, ch := ClipRect()
+	if x >= cx+cw || y < cy || y >= cy+ch {
 		return
 	}
 
-	if xs.Len(frameChars) < 6 {
-		frameChars = "─│┌┐└┘"
+	length := xs.Len(text)
+	if x+length < cx {
+		return
 	}
 
-	parts := []rune(frameChars)
+	if x < cx {
+		text = xs.Slice(text, cx-x, -1)
+		length = length - (cx - x)
+		x = cx
+	}
+	text = CutText(text, cw)
+
+	dx := 0
+	for _, ch := range text {
+		putCharUnsafe(x+dx, y, ch)
+		dx++
+	}
+}
+
+// DrawTextVertical draws the part of text that is inside the current clipping
+// rectangle. DrawTextVertical always paints colorized string. If you want to draw
+// raw string then use DrawRawTextVertical function
+func DrawTextVertical(x, y int, text string) {
+	PushAttributes()
+	defer PopAttributes()
+
+	defText, defBack := TextColor(), BackColor()
+	firstdrawn := InClipRect(x, y)
+
+	parser := NewColorParser(text, defText, defBack)
+	elem := parser.NextElement()
+	for elem.Type != ElemEndOfText {
+		if elem.Type == ElemPrintable {
+			SetTextColor(elem.Fg)
+			SetBackColor(elem.Bg)
+			drawn := PutChar(x, y, elem.Ch)
+			y += 1
+			if firstdrawn && !drawn {
+				break
+			}
+		}
+
+		elem = parser.NextElement()
+	}
+}
+
+// DrawRawTextVertical draws the part of text that is inside the current clipping
+// rectangle. DrawRawTextVertical always paints string as is - no color changes.
+// If you want to draw string with color changing commands included then
+// use DrawTextVertical function
+func DrawRawTextVertical(x, y int, text string) {
+	cx, cy, cw, ch := ClipRect()
+	if y >= cy+ch || x < cx || x >= cx+cw {
+		return
+	}
+
+	length := xs.Len(text)
+	if y+length < cy {
+		return
+	}
+
+	if y < cy {
+		text = xs.Slice(text, cy-y, -1)
+		length = length - (cy - y)
+		y = cy
+	}
+	text = CutText(text, ch)
+
+	dy := 0
+	for _, ch := range text {
+		putCharUnsafe(x, y+dy, ch)
+		dy++
+	}
+}
+
+// DrawFrame paints the frame without changing area inside it
+func DrawFrame(x, y, w, h int, border BorderStyle) {
+	var chars string
+	if border == BorderThick {
+		chars = SysObject(ObjDoubleBorder)
+	} else {
+		chars = SysObject(ObjSingleBorder)
+	}
+
+	parts := []rune(chars)
 	H, V, UL, UR, DL, DR := parts[0], parts[1], parts[2], parts[3], parts[4], parts[5]
 
-	if h == 1 {
-		for xx := x; xx < x+w; xx++ {
-			fb.PutChar(xx, y, H, fg, bg)
-		}
-		return
+	if InClipRect(x, y) {
+		putCharUnsafe(x, y, UL)
 	}
-	if w == 1 {
-		for yy := y; yy < y+h; yy++ {
-			fb.PutChar(x, yy, V, fg, bg)
-		}
-		return
+	if InClipRect(x+w-1, y+h-1) {
+		putCharUnsafe(x+w-1, y+h-1, DR)
+	}
+	if InClipRect(x, y+h-1) {
+		putCharUnsafe(x, y+h-1, DL)
+	}
+	if InClipRect(x+w-1, y) {
+		putCharUnsafe(x+w-1, y, UR)
 	}
 
-	fb.PutChar(x, y, UL, fg, bg)
-	fb.PutChar(x, y+h-1, DL, fg, bg)
-	fb.PutChar(x+w-1, y, UR, fg, bg)
-	fb.PutChar(x+w-1, y+h-1, DR, fg, bg)
-
-	for xx := x + 1; xx < x+w-1; xx++ {
-		fb.PutChar(xx, y, H, fg, bg)
-		fb.PutChar(xx, y+h-1, H, fg, bg)
+	var xx, yy, ww, hh int
+	xx, yy, ww, _ = clip(x+1, y, w-2, 1)
+	if ww > 0 {
+		DrawHorizontalLine(xx, yy, ww, H)
 	}
-	for yy := y + 1; yy < y+h-1; yy++ {
-		fb.PutChar(x, yy, V, fg, bg)
-		fb.PutChar(x+w-1, yy, V, fg, bg)
+	xx, yy, ww, _ = clip(x+1, y+h-1, w-2, 1)
+	if ww > 0 {
+		DrawHorizontalLine(xx, yy, ww, H)
+	}
+	xx, yy, _, hh = clip(x, y+1, 1, h-2)
+	if hh > 0 {
+		DrawVerticalLine(xx, yy, hh, V)
+	}
+	xx, yy, _, hh = clip(x+w-1, y+1, 1, h-2)
+	if hh > 0 {
+		DrawVerticalLine(xx, yy, hh, V)
 	}
 }
 
-/*
-SetCursorPos sets text caret position. In opposite to other FrameBuffer
-methods, x and y - are absolute console coordinates. Use negative values
-if you want to hide the caret. Used by controls like EditField
-*/
-func (fb *FrameBuffer) SetCursorPos(x, y int) {
-	term.SetCursor(x, y)
-}
-
-/*
-DrawScroll paints a scroll bar inside FrameBuffer.
-x, y - start position.
-w, h - width and height (if h equals 1 then horizontal scroll is drawn
-and vertical otherwise).
-pos - thumb position.
-fgScroll, bgScroll - scroll bar main attributes.
-fgThumb, bgThumb - thumb colors.
-scrollChars  - rune set(by default, in case of is is empty string, the
-rune set equals "░■▲▼")
-*/
-func (fb *FrameBuffer) DrawScroll(x, y, w, h, pos int, fgScroll, bgScroll, fgThumb, bgThumb term.Attribute, scrollChars string) {
-	if w < 1 || h < 1 {
+// DrawScrollBar displays a scrollbar. pos is the position of the thumb.
+// The function detects direction of the scrollbar automatically: if w is greater
+// than h then it draws horizontal scrollbar and vertical otherwise
+func DrawScrollBar(x, y, w, h, pos int) {
+	xx, yy, ww, hh := clip(x, y, w, h)
+	if ww < 1 || hh < 1 {
 		return
 	}
 
-	if scrollChars == "" {
-		scrollChars = "░■▲▼◄►"
-	}
+	PushAttributes()
+	defer PopAttributes()
 
-	parts := []rune(scrollChars)
-	chLine, chCursor, chUp, chDown := parts[0], parts[1], parts[2], parts[3]
-	chLeft, chRight := '◄', '►'
-	if len(parts) > 4 {
-		chLeft, chRight = parts[4], parts[5]
-	}
+	fg, bg := RealColor(ColorDefault, ColorScrollText), RealColor(ColorDefault, ColorScrollBack)
+	// TODO: add thumb styling
+	// fgThumb, bgThumb := RealColor(ColorDefault, ColorThumbText), RealColor(ColorDefault, ColorThumbBack)
+	SetTextColor(fg)
+	SetBackColor(bg)
 
-	if h == 1 {
-		fb.PutChar(x, y, chLeft, fgScroll, bgScroll)
-		fb.PutChar(x+w-1, y, chRight, fgScroll, bgScroll)
+	parts := []rune(SysObject(ObjScrollBar))
+	chLine, chThumb, chUp, chDown := parts[0], parts[1], parts[2], parts[3]
+	chLeft, chRight := parts[4], parts[5]
 
-		if w > 2 {
-			for xx := 1; xx < w-1; xx++ {
-				fb.PutChar(x+xx, y, chLine, fgScroll, bgScroll)
-			}
-		}
-
-		if pos != -1 {
-			fb.PutChar(x+pos, y, chCursor, fgThumb, bgThumb)
-		}
+	chStart, chEnd := chUp, chDown
+	var dx, dy int
+	if w > h {
+		chStart, chEnd = chLeft, chRight
+		dx = w - 1
+		dy = 0
 	} else {
-		fb.PutChar(x, y, chUp, fgScroll, bgScroll)
-		fb.PutChar(x, y+h-1, chDown, fgScroll, bgScroll)
+		dx = 0
+		dy = h - 1
+	}
 
-		if h > 2 {
-			for yy := 1; yy < h-1; yy++ {
-				fb.PutChar(x, y+yy, chLine, fgScroll, bgScroll)
+	if InClipRect(x, y) {
+		putCharUnsafe(x, y, chStart)
+	}
+	if InClipRect(x+dx, y+dy) {
+		putCharUnsafe(x+dx, y+dy, chEnd)
+	}
+	if xx == x && w > h {
+		xx = x + 1
+		ww--
+	}
+	if yy == y && w < h {
+		yy = y + 1
+		hh--
+	}
+	if xx+ww == x+w && w > h {
+		ww--
+	}
+	if yy+hh == y+h && w < h {
+		hh--
+	}
+
+	if w > h {
+		DrawHorizontalLine(xx, yy, ww, chLine)
+	} else {
+		DrawVerticalLine(xx, yy, hh, chLine)
+	}
+
+	if pos >= 0 {
+		if w > h {
+			if pos < w-2 && InClipRect(x+1+pos, y) {
+				putCharUnsafe(x+1+pos, y, chThumb)
+			}
+		} else {
+			if pos < h-2 && InClipRect(x, y+1+pos) {
+				putCharUnsafe(x, y+1+pos, chThumb)
 			}
 		}
+	}
+}
 
-		if pos != -1 {
-			fb.PutChar(x, y+pos, chCursor, fgThumb, bgThumb)
+// FillRect paints the area with r character using the current colors
+func FillRect(x, y, w, h int, r rune) {
+	x, y, w, h = clip(x, y, w, h)
+	if w < 1 || y < -1 {
+		return
+	}
+
+	for yy := y; yy < y+h; yy++ {
+		for xx := x; xx < x+w; xx++ {
+			putCharUnsafe(xx, yy, r)
 		}
 	}
+}
+
+// TextExtent calculates the width and the height of the text
+func TextExtent(text string) (int, int) {
+	if text == "" {
+		return 0, 0
+	}
+	parts := strings.Split(text, "\n")
+	h := len(parts)
+	w := 0
+	for _, p := range parts {
+		s := UnColorizeText(p)
+		l := len(s)
+		if l > w {
+			w = l
+		}
+	}
+
+	return h, w
 }

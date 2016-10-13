@@ -10,7 +10,7 @@ Radio button control. Unite a few radios in one radio group to
 make a user select one of available choices.
 */
 type Radio struct {
-	ControlBase
+	BaseControl
 	group    *RadioGroup
 	selected bool
 }
@@ -24,65 +24,67 @@ title - radio title.
 scale - the way of scaling the control when the parent is resized. Use DoNotScale constant if the
 control should keep its original size.
 */
-func NewRadio(view View, parent Control, width int, title string, scale int) *Radio {
+func CreateRadio(parent Control, width int, title string, scale int) *Radio {
 	c := new(Radio)
 
 	if width == AutoSize {
 		width = xs.Len(title) + 4
 	}
 
-	c.view = view
 	c.parent = parent
 
 	c.SetSize(width, 1) // TODO: only one line heigth is supported at that moment
 	c.SetConstraints(width, 1)
 	c.SetTitle(title)
 	c.SetTabStop(true)
+	c.SetScale(scale)
 
 	if parent != nil {
-		parent.AddChild(c, scale)
+		parent.AddChild(c)
 	}
 
 	return c
 }
 
 // Repaint draws the control on its View surface
-func (c *Radio) Repaint() {
+func (c *Radio) Draw() {
+	PushAttributes()
+	defer PopAttributes()
+
 	x, y := c.Pos()
 	w, h := c.Size()
-	canvas := c.view.Canvas()
-	tm := c.view.Screen().Theme()
 
-	fg, bg := RealColor(tm, c.fg, ColorControlText), RealColor(tm, c.bg, ColorControlBack)
+	fg, bg := RealColor(c.fg, ColorControlText), RealColor(c.bg, ColorControlBack)
 	if !c.Enabled() {
-		fg, bg = RealColor(tm, c.fg, ColorControlDisabledText), RealColor(tm, c.bg, ColorControlDisabledBack)
+		fg, bg = RealColor(c.fg, ColorControlDisabledText), RealColor(c.bg, ColorControlDisabledBack)
 	} else if c.Active() {
-		fg, bg = RealColor(tm, c.fg, ColorControlActiveText), RealColor(tm, c.bg, ColorControlActiveBack)
+		fg, bg = RealColor(c.fg, ColorControlActiveText), RealColor(c.bg, ColorControlActiveBack)
 	}
 
-	parts := []rune(tm.SysObject(ObjRadio))
-
+	parts := []rune(SysObject(ObjRadio))
 	cOpen, cClose, cEmpty, cCheck := parts[0], parts[1], parts[2], parts[3]
 	cState := cEmpty
 	if c.selected {
 		cState = cCheck
 	}
 
-	canvas.FillRect(x, y, w, h, term.Cell{Ch: ' ', Bg: bg})
+	SetTextColor(fg)
+	SetBackColor(bg)
+	FillRect(x, y, w, h, ' ')
 	if w < 3 {
 		return
 	}
 
-	canvas.PutSymbol(x, y, term.Cell{Ch: cOpen, Fg: fg, Bg: bg})
-	canvas.PutSymbol(x+2, y, term.Cell{Ch: cClose, Fg: fg, Bg: bg})
-	canvas.PutSymbol(x+1, y, term.Cell{Ch: cState, Fg: fg, Bg: bg})
+	PutChar(x, y, cOpen)
+	PutChar(x+2, y, cClose)
+	PutChar(x+1, y, cState)
 
 	if w < 5 {
 		return
 	}
 
-	shift, text := AlignText(c.title, w-4, c.align)
-	canvas.PutText(x+4+shift, y, text, fg, bg)
+	shift, text := AlignColorizedText(c.title, w-4, c.align)
+	DrawText(x+4+shift, y, text)
 }
 
 /*

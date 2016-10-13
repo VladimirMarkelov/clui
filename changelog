@@ -1,0 +1,41 @@
+﻿2016-10-13 - Version 0.5
+
+[+] Added mouse move and mouse button release support:
+    Now all windows can be dragged and resized with mouse
+[+] Added constants for dragging events - new type DragType
+[+] Added new type of Event MouseClick: it generates if a user does mouse
+    button down and mouse release at the same coordinates. In this case a
+    control recieves 3 events: mouse down, mouse release, and mouse click
+[+] Main loop moved to separate source file
+[+] Added test for color parsing functions
+
+[*] Logger moved to separate source file and it is global object now
+[*] Windows do not have their own interface - all objects are derived from the
+    same interface. It simplifies things like container objects
+[*] Library initialization is made simpler: only one call is required, there
+    is no need to create composer, theme manager etc manually - everything is
+    created inside library initialization
+[*] Because composer, theme manager and some other objects are hidden now then
+    a set of methods are just global library functions:
+        Event processing functions like Stop(), PutEvent() etc
+        Theme manager related functions like SysColor(), SysObject() etc
+[*] All functions to create new objects New* are renamed to New* functions.
+    CreateWindow now is very useful: it creates a window but it does not do
+    anything else, so the window is not displayed and a user cannot interact
+    it. Use AddWindow function instead of CreateWindows. The latter one is for
+    internal use by the library
+[*] All text output is colorized by default. So, Multicolor property is
+    removed. If you want to draw text as is then use DrawRaw* functions.
+[*] Now all drawing function uses the current canvas colors, so all color
+    function arguments of all drawing functions are removed. Use global
+    functions SetTextColor and SetBackColor to change colors before drawing.
+    PopAttributes and PushAttributes may come handy to save/restore canvas
+    attributes between drawing calls
+[*] Renamed a few constants to get rid of negative constructions:
+    DoNotScale -> Fixed
+    DoNotChange -> KeepValue
+
+[-] The first argument view of all Create* functions is removed as obsolete.
+    Now library does not require to set parent Window. It is sufficient to set
+    only control's parent. It made some functions more complex but it seems
+    easier for developer

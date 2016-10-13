@@ -5,18 +5,18 @@ import (
 )
 
 const (
-	// DoNotScale means 'never change size of the object when its parent resizes'
-	DoNotScale int = 0
+	// Fixed means 'never change size of the object when its parent resizes'
+	Fixed int = 0
 	// AutoSize is used only in constructors. It means that the constructor
 	// should either calculate the size of an object, e.g. for Label it is its text
 	// length, or use default intial values
 	AutoSize int = -1
-	// DoNotChange is used as a placeholder when you want to change only one
+	// KeepSize is used as a placeholder when you want to change only one
 	// value and keep other ones untouched. Used in SetSize and SetConstraints
 	// methods only
-	// Example: control.SetConstraint(10, DoNotChange) changes only minimal width
+	// Example: control.SetConstraint(10, KeepValue) changes only minimal width
 	// of the control and do not change the current minimal control height
-	DoNotChange int = -1
+	KeepValue int = -1
 )
 
 // Predefined types
@@ -46,6 +46,19 @@ type (
 	TableAction int
 	// SortOrder is a way of sorting rows in TableView
 	SortOrder int
+	DragType  int
+)
+
+const (
+	DragNone DragType = iota
+	DragMove
+	DragResizeLeft
+	DragResizeRight
+	DragResizeBottom
+	DragResizeBottomLeft
+	DragResizeBottomRight
+	DragResizeTopLeft
+	DragResizeTopRight
 )
 
 // Event is structure used by Views and controls to communicate with Composer
@@ -56,10 +69,6 @@ type Event struct {
 	Type EventType
 	// Mod - is a key modifier. Only Alt modifier is supported
 	Mod term.Modifier
-	// Sender is a control that fired the event. Can be nil
-	Sender Control
-	// View is parent View for Sender. Can be nil
-	View View
 	// Msg is a text part of the event. Used by few events: e.g, ListBox click
 	// sends a value of clicked item
 	Msg string
@@ -73,13 +82,16 @@ type Event struct {
 	Key term.Key
 	// Ch is a printable representation of pressed key combinaton
 	Ch rune
+	// For resize event - new terminal size
+	Width  int
+	Height int
 }
 
 // BorderStyle constants
 const (
 	BorderNone BorderStyle = iota
-	BorderSingle
-	BorderDouble
+	BorderThin
+	BorderThick
 )
 
 // Color predefined values
@@ -108,6 +120,14 @@ const (
 	HitOutside HitResult = iota
 	HitInside
 	HitBorder
+	HitTop
+	HitBottom
+	HitRight
+	HitLeft
+	HitTopLeft
+	HitTopRight
+	HitBottomRight
+	HitBottomLeft
 	HitButtonClose
 	HitButtonBottom
 	HitButtonMaximize
@@ -237,7 +257,7 @@ const (
 	EventKey EventType = iota
 	// an object or console size changed. X and Y are new width and height
 	EventResize
-	// Mouse button clicked. X and Y are coordinates of mouse click. Note: used only for non-Windows builds
+	// Mouse button clicked. X and Y are coordinates of mouse click
 	EventMouse
 	// Something bad happened
 	EventError
@@ -261,7 +281,7 @@ const (
 	// X defines how the content was changed: 0 - by pressing any key, 1 - by clicking mouse. This is used by compound controls, e.g, child ListBox of ComboBox should change its parent EditField text when a user selects a new item an ListBox with arrow keys and the ListBox should be closed if a user clicks on ListBox item
 	EventChanged
 	// Button event - button was clicked
-	EventClicked
+	EventClick
 	// dialog closed
 	EventDialogClose
 	// Close application

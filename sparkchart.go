@@ -26,7 +26,7 @@ AutoScale to false and Top value to 100.
 Note: negative and zero values are displayed as empty bar
 */
 type SparkChart struct {
-	ControlBase
+	BaseControl
 	data         []float64
 	valueWidth   int
 	hiliteMax    bool
@@ -43,7 +43,7 @@ w and h - are minimal size of the control.
 scale - the way of scaling the control when the parent is resized. Use DoNotScale constant if the
 control should keep its original size.
 */
-func NewSparkChart(view View, parent Control, w, h int, scale int) *SparkChart {
+func CreateSparkChart(parent Control, w, h int, scale int) *SparkChart {
 	c := new(SparkChart)
 
 	if w == AutoSize {
@@ -53,7 +53,6 @@ func NewSparkChart(view View, parent Control, w, h int, scale int) *SparkChart {
 		h = 5
 	}
 
-	c.view = view
 	c.parent = parent
 
 	c.SetSize(w, h)
@@ -62,31 +61,34 @@ func NewSparkChart(view View, parent Control, w, h int, scale int) *SparkChart {
 	c.hiliteMax = true
 	c.autosize = true
 	c.data = make([]float64, 0)
+	c.SetScale(scale)
 
 	if parent != nil {
-		parent.AddChild(c, scale)
+		parent.AddChild(c)
 	}
 
 	return c
 }
 
 // Repaint draws the control on its View surface
-func (b *SparkChart) Repaint() {
-	canvas := b.view.Canvas()
-	tm := b.view.Screen().Theme()
+func (b *SparkChart) Draw() {
+	PushAttributes()
+	defer PopAttributes()
 
-	fg, bg := RealColor(tm, b.fg, ColorSparkChartText), RealColor(tm, b.bg, ColorSparkChartBack)
-	canvas.FillRect(b.x, b.y, b.width, b.height, term.Cell{Ch: ' ', Fg: fg, Bg: bg})
+	fg, bg := RealColor(b.fg, ColorSparkChartText), RealColor(b.bg, ColorSparkChartBack)
+	SetTextColor(fg)
+	SetBackColor(bg)
+	FillRect(b.x, b.y, b.width, b.height, ' ')
 
 	if len(b.data) == 0 {
 		return
 	}
 
-	b.drawValues(fg, bg)
-	b.drawBars(tm)
+	b.drawValues()
+	b.drawBars()
 }
 
-func (b *SparkChart) drawBars(tm Theme) {
+func (b *SparkChart) drawBars() {
 	if len(b.data) == 0 {
 		return
 	}
@@ -101,13 +103,15 @@ func (b *SparkChart) drawBars(tm Theme) {
 		return
 	}
 
+	PushAttributes()
+	defer PopAttributes()
+
 	h := b.height
 	pos := b.x + start
-	canvas := b.view.Canvas()
 
-	mxFg, mxBg := RealColor(tm, b.maxFg, ColorSparkChartMaxText), RealColor(tm, b.maxBg, ColorSparkChartMaxBack)
-	brFg, brBg := RealColor(tm, b.fg, ColorSparkChartBarText), RealColor(tm, b.bg, ColorSparkChartBarBack)
-	parts := []rune(tm.SysObject(ObjSparkChart))
+	mxFg, mxBg := RealColor(b.maxFg, ColorSparkChartMaxText), RealColor(b.maxBg, ColorSparkChartMaxBack)
+	brFg, brBg := RealColor(b.fg, ColorSparkChartBarText), RealColor(b.bg, ColorSparkChartBarBack)
+	parts := []rune(SysObject(ObjSparkChart))
 
 	var dt []float64
 	if len(b.data) > width {
@@ -128,14 +132,15 @@ func (b *SparkChart) drawBars(tm Theme) {
 		if b.hiliteMax && max == d {
 			f, g = mxFg, mxBg
 		}
-		cell := term.Cell{Ch: parts[0], Fg: f, Bg: g}
-		canvas.FillRect(pos, b.y+h-barH, 1, barH, cell)
+		SetTextColor(f)
+		SetBackColor(g)
+		FillRect(pos, b.y+h-barH, 1, barH, parts[0])
 
 		pos++
 	}
 }
 
-func (b *SparkChart) drawValues(fg, bg term.Attribute) {
+func (b *SparkChart) drawValues() {
 	if b.valueWidth <= 0 {
 		return
 	}
@@ -154,14 +159,13 @@ func (b *SparkChart) drawValues(fg, bg term.Attribute) {
 		max = b.topValue
 	}
 
-	canvas := b.view.Canvas()
 	dy := 0
 	format := fmt.Sprintf("%%%v.2f", b.valueWidth)
 	for dy < h-1 {
 		v := float64(h-dy) / float64(h) * max
 		s := fmt.Sprintf(format, v)
 		s = CutText(s, b.valueWidth)
-		canvas.PutText(b.x, b.y+dy, s, fg, bg)
+		DrawRawText(b.x, b.y+dy, s)
 
 		dy += 2
 	}
@@ -214,7 +218,6 @@ func (b *SparkChart) AddData(val float64) {
 	if len(b.data) > width {
 		b.data = b.data[len(b.data)-width:]
 	}
-	b.Logger().Printf("%v - %v = %v", b.width, width, len(b.data))
 }
 
 // ClearData removes all bar from chart

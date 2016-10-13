@@ -56,7 +56,7 @@ If LegendWidth is greater than half of the chart it is not
 displayed. The same is applied to ValueWidth
 */
 type BarChart struct {
-	ControlBase
+	BaseControl
 	data        []BarData
 	autosize    bool
 	gap         int
@@ -76,7 +76,7 @@ w and h - are minimal size of the control.
 scale - the way of scaling the control when the parent is resized. Use DoNotScale constant if the
 control should keep its original size.
 */
-func NewBarChart(view View, parent Control, w, h int, scale int) *BarChart {
+func CreateBarChart(parent Control, w, h int, scale int) *BarChart {
 	c := new(BarChart)
 
 	if w == AutoSize {
@@ -86,7 +86,6 @@ func NewBarChart(view View, parent Control, w, h int, scale int) *BarChart {
 		h = 5
 	}
 
-	c.view = view
 	c.parent = parent
 
 	c.SetSize(w, h)
@@ -95,30 +94,34 @@ func NewBarChart(view View, parent Control, w, h int, scale int) *BarChart {
 	c.showTitles = true
 	c.barWidth = 3
 	c.data = make([]BarData, 0)
+	c.SetScale(scale)
 
 	if parent != nil {
-		parent.AddChild(c, scale)
+		parent.AddChild(c)
 	}
 
 	return c
 }
 
 // Repaint draws the control on its View surface
-func (b *BarChart) Repaint() {
-	canvas := b.view.Canvas()
-	tm := b.view.Screen().Theme()
+func (b *BarChart) Draw() {
+	PushAttributes()
+	defer PopAttributes()
 
-	fg, bg := RealColor(tm, b.fg, ColorBarChartText), RealColor(tm, b.bg, ColorBarChartBack)
-	canvas.FillRect(b.x, b.y, b.width, b.height, term.Cell{Ch: ' ', Fg: fg, Bg: bg})
+	fg, bg := RealColor(b.fg, ColorBarChartText), RealColor(b.bg, ColorBarChartBack)
+	SetTextColor(fg)
+	SetBackColor(bg)
+
+	FillRect(b.x, b.y, b.width, b.height, ' ')
 
 	if len(b.data) == 0 {
 		return
 	}
 
-	b.drawRulers(tm, fg, bg)
-	b.drawValues(tm, fg, bg)
-	b.drawLegend(tm, fg, bg)
-	b.drawBars(tm, fg, bg)
+	b.drawRulers()
+	b.drawValues()
+	b.drawLegend()
+	b.drawBars()
 }
 
 func (b *BarChart) barHeight() int {
@@ -128,7 +131,7 @@ func (b *BarChart) barHeight() int {
 	return b.height
 }
 
-func (b *BarChart) drawBars(tm Theme, fg, bg term.Attribute) {
+func (b *BarChart) drawBars() {
 	if len(b.data) == 0 {
 		return
 	}
@@ -148,10 +151,13 @@ func (b *BarChart) drawBars(tm Theme, fg, bg term.Attribute) {
 		return
 	}
 
+	PushAttributes()
+	defer PopAttributes()
+
 	h := b.barHeight()
 	pos := start
-	canvas := b.view.Canvas()
-	parts := []rune(tm.SysObject(ObjBarChart))
+	parts := []rune(SysObject(ObjBarChart))
+	fg, bg := TextColor(), BackColor()
 
 	for idx, d := range b.data {
 		if pos+barW > start+width {
@@ -172,8 +178,9 @@ func (b *BarChart) drawBars(tm Theme, fg, bg term.Attribute) {
 
 		barH := int(d.Value * coeff)
 		if b.onDrawCell == nil {
-			cell := term.Cell{Ch: ch, Fg: fColor, Bg: bColor}
-			canvas.FillRect(b.x+pos, b.y+h-barH, barW, barH, cell)
+			SetTextColor(fColor)
+			SetBackColor(bColor)
+			FillRect(b.x+pos, b.y+h-barH, barW, barH, ch)
 		} else {
 			cellDef := BarDataCell{Item: d.Title, ID: idx,
 				Value: 0, BarMax: d.Value, TotalMax: max,
@@ -182,17 +189,20 @@ func (b *BarChart) drawBars(tm Theme, fg, bg term.Attribute) {
 				req := cellDef
 				req.Value = max * float64(dy+1) / float64(h)
 				b.onDrawCell(&req)
-				cell := term.Cell{Ch: req.Ch, Fg: req.Fg, Bg: req.Bg}
+				SetTextColor(req.Fg)
+				SetBackColor(req.Bg)
 				for dx := 0; dx < barW; dx++ {
-					canvas.PutSymbol(b.x+pos+dx, b.y+h-1-dy, cell)
+					PutChar(b.x+pos+dx, b.y+h-1-dy, req.Ch)
 				}
 			}
 		}
 
 		if b.showTitles {
+			SetTextColor(fg)
+			SetBackColor(bg)
 			if b.showMarks {
 				c := parts[7]
-				canvas.PutSymbol(b.x+pos+barW/2, b.y+h, term.Cell{Ch: c, Bg: bg, Fg: fg})
+				PutChar(b.x+pos+barW/2, b.y+h, c)
 			}
 			var s string
 			shift := 0
@@ -201,21 +211,24 @@ func (b *BarChart) drawBars(tm Theme, fg, bg term.Attribute) {
 			} else {
 				shift, s = AlignText(d.Title, barW, AlignCenter)
 			}
-			canvas.PutText(b.x+pos+shift, b.y+h+1, s, fg, bg)
+			DrawRawText(b.x+pos+shift, b.y+h+1, s)
 		}
 
 		pos += barW + b.gap
 	}
 }
 
-func (b *BarChart) drawLegend(tm Theme, fg, bg term.Attribute) {
+func (b *BarChart) drawLegend() {
 	pos, width := b.calculateBarArea()
 	if pos+width >= b.width-3 {
 		return
 	}
 
-	canvas := b.view.Canvas()
-	parts := []rune(tm.SysObject(ObjBarChart))
+	PushAttributes()
+	defer PopAttributes()
+	fg, bg := RealColor(b.fg, ColorBarChartText), RealColor(b.bg, ColorBarChartBack)
+
+	parts := []rune(SysObject(ObjBarChart))
 	defRune := parts[0]
 	for idx, d := range b.data {
 		if idx >= b.height {
@@ -226,13 +239,17 @@ func (b *BarChart) drawLegend(tm Theme, fg, bg term.Attribute) {
 		if c == 0 {
 			c = defRune
 		}
-		canvas.PutSymbol(b.x+pos+width, b.y+idx, term.Cell{Ch: c, Fg: d.Fg, Bg: d.Bg})
+		SetTextColor(d.Fg)
+		SetBackColor(d.Bg)
+		PutChar(b.x+pos+width, b.y+idx, c)
 		s := CutText(fmt.Sprintf(" - %v", d.Title), b.legendWidth)
-		canvas.PutText(b.x+pos+width+1, b.y+idx, s, fg, bg)
+		SetTextColor(fg)
+		SetBackColor(bg)
+		DrawRawText(b.x+pos+width+1, b.y+idx, s)
 	}
 }
 
-func (b *BarChart) drawValues(tm Theme, fg, bg term.Attribute) {
+func (b *BarChart) drawValues() {
 	if b.valueWidth <= 0 {
 		return
 	}
@@ -248,27 +265,26 @@ func (b *BarChart) drawValues(tm Theme, fg, bg term.Attribute) {
 		return
 	}
 
-	canvas := b.view.Canvas()
 	dy := 0
 	format := fmt.Sprintf("%%%v.2f", b.valueWidth)
 	for dy < h-1 {
 		v := float64(h-dy) / float64(h) * max
 		s := fmt.Sprintf(format, v)
 		s = CutText(s, b.valueWidth)
-		canvas.PutText(b.x, b.y+dy, s, fg, bg)
+		DrawRawText(b.x, b.y+dy, s)
 
 		dy += 2
 	}
 }
 
-func (b *BarChart) drawRulers(tm Theme, fg, bg term.Attribute) {
+func (b *BarChart) drawRulers() {
 	if b.valueWidth <= 0 && b.legendWidth <= 0 && !b.showTitles {
 		return
 	}
 
 	pos, vWidth := b.calculateBarArea()
 
-	parts := []rune(tm.SysObject(ObjBarChart))
+	parts := []rune(SysObject(ObjBarChart))
 	h := b.barHeight()
 
 	if pos > 0 {
@@ -278,20 +294,19 @@ func (b *BarChart) drawRulers(tm Theme, fg, bg term.Attribute) {
 
 	// horizontal and vertical lines, corner
 	cH, cV, cC := parts[1], parts[2], parts[5]
-	canvas := b.view.Canvas()
 
 	if pos > 0 {
 		for dy := 0; dy < h; dy++ {
-			canvas.PutSymbol(b.x+pos, b.y+dy, term.Cell{Ch: cV, Fg: fg, Bg: bg})
+			PutChar(b.x+pos, b.y+dy, cV)
 		}
 	}
 	if b.showTitles {
 		for dx := 0; dx < vWidth; dx++ {
-			canvas.PutSymbol(b.x+pos+dx, b.y+h, term.Cell{Ch: cH, Fg: fg, Bg: bg})
+			PutChar(b.x+pos+dx, b.y+h, cH)
 		}
 	}
 	if pos > 0 && b.showTitles {
-		canvas.PutSymbol(b.x+pos, b.y+h, term.Cell{Ch: cC, Fg: fg, Bg: bg})
+		PutChar(b.x+pos, b.y+h, cC)
 	}
 }
 
@@ -399,12 +414,12 @@ func (b *BarChart) SetAutoSize(auto bool) {
 }
 
 // Gap returns width of visual gap between two adjacent bars
-func (b *BarChart) Gap() int {
+func (b *BarChart) BarGap() int {
 	return b.gap
 }
 
 // SetGap sets the space width between two adjacent bars
-func (b *BarChart) SetGap(gap int) {
+func (b *BarChart) SetBarGap(gap int) {
 	b.gap = gap
 }
 

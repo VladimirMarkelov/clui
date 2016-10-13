@@ -85,7 +85,7 @@ func (p *ColorParser) parseColor() (term.Attribute, TextElementType, bool) {
 		switch step {
 		case StepType:
 			c := p.text[newIdx]
-			if c == 't' || c == 'f' {
+			if c == 't' || c == 'f' || c == 'c' {
 				t = ElemTextColor
 			} else if c == 'b' {
 				t = ElemBackColor

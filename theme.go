@@ -85,9 +85,13 @@ type ThemeManager struct {
 const defaultTheme = "default"
 const themeSuffix = ".theme"
 
-// ThemeInfo is a detailed information about theme:
+var (
+	themeManager *ThemeManager
+)
+
+// ThemeDesc is a detailed information about theme:
 // title, author, version number
-type ThemeInfo struct {
+type ThemeDesc struct {
 	parent  string
 	title   string
 	author  string
@@ -110,19 +114,16 @@ type theme struct {
 }
 
 // NewThemeManager creates a new theme manager
-func NewThemeManager() *ThemeManager {
-	sm := new(ThemeManager)
-
-	sm.Reset()
-
-	return sm
+func initThemeManager() {
+	themeManager = new(ThemeManager)
+	ThemeReset()
 }
 
 // Reset removes all loaded themes from cache and reinitialize
 // the default theme
-func (s *ThemeManager) Reset() {
-	s.current = defaultTheme
-	s.themes = make(map[string]theme, 0)
+func ThemeReset() {
+	themeManager.current = defaultTheme
+	themeManager.themes = make(map[string]theme, 0)
 
 	defTheme := theme{parent: "", title: "Default Theme", author: "Vladimir V. Markelov", version: "1.0"}
 	defTheme.colors = make(map[string]term.Attribute, 0)
@@ -201,22 +202,22 @@ func (s *ThemeManager) Reset() {
 	defTheme.colors[ColorTableHeaderText] = ColorWhite
 	defTheme.colors[ColorTableHeaderBack] = ColorBlack
 
-	s.themes[defaultTheme] = defTheme
+	themeManager.themes[defaultTheme] = defTheme
 }
 
 // SysColor returns attribute by its id for the current theme.
 // The method panics if theme loop is detected - check if
 // parent attribute is correct
-func (s *ThemeManager) SysColor(color string) term.Attribute {
-	sch, ok := s.themes[s.current]
+func SysColor(color string) term.Attribute {
+	sch, ok := themeManager.themes[themeManager.current]
 	if !ok {
-		sch = s.themes[defaultTheme]
+		sch = themeManager.themes[defaultTheme]
 	}
 
 	clr, okclr := sch.colors[color]
 	if !okclr {
 		visited := make(map[string]int, 0)
-		visited[s.current] = 1
+		visited[themeManager.current] = 1
 		if !ok {
 			visited[defaultTheme] = 1
 		}
@@ -225,8 +226,8 @@ func (s *ThemeManager) SysColor(color string) term.Attribute {
 			if sch.parent == "" {
 				break
 			}
-			s.LoadTheme(sch.parent)
-			sch = s.themes[sch.parent]
+			themeManager.LoadTheme(sch.parent)
+			sch = themeManager.themes[sch.parent]
 			clr, okclr = sch.colors[color]
 
 			if ok {
@@ -248,16 +249,16 @@ func (s *ThemeManager) SysColor(color string) term.Attribute {
 // theme. E.g, border lines for frame or arrows for scrollbar.
 // The method panics if theme loop is detected - check if
 // parent attribute is correct
-func (s *ThemeManager) SysObject(object string) string {
-	sch, ok := s.themes[s.current]
+func SysObject(object string) string {
+	sch, ok := themeManager.themes[themeManager.current]
 	if !ok {
-		sch = s.themes[defaultTheme]
+		sch = themeManager.themes[defaultTheme]
 	}
 
 	obj, okobj := sch.objects[object]
 	if !okobj {
 		visited := make(map[string]int, 0)
-		visited[s.current] = 1
+		visited[themeManager.current] = 1
 		if !ok {
 			visited[defaultTheme] = 1
 		}
@@ -267,8 +268,8 @@ func (s *ThemeManager) SysObject(object string) string {
 				break
 			}
 
-			s.LoadTheme(sch.parent)
-			sch = s.themes[sch.parent]
+			themeManager.LoadTheme(sch.parent)
+			sch = themeManager.themes[sch.parent]
 			obj, okobj = sch.objects[object]
 
 			if ok {
@@ -287,17 +288,17 @@ func (s *ThemeManager) SysObject(object string) string {
 }
 
 // ThemeNames returns the list of short theme names (file names)
-func (s *ThemeManager) ThemeNames() []string {
+func ThemeNames() []string {
 	var str []string
 	str = append(str, defaultTheme)
 
-	path := s.themePath
+	path := themeManager.themePath
 	if path == "" {
 		path = "." + string(os.PathSeparator)
 	}
 	files, err := ioutil.ReadDir(path)
 	if err != nil {
-		panic("Failed to read theme directory: " + s.themePath)
+		panic("Failed to read theme directory: " + themeManager.themePath)
 	}
 
 	for _, f := range files {
@@ -311,44 +312,44 @@ func (s *ThemeManager) ThemeNames() []string {
 }
 
 // CurrentTheme returns name of the current theme
-func (s *ThemeManager) CurrentTheme() string {
-	return s.current
+func CurrentTheme() string {
+	return themeManager.current
 }
 
 // SetCurrentTheme changes the current theme.
 // Returns false if changing failed - e.g, theme does not exist
-func (s *ThemeManager) SetCurrentTheme(name string) bool {
-	if _, ok := s.themes[name]; !ok {
-		tnames := s.ThemeNames()
+func SetCurrentTheme(name string) bool {
+	if _, ok := themeManager.themes[name]; !ok {
+		tnames := ThemeNames()
 		for _, theme := range tnames {
 			if theme == name {
-				s.LoadTheme(theme)
+				themeManager.LoadTheme(theme)
 				break
 			}
 		}
 	}
 
-	if _, ok := s.themes[name]; ok {
-		s.current = name
+	if _, ok := themeManager.themes[name]; ok {
+		themeManager.current = name
 		return true
 	}
 	return false
 }
 
 // ThemePath returns the current directory with theme inside it
-func (s *ThemeManager) ThemePath() string {
-	return s.themePath
+func ThemePath() string {
+	return themeManager.themePath
 }
 
 // SetThemePath changes the directory that contains themes.
 // If new path does not equal old one, theme list reloads
-func (s *ThemeManager) SetThemePath(path string) {
-	if path == s.themePath {
+func SetThemePath(path string) {
+	if path == themeManager.themePath {
 		return
 	}
 
-	s.themePath = path
-	s.Reset()
+	themeManager.themePath = path
+	ThemeReset()
 }
 
 // LoadTheme loads the theme if it is not in the cache already.
@@ -444,27 +445,47 @@ func (s *ThemeManager) LoadTheme(name string) {
 // ReLoadTheme refresh cache entry for the theme with new
 // data loaded from file. Use it to apply theme changes on
 // the fly without resetting manager or restarting application
-func (s *ThemeManager) ReLoadTheme(name string) {
+func ReLoadTheme(name string) {
 	if name == defaultTheme {
 		// default theme cannot be reloaded
 		return
 	}
 
-	if _, ok := s.themes[name]; ok {
-		delete(s.themes, name)
+	if _, ok := themeManager.themes[name]; ok {
+		delete(themeManager.themes, name)
 	}
 
-	s.LoadTheme(name)
+	themeManager.LoadTheme(name)
 }
 
 // ThemeInfo returns detailed info about theme
-func (s *ThemeManager) ThemeInfo(name string) ThemeInfo {
-	s.LoadTheme(name)
-	var theme ThemeInfo
-	if t, ok := s.themes[name]; !ok {
+func ThemeInfo(name string) ThemeDesc {
+	themeManager.LoadTheme(name)
+	var theme ThemeDesc
+	if t, ok := themeManager.themes[name]; !ok {
 		theme.parent = t.parent
 		theme.title = t.title
 		theme.version = t.version
 	}
 	return theme
+}
+
+// RealColor returns attribute that should be applied to an
+// object. By default all attributes equal ColorDefault and
+// the real color should be retrieved from the current theme.
+// Attribute selection work this way: if color is not ColorDefault,
+// it is returned as is, otherwise the function tries to load
+// color from the theme.
+// clr - current object color
+// id - color ID in theme
+func RealColor(clr term.Attribute, id string) term.Attribute {
+	if clr == ColorDefault {
+		clr = SysColor(id)
+	}
+
+	if clr == ColorDefault {
+		panic("Failed to load color value for " + id)
+	}
+
+	return clr
 }

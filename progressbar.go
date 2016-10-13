@@ -15,7 +15,7 @@ one set: foreground and background colors): for filled part and for
 empty one. By default colors are the same.
 */
 type ProgressBar struct {
-	ControlBase
+	BaseControl
 	direction        Direction
 	min, max         int
 	value            int
@@ -25,13 +25,12 @@ type ProgressBar struct {
 
 /*
 NewProgressBar creates a new ProgressBar.
-view - is a View that manages the control
-parent - is container that keeps the control. The same View can be a view and a parent at the same time.
+parent - is container that keeps the control.
 width and heigth - are minimal size of the control.
 scale - the way of scaling the control when the parent is resized. Use DoNotScale constant if the
 control should keep its original size.
 */
-func NewProgressBar(view View, parent Control, width, height int, scale int) *ProgressBar {
+func CreateProgressBar(parent Control, width, height int, scale int) *ProgressBar {
 	b := new(ProgressBar)
 
 	if height == AutoSize {
@@ -44,15 +43,15 @@ func NewProgressBar(view View, parent Control, width, height int, scale int) *Pr
 	b.SetSize(width, height)
 	b.SetConstraints(width, height)
 	b.SetTabStop(false)
+	b.SetScale(scale)
 	b.min = 0
 	b.max = 10
 	b.direction = Horizontal
 	b.parent = parent
-	b.view = view
 	b.align = AlignCenter
 
 	if parent != nil {
-		parent.AddChild(b, scale)
+		parent.AddChild(b)
 	}
 
 	return b
@@ -71,18 +70,18 @@ func NewProgressBar(view View, parent Control, width, height int, scale int) *Pr
 // Examples:
 //      pb.SetTitle("{{value}} of {{max}}")
 //      pb.SetTitle("{{percent}}%")
-func (b *ProgressBar) Repaint() {
+func (b *ProgressBar) Draw() {
 	if b.max <= b.min {
 		return
 	}
 
-	canvas := b.view.Canvas()
-	tm := b.view.Screen().Theme()
+	PushAttributes()
+	defer PopAttributes()
 
-	fgOff, fgOn := RealColor(tm, b.fg, ColorProgressText), RealColor(tm, b.fgActive, ColorProgressActiveText)
-	bgOff, bgOn := RealColor(tm, b.bg, ColorProgressBack), RealColor(tm, b.bgActive, ColorProgressActiveBack)
+	fgOff, fgOn := RealColor(b.fg, ColorProgressText), RealColor(b.fgActive, ColorProgressActiveText)
+	bgOff, bgOn := RealColor(b.bg, ColorProgressBack), RealColor(b.bgActive, ColorProgressActiveBack)
 
-	parts := []rune(tm.SysObject(ObjProgressBar))
+	parts := []rune(SysObject(ObjProgressBar))
 	cFilled, cEmpty := parts[0], parts[1]
 
 	prc := 0
@@ -110,13 +109,17 @@ func (b *ProgressBar) Repaint() {
 		sEmpty := strings.Repeat(string(cEmpty), w-filled)
 
 		for yy := y; yy < y+h; yy++ {
-			canvas.PutText(x, yy, sFilled, fgOn, bgOn)
-			canvas.PutText(x+filled, yy, sEmpty, fgOff, bgOff)
+			SetTextColor(fgOn)
+			SetBackColor(bgOn)
+			DrawRawText(x, yy, sFilled)
+			SetTextColor(fgOff)
+			SetBackColor(bgOff)
+			DrawRawText(x+filled, yy, sEmpty)
 		}
 
 		if title != "" {
 			shift, str := AlignText(title, w, b.align)
-			titleClr := RealColor(tm, b.titleFg, ColorProgressTitleText)
+			titleClr := RealColor(b.titleFg, ColorProgressTitleText)
 			var sOn, sOff string
 			if filled == 0 || shift >= filled {
 				sOff = str
@@ -127,11 +130,14 @@ func (b *ProgressBar) Repaint() {
 				sOn = xs.Slice(str, 0, r)
 				sOff = xs.Slice(str, r, -1)
 			}
+			SetTextColor(titleClr)
 			if sOn != "" {
-				canvas.PutText(x+shift, y, sOn, titleClr, bgOn)
+				SetBackColor(bgOn)
+				DrawRawText(x+shift, y, sOn)
 			}
 			if sOff != "" {
-				canvas.PutText(x+shift+xs.Len(sOn), y, sOff, titleClr, bgOff)
+				SetBackColor(bgOff)
+				DrawRawText(x+shift+xs.Len(sOn), y, sOff)
 			}
 		}
 	} else {
@@ -139,10 +145,14 @@ func (b *ProgressBar) Repaint() {
 		sFilled := strings.Repeat(string(cFilled), w)
 		sEmpty := strings.Repeat(string(cEmpty), w)
 		for yy := y; yy < y+h-filled; yy++ {
-			canvas.PutText(x, yy, sEmpty, fgOff, bgOff)
+			SetTextColor(fgOff)
+			SetBackColor(bgOff)
+			DrawRawText(x, yy, sEmpty)
 		}
 		for yy := y + h - filled; yy < y+h; yy++ {
-			canvas.PutText(x, yy, sFilled, fgOn, bgOn)
+			SetTextColor(fgOff)
+			SetBackColor(bgOff)
+			DrawRawText(x, yy, sFilled)
 		}
 	}
 }

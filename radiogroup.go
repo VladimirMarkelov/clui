@@ -8,7 +8,7 @@ type RadioGroup struct {
 }
 
 // NewRadioGroup creates a new RadioGroup
-func NewRadioGroup() *RadioGroup {
+func CreateRadioGroup() *RadioGroup {
 	c := new(RadioGroup)
 	c.items = make([]*Radio, 0)
 	return c

@@ -12,11 +12,11 @@ emits OnClick event. Event has only one valid field Sender.
 Button can be clicked with mouse or using space on keyboard while the Button is active.
 */
 type Button struct {
-	ControlBase
-	pressed     bool
+	BaseControl
 	shadowColor term.Attribute
-
-	onClick func(Event)
+	bgActive    term.Attribute
+	pressed     bool
+	onClick     func(Event)
 }
 
 /*
@@ -28,10 +28,9 @@ title - button title.
 scale - the way of scaling the control when the parent is resized. Use DoNotScale constant if the
 control should keep its original size.
 */
-func NewButton(view View, parent Control, width, height int, title string, scale int) *Button {
+func CreateButton(parent Control, width, height int, title string, scale int) *Button {
 	b := new(Button)
 
-	b.view = view
 	b.parent = parent
 	b.align = AlignCenter
 
@@ -52,40 +51,46 @@ func NewButton(view View, parent Control, width, height int, title string, scale
 	b.SetTitle(title)
 	b.SetSize(width, height)
 	b.SetConstraints(width, height)
+	b.SetScale(scale)
 
 	if parent != nil {
-		parent.AddChild(b, scale)
+		parent.AddChild(b)
 	}
 
 	return b
 }
 
 // Repaint draws the control on its View surface
-func (b *Button) Repaint() {
+func (b *Button) Draw() {
+	PushAttributes()
+	defer PopAttributes()
+
 	x, y := b.Pos()
 	w, h := b.Size()
-	canvas := b.view.Canvas()
-	tm := b.view.Screen().Theme()
 
 	fg, bg := b.fg, b.bg
-	shadow := RealColor(tm, b.shadowColor, ColorButtonShadow)
+	shadow := RealColor(b.shadowColor, ColorButtonShadow)
 	if !b.Enabled() {
-		fg, bg = RealColor(tm, fg, ColorButtonDisabledText), RealColor(tm, bg, ColorButtonDisabledBack)
+		fg, bg = RealColor(fg, ColorButtonDisabledText), RealColor(bg, ColorButtonDisabledBack)
 	} else if b.Active() {
-		fg, bg = RealColor(tm, b.fgActive, ColorButtonActiveText), RealColor(tm, b.bgActive, ColorButtonActiveBack)
+		fg, bg = RealColor(b.fgActive, ColorButtonActiveText), RealColor(b.bgActive, ColorButtonActiveBack)
 	} else {
-		fg, bg = RealColor(tm, fg, ColorButtonText), RealColor(tm, bg, ColorButtonBack)
+		fg, bg = RealColor(fg, ColorButtonText), RealColor(bg, ColorButtonBack)
 	}
 
 	dy := int((h - 1) / 2)
-	shift, text := AlignText(b.title, w-1, b.align)
+	SetTextColor(fg)
+	shift, text := AlignColorizedText(b.title, w-1, b.align)
 	if !b.pressed {
-		canvas.FillRect(x+1, y+1, w-1, h-1, term.Cell{Ch: ' ', Bg: shadow})
-		canvas.FillRect(x, y, w-1, h-1, term.Cell{Ch: ' ', Bg: bg})
-		canvas.PutText(x+shift, y+dy, text, fg, bg)
+		SetBackColor(shadow)
+		FillRect(x+1, y+1, w-1, h-1, ' ')
+		SetBackColor(bg)
+		FillRect(x, y, w-1, h-1, ' ')
+		DrawText(x+shift, y+dy, text)
 	} else {
-		canvas.FillRect(x+1, y+1, w-1, h-1, term.Cell{Ch: ' ', Bg: bg})
-		canvas.PutText(x+1+shift, y+1+dy, b.title, fg, bg)
+		SetBackColor(bg)
+		FillRect(x+1, y+1, w-1, h-1, ' ')
+		DrawText(x+1+shift, y+1+dy, b.title)
 	}
 }
 
@@ -96,28 +101,46 @@ that the control do not want or cannot process the event and the caller sends
 the event to the control parent
 */
 func (b *Button) ProcessEvent(event Event) bool {
-	if (!b.active && event.Type == EventKey) || !b.Enabled() || b.pressed {
+	if !b.Enabled() {
 		return false
 	}
 
-	if (event.Type == EventKey && event.Key == term.KeySpace) || event.Type == EventMouse {
-		b.pressed = true
-		timer := time.NewTimer(time.Millisecond * 150)
-		go func() {
-			<-timer.C
-			b.pressed = false
-			// generate ButtonClickEvent
-			if b.parent != nil {
-				if b.onClick != nil {
-					ev := Event{Sender: b}
-					b.onClick(ev)
-				}
-
-				ev := Event{Type: EventRedraw, Sender: b}
-				b.view.Screen().PutEvent(ev)
+	if event.Type == EventKey {
+		if event.Key == term.KeySpace && !b.pressed {
+			b.pressed = true
+			ev := Event{Type: EventRedraw}
+			go func() {
+				b.Draw()
+				PutEvent(ev)
+				time.Sleep(100 * time.Millisecond)
+				b.pressed = false
+				b.Draw()
+				PutEvent(ev)
+			}()
+			if b.onClick != nil {
+				b.onClick(event)
 			}
-		}()
-		return true
+			return true
+		} else if event.Key == term.KeyEsc && b.pressed {
+			b.pressed = false
+			ReleaseEvents()
+			return true
+		}
+	} else if event.Type == EventMouse {
+		if event.Key == term.MouseLeft {
+			b.pressed = true
+			GrabEvents(b)
+			return true
+		} else if event.Key == term.MouseRelease && b.pressed {
+			ReleaseEvents()
+			if event.X >= b.x && event.Y >= b.y && event.X < b.x+b.width && event.Y < b.y+b.height {
+				if b.onClick != nil {
+					b.onClick(event)
+				}
+			}
+			b.pressed = false
+			return true
+		}
 	}
 
 	return false

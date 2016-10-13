@@ -1,4 +1,4 @@
-﻿/*
+/*
 Demo includes:
     - How to intialize and run the application
     - How to stop the application
@@ -22,8 +22,8 @@ func updateProgress(value string, pb *ui.ProgressBar) {
 	pb.SetValue(v)
 }
 
-func changeTheme(c *ui.Composer, lb *ui.ListBox, btn *ui.Button, tp int) {
-	items := c.Theme().ThemeNames()
+func changeTheme(lb *ui.ListBox, btn *ui.Button, tp int) {
+	items := ui.ThemeNames()
 	dlgType := ui.SelectDialogRadio
 	if tp == 1 {
 		dlgType = ui.SelectDialogList
@@ -31,13 +31,13 @@ func changeTheme(c *ui.Composer, lb *ui.ListBox, btn *ui.Button, tp int) {
 
 	curr := -1
 	for i, tName := range items {
-		if tName == c.Theme().CurrentTheme() {
+		if tName == ui.CurrentTheme() {
 			curr = i
 			break
 		}
 	}
 
-	selDlg := ui.NewSelectDialog(c, "Choose a theme", items, curr, dlgType)
+	selDlg := ui.CreateSelectDialog("Choose a theme", items, curr, dlgType)
 	selDlg.OnClose(func() {
 		switch selDlg.Result() {
 		case ui.DialogButton1:
@@ -45,49 +45,51 @@ func changeTheme(c *ui.Composer, lb *ui.ListBox, btn *ui.Button, tp int) {
 			lb.AddItem(fmt.Sprintf("Selected item: %v", selDlg.Value()))
 			lb.SelectItem(lb.ItemCount() - 1)
 			if idx != -1 {
-				c.Theme().SetCurrentTheme(items[idx])
+				ui.SetCurrentTheme(items[idx])
 			}
 		}
 
 		btn.SetEnabled(true)
 		// ask the composer to repaint all windows
-		c.PutEvent(ui.Event{Type: ui.EventRedraw})
+		ui.PutEvent(ui.Event{Type: ui.EventRedraw})
 	})
 }
 
-func createView(c *ui.Composer) {
+func createView() {
 
-	view := c.CreateView(0, 0, 20, 7, "Theme Manager Demo")
+	view := ui.AddWindow(0, 0, 20, 7, "Theme Manager Demo")
 
-	frmLeft := ui.NewFrame(view, view, 8, 4, ui.BorderNone, 1)
+	frmLeft := ui.CreateFrame(view, 8, 4, ui.BorderNone, 1)
 	frmLeft.SetPack(ui.Vertical)
-	frmLeft.SetPaddings(1, 1, ui.DoNotChange, 1)
+	frmLeft.SetGaps(ui.KeepValue, 1)
+	frmLeft.SetPaddings(1, 1)
 
-	frmTheme := ui.NewFrame(view, frmLeft, 8, 1, ui.BorderNone, ui.DoNotScale)
-	frmTheme.SetPaddings(ui.DoNotChange, ui.DoNotChange, 1, ui.DoNotChange)
-	checkBox := ui.NewCheckBox(view, frmTheme, ui.AutoSize, "Use ListBox", ui.DoNotScale)
-	btnTheme := ui.NewButton(view, frmTheme, ui.AutoSize, 4, "Select theme", ui.DoNotScale)
-	ui.NewFrame(view, frmLeft, 1, 1, ui.BorderNone, 1)
+	frmTheme := ui.CreateFrame(frmLeft, 8, 1, ui.BorderNone, ui.Fixed)
+	frmTheme.SetGaps(1, ui.KeepValue)
+	checkBox := ui.CreateCheckBox(frmTheme, ui.AutoSize, "Use ListBox", ui.Fixed)
+	btnTheme := ui.CreateButton(frmTheme, ui.AutoSize, 4, "Select theme", ui.Fixed)
+	ui.CreateFrame(frmLeft, 1, 1, ui.BorderNone, 1)
 
-	frmPb := ui.NewFrame(view, frmLeft, 8, 1, ui.BorderNone, ui.DoNotScale)
-	ui.NewLabel(view, frmPb, 1, 1, "[", ui.DoNotScale)
-	pb := ui.NewProgressBar(view, frmPb, 20, 1, 1)
+	frmPb := ui.CreateFrame(frmLeft, 8, 1, ui.BorderNone, ui.Fixed)
+	ui.CreateLabel(frmPb, 1, 1, "[", ui.Fixed)
+	pb := ui.CreateProgressBar(frmPb, 20, 1, 1)
 	pb.SetLimits(0, 10)
 	pb.SetTitle("{{value}} of {{max}}")
-	ui.NewLabel(view, frmPb, 1, 1, "]", ui.DoNotScale)
+	ui.CreateLabel(frmPb, 1, 1, "]", ui.Fixed)
 
-	edit := ui.NewEditField(view, frmLeft, 5, "0", ui.DoNotScale)
+	edit := ui.CreateEditField(frmLeft, 5, "0", ui.Fixed)
 
-	frmEdit := ui.NewFrame(view, frmLeft, 8, 1, ui.BorderNone, ui.DoNotScale)
-	frmEdit.SetPaddings(1, 1, 1, ui.DoNotChange)
-	btnSet := ui.NewButton(view, frmEdit, ui.AutoSize, 4, "Set", ui.DoNotScale)
-	btnStep := ui.NewButton(view, frmEdit, ui.AutoSize, 4, "Step", ui.DoNotScale)
-	ui.NewFrame(view, frmEdit, 1, 1, ui.BorderNone, 1)
-	btnQuit := ui.NewButton(view, frmEdit, ui.AutoSize, 4, "Quit", ui.DoNotScale)
+	frmEdit := ui.CreateFrame(frmLeft, 8, 1, ui.BorderNone, ui.Fixed)
+	frmEdit.SetPaddings(1, 1)
+	frmEdit.SetGaps(1, ui.KeepValue)
+	btnSet := ui.CreateButton(frmEdit, ui.AutoSize, 4, "Set", ui.Fixed)
+	btnStep := ui.CreateButton(frmEdit, ui.AutoSize, 4, "Step", ui.Fixed)
+	ui.CreateFrame(frmEdit, 1, 1, ui.BorderNone, 1)
+	btnQuit := ui.CreateButton(frmEdit, ui.AutoSize, 4, "Quit", ui.Fixed)
 
-	logBox := ui.NewListBox(view, view, 28, 5, ui.DoNotScale)
+	logBox := ui.CreateListBox(view, 28, 5, ui.Fixed)
 
-	view.ActivateControl(edit)
+	ui.ActivateControl(view, edit)
 
 	edit.OnKeyPress(func(key term.Key) bool {
 		if key == term.KeyCtrlM {
@@ -102,7 +104,7 @@ func createView(c *ui.Composer) {
 	btnTheme.OnClick(func(ev ui.Event) {
 		btnTheme.SetEnabled(false)
 		tp := checkBox.State()
-		changeTheme(c, logBox, btnTheme, tp)
+		changeTheme(logBox, btnTheme, tp)
 	})
 	btnSet.OnClick(func(ev ui.Event) {
 		v := edit.Title()
@@ -114,25 +116,25 @@ func createView(c *ui.Composer) {
 		go pb.Step()
 		logBox.AddItem("ProgressBar step")
 		logBox.SelectItem(logBox.ItemCount() - 1)
-		c.PutEvent(ui.Event{Type: ui.EventRedraw})
+		ui.PutEvent(ui.Event{Type: ui.EventRedraw})
 	})
 	btnQuit.OnClick(func(ev ui.Event) {
-		go c.Stop()
+		go ui.Stop()
 	})
 }
 
 func mainLoop() {
 	// Every application must create a single Composer and
 	// call its intialize method
-	c := ui.InitLibrary()
-	defer c.Close()
+	ui.InitLibrary()
+	defer ui.DeinitLibrary()
 
-	c.Theme().SetThemePath("themes")
+	ui.SetThemePath("themes")
 
-	createView(c)
+	createView()
 
 	// start event processing loop - the main core of the library
-	c.MainLoop()
+	ui.MainLoop()
 }
 
 func main() {

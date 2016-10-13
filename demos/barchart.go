@@ -1,9 +1,7 @@
-﻿package main
+package main
 
 import (
-	// "fmt"
 	ui "github.com/VladimirMarkelov/clui"
-	// term "github.com/nsf/termbox-go"
 )
 
 func customColored(d *ui.BarDataCell) {
@@ -28,60 +26,62 @@ func customColored(d *ui.BarDataCell) {
 	}
 }
 
-func createView(c *ui.Composer) *ui.BarChart {
+func createView() *ui.BarChart {
 
-	view := c.CreateView(0, 0, 10, 7, "BarChart Demo")
-	bch := ui.NewBarChart(view, view, 40, 12, 1)
+	view := ui.AddWindow(0, 0, 10, 7, "BarChart Demo")
+	bch := ui.CreateBarChart(view, 40, 12, 1)
 
-	frmChk := ui.NewFrame(view, view, 8, 5, ui.BorderNone, ui.DoNotScale)
+	frmChk := ui.CreateFrame(view, 8, 5, ui.BorderNone, ui.Fixed)
 	frmChk.SetPack(ui.Vertical)
-	chkTitles := ui.NewCheckBox(view, frmChk, ui.AutoSize, "Show Titles", ui.DoNotScale)
-	chkMarks := ui.NewCheckBox(view, frmChk, ui.AutoSize, "Show Marks", ui.DoNotScale)
+	chkTitles := ui.CreateCheckBox(frmChk, ui.AutoSize, "Show Titles", ui.Fixed)
+	chkMarks := ui.CreateCheckBox(frmChk, ui.AutoSize, "Show Marks", ui.Fixed)
 	chkTitles.SetState(1)
-	chkLegend := ui.NewCheckBox(view, frmChk, ui.AutoSize, "Show Legend", ui.DoNotScale)
-	chkValues := ui.NewCheckBox(view, frmChk, ui.AutoSize, "Show Values", ui.DoNotScale)
+	chkLegend := ui.CreateCheckBox(frmChk, ui.AutoSize, "Show Legend", ui.Fixed)
+	chkValues := ui.CreateCheckBox(frmChk, ui.AutoSize, "Show Values", ui.Fixed)
 	chkValues.SetState(1)
-	chkFixed := ui.NewCheckBox(view, frmChk, ui.AutoSize, "Fixed Width", ui.DoNotScale)
-	chkGap := ui.NewCheckBox(view, frmChk, ui.AutoSize, "No Gap", ui.DoNotScale)
-	chkMulti := ui.NewCheckBox(view, frmChk, ui.AutoSize, "MultiColored", ui.DoNotScale)
-	chkCustom := ui.NewCheckBox(view, frmChk, ui.AutoSize, "Custom Colors", ui.DoNotScale)
+	chkFixed := ui.CreateCheckBox(frmChk, ui.AutoSize, "Fixed Width", ui.Fixed)
+	chkGap := ui.CreateCheckBox(frmChk, ui.AutoSize, "No Gap", ui.Fixed)
+	chkMulti := ui.CreateCheckBox(frmChk, ui.AutoSize, "MultiColored", ui.Fixed)
+	chkCustom := ui.CreateCheckBox(frmChk, ui.AutoSize, "Custom Colors", ui.Fixed)
+
+	ui.ActivateControl(view, chkTitles)
 
 	chkTitles.OnChange(func(state int) {
 		if state == 0 {
 			chkMarks.SetEnabled(false)
 			bch.SetShowTitles(false)
-			c.PutEvent(ui.Event{Type: ui.EventRedraw})
+			ui.PutEvent(ui.Event{Type: ui.EventRedraw})
 		} else if state == 1 {
 			chkMarks.SetEnabled(true)
 			bch.SetShowTitles(true)
-			c.PutEvent(ui.Event{Type: ui.EventRedraw})
+			ui.PutEvent(ui.Event{Type: ui.EventRedraw})
 		}
 	})
 	chkMarks.OnChange(func(state int) {
 		if state == 0 {
 			bch.SetShowMarks(false)
-			c.PutEvent(ui.Event{Type: ui.EventRedraw})
+			ui.PutEvent(ui.Event{Type: ui.EventRedraw})
 		} else if state == 1 {
 			bch.SetShowMarks(true)
-			c.PutEvent(ui.Event{Type: ui.EventRedraw})
+			ui.PutEvent(ui.Event{Type: ui.EventRedraw})
 		}
 	})
 	chkLegend.OnChange(func(state int) {
 		if state == 0 {
 			bch.SetLegendWidth(0)
-			c.PutEvent(ui.Event{Type: ui.EventRedraw})
+			ui.PutEvent(ui.Event{Type: ui.EventRedraw})
 		} else if state == 1 {
 			bch.SetLegendWidth(10)
-			c.PutEvent(ui.Event{Type: ui.EventRedraw})
+			ui.PutEvent(ui.Event{Type: ui.EventRedraw})
 		}
 	})
 	chkValues.OnChange(func(state int) {
 		if state == 0 {
 			bch.SetValueWidth(0)
-			c.PutEvent(ui.Event{Type: ui.EventRedraw})
+			ui.PutEvent(ui.Event{Type: ui.EventRedraw})
 		} else if state == 1 {
 			bch.SetValueWidth(5)
-			c.PutEvent(ui.Event{Type: ui.EventRedraw})
+			ui.PutEvent(ui.Event{Type: ui.EventRedraw})
 		}
 	})
 	chkMulti.OnChange(func(state int) {
@@ -92,7 +92,7 @@ func createView(c *ui.Composer) *ui.BarChart {
 				{Value: 150, Title: ">100%"},
 			}
 			bch.SetData(d)
-			c.PutEvent(ui.Event{Type: ui.EventRedraw})
+			ui.PutEvent(ui.Event{Type: ui.EventRedraw})
 		} else if state == 1 {
 			d := []ui.BarData{
 				{Value: 80, Title: "80%", Fg: ui.ColorBlue},
@@ -100,35 +100,32 @@ func createView(c *ui.Composer) *ui.BarChart {
 				{Value: 150, Title: ">100%", Fg: ui.ColorYellow},
 			}
 			bch.SetData(d)
-			c.PutEvent(ui.Event{Type: ui.EventRedraw})
+			ui.PutEvent(ui.Event{Type: ui.EventRedraw})
 		}
 	})
 	chkFixed.OnChange(func(state int) {
 		if state == 0 {
 			bch.SetAutoSize(true)
-			c.PutEvent(ui.Event{Type: ui.EventRedraw})
 		} else if state == 1 {
 			bch.SetAutoSize(false)
-			c.PutEvent(ui.Event{Type: ui.EventRedraw})
 		}
+		ui.PutEvent(ui.Event{Type: ui.EventRedraw})
 	})
 	chkGap.OnChange(func(state int) {
 		if state == 1 {
-			bch.SetGap(0)
-			c.PutEvent(ui.Event{Type: ui.EventRedraw})
+			bch.SetBarGap(0)
 		} else if state == 0 {
-			bch.SetGap(1)
-			c.PutEvent(ui.Event{Type: ui.EventRedraw})
+			bch.SetBarGap(1)
 		}
+		ui.PutEvent(ui.Event{Type: ui.EventRedraw})
 	})
 	chkCustom.OnChange(func(state int) {
 		if state == 0 {
 			bch.OnDrawCell(nil)
-			c.PutEvent(ui.Event{Type: ui.EventRedraw})
 		} else if state == 1 {
 			bch.OnDrawCell(customColored)
-			c.PutEvent(ui.Event{Type: ui.EventRedraw})
 		}
+		ui.PutEvent(ui.Event{Type: ui.EventRedraw})
 	})
 
 	return bch
@@ -137,11 +134,11 @@ func createView(c *ui.Composer) *ui.BarChart {
 func mainLoop() {
 	// Every application must create a single Composer and
 	// call its intialize method
-	c := ui.InitLibrary()
-	defer c.Close()
+	ui.InitLibrary()
+	defer ui.DeinitLibrary()
 
-	b := createView(c)
-	b.SetGap(1)
+	b := createView()
+	b.SetBarGap(1)
 	d := []ui.BarData{
 		{Value: 80, Title: "80%"},
 		{Value: 50, Title: "50%"},
@@ -152,7 +149,7 @@ func mainLoop() {
 	b.SetAutoSize(true)
 
 	// start event processing loop - the main core of the library
-	c.MainLoop()
+	ui.MainLoop()
 }
 
 func main() {

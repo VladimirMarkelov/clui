@@ -1,566 +1,245 @@
 package clui
 
 import (
+	xs "github.com/huandu/xstrings"
 	term "github.com/nsf/termbox-go"
-	"log"
 )
 
 // Window is an implemetation of View managed by Composer.
 type Window struct {
-	ControlBase
+	BaseControl
+
 	buttons   ViewButton
-	canvas    Canvas
-	parent    Screen
-	pack      PackType
-	children  []Control
-	controls  []Control
 	maximized bool
 	// maximization support
 	origWidth  int
 	origHeight int
 	origX      int
 	origY      int
-	// dialog support
-	modal   bool
+
 	onClose func(Event)
 }
 
-/*
-NewWindow creates a new View.
-parent - is composer that manages all views.
-x and y - initial View postion.
-w and h - are minimal size of the view.
-    The minimal view size cannot be less than 10x5
-title - view title.
-*/
-func NewWindow(parent Screen, x, y, w, h int, title string) *Window {
-	d := new(Window)
-	d.canvas = NewFrameBuffer(w, h)
-
-	if w == AutoSize {
+func CreateWindow(x, y, w, h int, title string) *Window {
+	wnd := new(Window)
+	if w == AutoSize || w < 1 || w > 1000 {
 		w = 10
 	}
-	if h == AutoSize {
-		h = 5
+	if h == AutoSize || h < 1 || h > 1000 {
+		w = 5
 	}
 
-	d.SetSize(w, h)
-	d.SetConstraints(w, h)
-	d.SetTitle(title)
-	d.SetPos(x, y)
-	d.SetButtons(ButtonClose | ButtonBottom | ButtonMaximize)
+	wnd.SetConstraints(w, h)
+	wnd.SetSize(w, h)
+	wnd.SetPos(x, y)
+	wnd.SetTitle(title)
+	wnd.buttons = ButtonClose | ButtonBottom | ButtonMaximize
+	wnd.children = make([]Control, 0)
+	wnd.SetPaddings(1, 1)
+	wnd.SetGaps(1, 0)
+	wnd.SetScale(1)
 
-	d.controls = make([]Control, 0)
-	d.children = make([]Control, 0)
-	d.parent = parent
-	d.padSide, d.padTop, d.padX, d.padY = 1, 1, 1, 0
-
-	return d
+	return wnd
 }
 
-// SetSize changes control size. Constant DoNotChange can be
-// used as placeholder to indicate that the control attrubute
-// should be unchanged.
-// View automatically recalculates position and size of its children after changing its size
-func (w *Window) SetSize(width, height int) {
-	if width == w.width && height == w.height {
+func (wnd *Window) buttonCount() int {
+	cnt := 0
+	if wnd.buttons&ButtonClose == ButtonClose {
+		cnt += 1
+	}
+	if wnd.buttons&ButtonMaximize == ButtonMaximize {
+		cnt += 1
+	}
+	if wnd.buttons&ButtonBottom == ButtonBottom {
+		cnt += 1
+	}
+
+	return cnt
+}
+
+func (wnd *Window) drawFrame() {
+	PushAttributes()
+	defer PopAttributes()
+
+	var bs BorderStyle
+	if wnd.inactive {
+		bs = BorderThin
+	} else {
+		bs = BorderThick
+	}
+
+	DrawFrame(wnd.x, wnd.y, wnd.width, wnd.height, bs)
+}
+
+func (wnd *Window) drawTitle() {
+	PushAttributes()
+	defer PopAttributes()
+
+	btnCount := wnd.buttonCount()
+	maxw := wnd.width - 2 - btnCount
+	if btnCount > 0 {
+		maxw -= 2
+	}
+
+	fitTitle := wnd.title
+	rawText := UnColorizeText(fitTitle)
+	if xs.Len(rawText) > maxw {
+		fitTitle = SliceColorized(fitTitle, 0, maxw-3) + "..."
+	}
+
+	DrawText(wnd.x+1, wnd.y, fitTitle)
+}
+
+func (wnd *Window) drawButtons() {
+	btnCount := wnd.buttonCount()
+	if btnCount == 0 {
 		return
 	}
 
-	if width != DoNotChange {
-		if width > 1000 {
-			width = 1000
-		}
-		if width < w.minW {
-			width = w.minW
-		}
-	}
-	if height != DoNotChange {
-		if height > 200 {
-			height = 200
-		}
-		if height < w.minH {
-			height = w.minH
-		}
-	}
+	PushAttributes()
+	defer PopAttributes()
 
-	if width != DoNotChange {
-		w.width = width
-	}
-	if height != DoNotChange {
-		w.height = height
-	}
-
-	w.canvas.SetSize(w.width, w.height)
-	RepositionControls(0, 0, w)
-}
-
-func (w *Window) applyConstraints() {
-	width, height := w.Size()
-	wM, hM := w.Constraints()
-
-	newW, newH := width, height
-	if width < wM {
-		newW = wM
-	}
-	if height < hM {
-		newH = hM
-	}
-
-	if newW != width || newH != height {
-		w.SetSize(newW, newH)
-	}
-}
-
-// SetConstraints sets new minimal size of control.
-// If minimal size of the control is greater than the current
-// control size then the control size is changed to fit minimal values
-// The minimal constraints for view is width=10, height=5
-func (w *Window) SetConstraints(width, height int) {
-	if width >= 10 {
-		w.minW = width
-	}
-	if height >= 5 {
-		w.minH = height
-	}
-
-	w.applyConstraints()
-}
-
-// Draw paints the view screen buffer to a canvas. It does not
-// repaint all view children.
-// Method does nothing if coordinates are outside canvas
-func (w *Window) Draw(canvas Canvas) {
-	for y := 0; y < w.height; y++ {
-		for x := 0; x < w.width; x++ {
-			s, ok := w.canvas.Symbol(x, y)
-			if ok {
-				canvas.PutSymbol(x+w.x, y+w.y, s)
-			}
-		}
-	}
-}
-
-func (w *Window) buttonCount() int {
-	count := 0
-	if w.buttons&ButtonClose != 0 {
-		count++
-	}
-	if w.buttons&ButtonBottom != 0 {
-		count++
-	}
-	if w.buttons&ButtonMaximize != 0 {
-		count++
-	}
-
-	return count
-}
-
-// Repaint draws the control and its children on the internal canvas
-func (w *Window) Repaint() {
-	tm := w.parent.Theme()
-	bg := RealColor(tm, w.bg, ColorViewBack)
-
-	w.canvas.Clear(bg)
-	// paint all controls
-
-	for _, child := range w.children {
-		child.Repaint()
-	}
-	// paint itself - to overpaint any control that draws itself on the window border
-	w.drawFrame(tm)
-	w.drawTitle(tm)
-	w.drawButtons(tm)
-}
-
-func (w *Window) drawTitle(tm Theme) {
-	if w.title == "" {
-		return
-	}
-
-	btnWidth := w.buttonCount()
-	if btnWidth != 0 {
-		btnWidth += 2
-	}
-	maxWidth := w.width - 2 - btnWidth
-	text := Ellipsize(w.title, maxWidth)
-	bg := RealColor(tm, w.bg, ColorViewBack)
-	fg := RealColor(tm, w.fg, ColorViewText)
-	w.canvas.PutText(1, 0, text, fg, bg)
-}
-
-func (w *Window) drawButtons(tm Theme) {
-	if w.buttonCount() == 0 {
-		return
-	}
-
-	bg, fg := RealColor(tm, w.bg, ColorViewBack), RealColor(tm, w.fg, ColorViewText)
-	chars := []rune(tm.SysObject(ObjViewButtons))
+	chars := []rune(SysObject(ObjViewButtons))
 	cMax, cBottom, cClose, cOpenB, cCloseB := chars[0], chars[1], chars[2], chars[3], chars[4]
 
-	x := w.width - 2
-	w.canvas.PutSymbol(x, 0, term.Cell{Ch: cCloseB, Fg: fg, Bg: bg})
-	x--
-	if w.buttons&ButtonClose != 0 {
-		w.canvas.PutSymbol(x, 0, term.Cell{Ch: cClose, Fg: fg, Bg: bg})
-		x--
+	pos := wnd.x + wnd.width - btnCount - 2
+	putCharUnsafe(pos, wnd.y, cOpenB)
+	pos += 1
+	if wnd.buttons&ButtonBottom == ButtonBottom {
+		putCharUnsafe(pos, wnd.y, cBottom)
+		pos += 1
 	}
-	if w.buttons&ButtonBottom != 0 {
-		w.canvas.PutSymbol(x, 0, term.Cell{Ch: cBottom, Fg: fg, Bg: bg})
-		x--
+	if wnd.buttons&ButtonMaximize == ButtonMaximize {
+		putCharUnsafe(pos, wnd.y, cMax)
+		pos += 1
 	}
-	if w.buttons&ButtonMaximize != 0 {
-		w.canvas.PutSymbol(x, 0, term.Cell{Ch: cMax, Fg: fg, Bg: bg})
-		x--
+	if wnd.buttons&ButtonClose == ButtonClose {
+		putCharUnsafe(pos, wnd.y, cClose)
+		pos += 1
 	}
-	w.canvas.PutSymbol(x, 0, term.Cell{Ch: cOpenB, Fg: fg, Bg: bg})
+	putCharUnsafe(pos, wnd.y, cCloseB)
 }
 
-func (w *Window) drawFrame(tm Theme) {
-	var chars string
-	if w.active {
-		chars = tm.SysObject(ObjDoubleBorder)
-	} else {
-		chars = tm.SysObject(ObjSingleBorder)
-	}
+func (wnd *Window) Draw() {
+	PushAttributes()
+	defer PopAttributes()
 
-	bg := RealColor(tm, w.bg, ColorViewBack)
-	fg := RealColor(tm, w.fg, ColorViewText)
+	fg, bg := RealColor(wnd.fg, ColorViewText), RealColor(wnd.bg, ColorViewBack)
+	SetBackColor(bg)
 
-	w.canvas.DrawFrame(0, 0, w.width, w.height, fg, bg, chars)
+	FillRect(wnd.x, wnd.y, wnd.width, wnd.height, ' ')
+
+	wnd.DrawChildren()
+
+	SetBackColor(bg)
+	SetTextColor(fg)
+
+	wnd.drawFrame()
+	wnd.drawTitle()
+	wnd.drawButtons()
 }
 
-// Canvas returns an internal graphic buffer to draw everything.
-// Used by children controls - they paint themselves on the canvas
-func (w *Window) Canvas() Canvas {
-	return w.canvas
-}
-
-// SetButtons detemines which button is visible inside view
-// title
-func (w *Window) SetButtons(bi ViewButton) {
-	w.buttons = bi
-}
-
-// Buttons returns the bit set of buttons displayed in Windows's title
-// A set may contain any combination of: ButtonClose, ButtonBottom, and ButtonMaximize
-func (w *Window) Buttons() ViewButton {
-	return w.buttons
-}
-
-// SetPack changes the direction of children packing. Call the method
-// only before any child is added to view. Otherwise, the method
-// does nothing
-func (w *Window) SetPack(pk PackType) {
-	if len(w.children) > 0 {
-		return
+func (c *Window) HitTest(x, y int) HitResult {
+	if x > c.x && x < c.x+c.width-1 &&
+		y > c.y && y < c.y+c.height-1 {
+		return HitInside
 	}
 
-	w.pack = pk
-}
-
-// Pack returns direction in which a container packs
-// its children: horizontal or vertical
-func (w *Window) Pack() PackType {
-	return w.pack
-}
-
-// RecalculateConstraints used by containers to recalculate new minimal size
-// depending on its children constraints after a new child is added
-func (w *Window) RecalculateConstraints() {
-	width, height := w.Constraints()
-	minW, minH := CalculateMinimalSize(w)
-
-	newW, newH := width, height
-	if minW > newW {
-		newW = minW
-	}
-	if minH > newH {
-		newH = minH
+	if x == c.x && y == c.y {
+		return HitTopLeft
 	}
 
-	if newW != width || newH != height {
-		w.SetConstraints(newW, newH)
-	}
-}
-
-// RegisterControl adds a control to the view control list. It
-// a list of all controls visible on the view - used to
-// calculate the control under mouse when a user clicks, and
-// to calculate the next control after a user presses TAB key
-func (w *Window) RegisterControl(c Control) {
-	w.controls = append(w.controls, c)
-	w.RecalculateConstraints()
-	RepositionControls(0, 0, w)
-}
-
-// AddChild add control to a list of view children. Minimal size
-// of the view calculated as a sum of sizes of its children.
-// Method does nothing if the control is already added
-func (w *Window) AddChild(c Control, scale int) {
-	if w.ChildExists(c) {
-		return
+	if x == c.x+c.width-1 && y == c.y {
+		return HitTopRight
 	}
 
-	c.SetScale(scale)
-	w.children = append(w.children, c)
-	w.RegisterControl(c)
-}
+	if x == c.x && y == c.y+c.height-1 {
+		return HitBottomLeft
+	}
 
-// Children returns the list of view children
-func (w *Window) Children() []Control {
-	return w.children
-}
+	if x == c.x+c.width-1 && y == c.y+c.height-1 {
+		return HitBottomRight
+	}
 
-// Scale is a stub that always return DoNotScale becaue the
-// scaling feature is not applied to views
-func (w *Window) Scale() int {
-	return DoNotScale
-}
+	if x == c.x && y > c.y && y < c.y+c.height-1 {
+		return HitLeft
+	}
 
-func (w *Window) controlAtPos(x, y int) Control {
-	x -= w.x
-	y -= w.y
+	if x == c.x+c.width-1 && y > c.y && y < c.y+c.height-1 {
+		return HitRight
+	}
 
-	for id := len(w.controls) - 1; id >= 0; id-- {
-		ctrl := w.controls[id]
-		cw, ch := ctrl.Size()
-		cx, cy := ctrl.Pos()
-
-		if x >= cx && x < cx+cw && y >= cy && y < cy+ch {
-			return ctrl
+	if y == c.y && x > c.x && x < c.x+c.width-1 {
+		btnCount := c.buttonCount()
+		if x < c.x+c.width-1-btnCount {
+			return HitTop
 		}
+
+		hitRes := []HitResult{HitTop, HitTop, HitTop}
+		pos := 0
+
+		if c.buttons&ButtonBottom == ButtonBottom {
+			hitRes[pos] = HitButtonBottom
+			pos += 1
+		}
+		if c.buttons&ButtonMaximize == ButtonMaximize {
+			hitRes[pos] = HitButtonMaximize
+			pos += 1
+		}
+		if c.buttons&ButtonClose == ButtonClose {
+			hitRes[pos] = HitButtonClose
+			pos += 1
+		}
+
+		return hitRes[x-(c.x+c.width-1-btnCount)]
 	}
 
-	return nil
+	if y == c.y+c.height-1 && x > c.x && x < c.x+c.width-1 {
+		return HitBottom
+	}
+
+	return HitOutside
 }
 
-// ProcessEvent processes all events come from the composer.
-// If a view processes an event it should return true. If
-// the method returns false it means that the view do
-// not want or cannot process the event and the caller sends
-// the event to the next target
-func (w *Window) ProcessEvent(ev Event) bool {
+func (c *Window) ProcessEvent(ev Event) bool {
 	switch ev.Type {
-	case EventKey, EventMouse:
-		if ev.Type == EventKey && (ev.Key == term.KeyTab || (ev.Mod&term.ModAlt != 0 && (ev.Key == term.KeyPgup || ev.Key == term.KeyPgdn))) {
-			forward := ev.Key != term.KeyPgup
-			ctrl := w.ActiveControl()
-			if ctrl != nil {
-				ctrl.ProcessEvent(Event{Type: EventActivate, X: 0})
-			}
-			ctrl = w.nextControl(ctrl, forward)
-			if ctrl != nil {
-				// w.Logger().Printf("Activate control: %v", ctrl)
-				w.ActivateControl(ctrl)
-			}
-			return true
-		}
-		if ev.Type == EventMouse {
-			cunder := w.controlAtPos(ev.X, ev.Y)
-			if cunder == nil {
-				return true
-			}
-
-			w.ActivateControl(cunder)
-		}
-		ctrl := w.ActiveControl()
-		if ctrl != nil {
-			cx, cy := ctrl.Pos()
-			cw, ch := ctrl.Size()
-			ctrlX, ctrlY := ev.X-w.x, ev.Y-w.y
-			if ev.Type == EventMouse && (ctrlX < cx || ctrlY < cy || ctrlX >= cx+cw || ctrlY >= cy+ch) {
-				return false
-			}
-			copyEv := ev
-			copyEv.X, copyEv.Y = ctrlX, ctrlY
-			ctrl.ProcessEvent(copyEv)
-			return true
-		}
-	case EventActivate:
-		if ev.X == 0 {
-			w.canvas.SetCursorPos(-1, -1)
-		}
+	case EventMove:
+		c.PlaceChildren()
+	case EventResize:
+		c.ResizeChildren()
+		c.PlaceChildren()
 	case EventClose:
-		if w.onClose != nil {
-			w.onClose(Event{Type: EventClose, X: ev.X})
+		if c.onClose != nil {
+			c.onClose(ev)
 		}
-		// case EventResize:
-		// 	d.hideAllExtraControls()
-		// 	d.recalculateControls()
-	}
-
-	return false
-}
-
-// ChildExists returns true if the container already has
-// the control in its children list
-func (w *Window) ChildExists(c Control) bool {
-	for _, ctrl := range w.controls {
-		if ctrl == c {
+	case EventKey:
+		if ev.Key == term.KeyTab {
+			aC := ActiveControl(c)
+			nC := NextControl(c, aC, true)
+			if nC != aC {
+				if aC != nil {
+					aC.SetActive(false)
+					aC.ProcessEvent(Event{Type: EventActivate, X: 0})
+				}
+				if nC != nil {
+					nC.SetActive(true)
+					nC.ProcessEvent(Event{Type: EventActivate, X: 1})
+				}
+			}
 			return true
-		}
-	}
-
-	return false
-}
-
-func (w *Window) nextControl(c Control, forward bool) Control {
-	length := len(w.controls)
-
-	if length == 0 {
-		return nil
-	}
-
-	if length == 1 {
-		return w.controls[0]
-	}
-
-	id := 0
-	if c != nil {
-		id = -1
-		for idx, ct := range w.controls {
-			if ct == c {
-				id = idx
-				break
-			}
-		}
-
-		if id == -1 {
-			return nil
-		}
-	}
-
-	orig := id
-	for {
-		if forward {
-			id++
 		} else {
-			id--
+			return SendEventToChild(c, ev)
 		}
-
-		if id >= length {
-			id = 0
-		} else if id < 0 {
-			id = length - 1
+	default:
+		if ev.Type == EventMouse && ev.Key == term.MouseLeft {
+			DeactivateControls(c)
 		}
-
-		if w.controls[id].TabStop() {
-			return w.controls[id]
-		}
-
-		if orig == id {
-			if !w.controls[id].TabStop() {
-				return nil
-			}
-			return c
-		}
-	}
-}
-
-// ActiveControl returns control that currently has focus or nil
-// if there is no active control
-func (w *Window) ActiveControl() Control {
-	for _, ctrl := range w.controls {
-		if ctrl.Active() {
-			return ctrl
-		}
+		return SendEventToChild(c, ev)
 	}
 
-	return nil
-}
-
-// ActivateControl make the control active and previously
-// focused control loses the focus. As a side effect the method
-// emits two events: deactivate for previously focused and
-// activate for new one if it is possible (EventActivate with
-// different X values)
-func (w *Window) ActivateControl(ctrl Control) {
-	active := w.ActiveControl()
-	if active == ctrl {
-		return
-	}
-	if active != nil {
-		active.ProcessEvent(Event{Type: EventActivate, X: 0})
-		active.SetActive(false)
-	}
-	ctrl.SetActive(true)
-	ctrl.ProcessEvent(Event{Type: EventActivate, X: 1})
-}
-
-func (w *Window) Logger() *log.Logger {
-	return w.parent.Logger()
-}
-
-// Screen returns the composer that manages the view
-func (w *Window) Screen() Screen {
-	return w.parent
-}
-
-// Parent is a stub that always returns nil because the view
-// cannot be added to any container
-func (w *Window) Parent() Control {
-	return nil
-}
-
-// TabStop is a stub that always returns false because the view
-// cannot be selected by pressing TAB key
-func (w *Window) TabStop() bool {
 	return false
 }
 
-// HitTest returns the area that corresponds to the clicked
-// position X, Y (absolute position in console window): title,
-// internal view area, title button, border or outside the view
-func (w *Window) HitTest(x, y int) HitResult {
-	if x < w.x || y < w.y || x >= w.x+w.width || y >= w.y+w.height {
-		return HitOutside
-	}
-
-	if x == w.x || x == w.x+w.width-1 || y == w.y+w.height-1 {
-		return HitBorder
-	}
-
-	if y == w.y {
-		dx := -3
-		if w.buttons&ButtonClose != 0 {
-			if x == w.x+w.width+dx {
-				return HitButtonClose
-			}
-			dx--
-		}
-		if w.buttons&ButtonBottom != 0 {
-			if x == w.x+w.width+dx {
-				return HitButtonBottom
-			}
-			dx--
-		}
-		if w.buttons&ButtonMaximize != 0 {
-			if x == w.x+w.width+dx {
-				return HitButtonMaximize
-			}
-		}
-	}
-
-	return HitInside
-}
-
-// SetModal enables or disables modal mode
-func (w *Window) SetModal(modal bool) {
-	w.modal = modal
-}
-
-// Modal returns if the view is in modal mode.In modal mode a
-// user cannot switch to any other view until the user closes
-// the modal view. Used by confirmation and select dialog to be
-// sure that the user has made a choice before continuing work
-func (w *Window) Modal() bool {
-	return w.modal
-}
-
-// OnClose sets a callback that is called when view is closed.
-// For dialogs after windows is closed a user can check the
-// close result
 func (w *Window) OnClose(fn func(Event)) {
 	w.onClose = fn
 }
@@ -577,13 +256,15 @@ func (w *Window) SetMaximized(maximize bool) {
 		w.origWidth, w.origHeight = w.Size()
 		w.maximized = true
 		w.SetPos(0, 0)
-		width, height := w.parent.Size()
+		width, height := ScreenSize()
 		w.SetSize(width, height)
 	} else {
 		w.maximized = false
 		w.SetPos(w.origX, w.origY)
 		w.SetSize(w.origWidth, w.origHeight)
 	}
+	w.ResizeChildren()
+	w.PlaceChildren()
 }
 
 // Maximized returns if the view is in full screen mode

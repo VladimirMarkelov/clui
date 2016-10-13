@@ -1,15 +1,15 @@
-﻿package main
+package main
 
 import (
 	"fmt"
 	ui "github.com/VladimirMarkelov/clui"
 )
 
-func createView(c *ui.Composer) *ui.TableView {
+func createView() *ui.TableView {
 
-	view := c.CreateView(0, 0, 10, 7, "TableView Demo")
-	bch := ui.NewTableView(view, view, 25, 12, 1)
-	view.ActivateControl(bch)
+	view := ui.AddWindow(0, 0, 10, 7, "TableView Demo")
+	bch := ui.CreateTableView(view, 25, 12, 1)
+	ui.ActivateControl(view, bch)
 
 	return bch
 }
@@ -17,10 +17,10 @@ func createView(c *ui.Composer) *ui.TableView {
 func mainLoop() {
 	// Every application must create a single Composer and
 	// call its intialize method
-	c := ui.InitLibrary()
-	defer c.Close()
+	ui.InitLibrary()
+	defer ui.DeinitLibrary()
 
-	b := createView(c)
+	b := createView()
 	b.SetShowLines(true)
 	b.SetShowRowNumber(true)
 	b.SetRowCount(15)
@@ -37,7 +37,7 @@ func mainLoop() {
 	})
 
 	// start event processing loop - the main core of the library
-	c.MainLoop()
+	ui.MainLoop()
 }
 
 func main() {

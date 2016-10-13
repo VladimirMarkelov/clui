@@ -20,7 +20,7 @@ and horizontal. The latter one is available only if WordWrap
 mode is off).
 */
 type TextView struct {
-	ControlBase
+	BaseControl
 	// own listbox members
 	lines   []string
 	lengths []int
@@ -32,7 +32,6 @@ type TextView struct {
 	colorized     bool
 	virtualHeight int
 	virtualWidth  int
-	multicolor    bool
 	autoscroll    bool
 	maxLines      int
 }
@@ -45,7 +44,7 @@ width and heigth - are minimal size of the control.
 scale - the way of scaling the control when the parent is resized. Use DoNotScale constant if the
 control should keep its original size.
 */
-func NewTextView(view View, parent Control, width, height int, scale int) *TextView {
+func CreateTextView(parent Control, width, height int, scale int) *TextView {
 	l := new(TextView)
 
 	if height == AutoSize {
@@ -60,13 +59,13 @@ func NewTextView(view View, parent Control, width, height int, scale int) *TextV
 	l.topLine = 0
 	l.lines = make([]string, 0)
 	l.parent = parent
-	l.view = view
 	l.maxLines = 0
 
 	l.SetTabStop(true)
+	l.SetScale(scale)
 
 	if parent != nil {
-		parent.AddChild(l, scale)
+		parent.AddChild(l)
 	}
 
 	return l
@@ -80,29 +79,28 @@ func (l *TextView) outputHeight() int {
 	return h
 }
 
-func (l *TextView) redrawScrolls(canvas Canvas, tm Theme) {
-	fg, bg := RealColor(tm, l.fg, ColorScrollText), RealColor(tm, l.bg, ColorScrollBack)
-	fgThumb, bgThumb := RealColor(tm, l.fg, ColorThumbText), RealColor(tm, l.bg, ColorThumbBack)
-
+func (l *TextView) drawScrolls() {
 	height := l.outputHeight()
 	pos := ThumbPosition(l.topLine, l.virtualHeight-l.outputHeight(), height)
-	canvas.DrawScroll(l.x+l.width-1, l.y, 1, height, pos, fg, bg, fgThumb, bgThumb, tm.SysObject(ObjScrollBar))
+	DrawScrollBar(l.x+l.width-1, l.y, 1, height, pos)
 
 	if !l.wordWrap {
 		pos = ThumbPosition(l.leftShift, l.virtualWidth-l.width+1, l.width-1)
-		canvas.DrawScroll(l.x, l.y+l.height-1, l.width-1, 1, pos, fg, bg, fgThumb, bgThumb, tm.SysObject(ObjScrollBar))
+		DrawScrollBar(l.x, l.y+l.height-1, l.width-1, 1, pos)
 	}
 }
 
-func (l *TextView) redrawText(canvas Canvas, tm Theme) {
+func (l *TextView) drawText() {
+	PushAttributes()
+	defer PopAttributes()
+
 	maxWidth := l.width - 1
 	maxHeight := l.outputHeight()
 
-	fg, bg := RealColor(tm, l.fg, ColorEditText), RealColor(tm, l.bg, ColorEditBack)
-	if l.Active() {
-		fg, bg = RealColor(tm, l.fg, ColorEditActiveText), RealColor(tm, l.bg, ColorEditActiveBack)
-	}
+	fg, bg := l.TextColor(), l.BackColor()
 
+	SetTextColor(fg)
+	SetBackColor(bg)
 	if l.wordWrap {
 		lineID := l.posToItemNo(l.topLine)
 		linePos := l.itemNoToPos(lineID)
@@ -117,22 +115,10 @@ func (l *TextView) redrawText(canvas Canvas, tm Theme) {
 			start := 0
 			for remained > 0 {
 				var s string
-				if l.multicolor {
-					s = SliceColorized(l.lines[lineID], start, start+maxWidth)
-				} else {
-					if remained <= maxWidth {
-						s = xs.Slice(l.lines[lineID], start, -1)
-					} else {
-						s = xs.Slice(l.lines[lineID], start, start+maxWidth)
-					}
-				}
+				s = SliceColorized(l.lines[lineID], start, start+maxWidth)
 
 				if linePos >= l.topLine {
-					if l.multicolor {
-						canvas.PutColorizedText(l.x, l.y+y, maxWidth, s, fg, bg, Horizontal)
-					} else {
-						canvas.PutText(l.x, l.y+y, s, fg, bg)
-					}
+					DrawText(l.x, l.y+y, s)
 				}
 
 				remained -= maxWidth
@@ -160,33 +146,18 @@ func (l *TextView) redrawText(canvas Canvas, tm Theme) {
 
 			str := l.lines[l.topLine+y]
 			lineLength := l.lengths[l.topLine+y]
-			if l.multicolor {
-				if l.leftShift == 0 {
-					if lineLength > maxWidth {
-						str = SliceColorized(str, 0, maxWidth)
-					}
-				} else {
-					if l.leftShift+maxWidth >= lineLength {
-						str = SliceColorized(str, l.leftShift, -1)
-					} else {
-						str = SliceColorized(str, l.leftShift, maxWidth+l.leftShift)
-					}
+			if l.leftShift == 0 {
+				if lineLength > maxWidth {
+					str = SliceColorized(str, 0, maxWidth)
 				}
-				canvas.PutColorizedText(l.x, l.y+y, maxWidth, str, fg, bg, Horizontal)
 			} else {
-				if l.leftShift == 0 {
-					if lineLength > maxWidth {
-						str = CutText(str, maxWidth)
-					}
+				if l.leftShift+maxWidth >= lineLength {
+					str = SliceColorized(str, l.leftShift, -1)
 				} else {
-					if l.leftShift+maxWidth >= lineLength {
-						str = xs.Slice(str, l.leftShift, -1)
-					} else {
-						str = xs.Slice(str, l.leftShift, maxWidth+l.leftShift)
-					}
+					str = SliceColorized(str, l.leftShift, maxWidth+l.leftShift)
 				}
-				canvas.PutText(l.x, l.y+y, str, fg, bg)
 			}
+			DrawText(l.x, l.y+y, str)
 
 			y++
 		}
@@ -194,20 +165,23 @@ func (l *TextView) redrawText(canvas Canvas, tm Theme) {
 }
 
 // Repaint draws the control on its View surface
-func (l *TextView) Repaint() {
-	canvas := l.view.Canvas()
-	tm := l.view.Screen().Theme()
+func (l *TextView) Draw() {
+	PushAttributes()
+	defer PopAttributes()
 
 	x, y := l.Pos()
 	w, h := l.Size()
 
-	bg := RealColor(tm, l.bg, ColorEditBack)
+	bg, fg := RealColor(l.bg, ColorEditBack), RealColor(l.fg, ColorEditText)
 	if l.Active() {
-		bg = RealColor(tm, l.bg, ColorEditActiveBack)
+		bg, fg = RealColor(l.bg, ColorEditActiveBack), RealColor(l.fg, ColorEditActiveText)
 	}
-	canvas.FillRect(x, y, w, h, term.Cell{Bg: bg, Ch: ' '})
-	l.redrawText(canvas, tm)
-	l.redrawScrolls(canvas, tm)
+
+	SetTextColor(fg)
+	SetBackColor(bg)
+	FillRect(x, y, w, h, ' ')
+	l.drawText()
+	l.drawScrolls()
 }
 
 func (l *TextView) home() {
@@ -382,9 +356,7 @@ func (l *TextView) calculateVirtualSize() {
 
 	l.lengths = make([]int, len(l.lines))
 	for idx, str := range l.lines {
-		if l.multicolor {
-			str = UnColorizeText(str)
-		}
+		str = UnColorizeText(str)
 
 		sz := xs.Len(str)
 		if l.wordWrap {
@@ -414,23 +386,6 @@ func (l *TextView) SetText(text []string) {
 
 	if l.autoscroll {
 		l.end()
-	}
-}
-
-// MultiColored returns if the TextView checks and applies any
-// color related tags inside its text. If MultiColores is
-// false then text is displayed as is.
-// To read about available color tags, please see ColorParser
-func (l *TextView) MultiColored() bool {
-	return l.multicolor
-}
-
-// SetMultiColored changes how the TextView output its text: as is
-// or parse and apply all internal color tags
-func (l *TextView) SetMultiColored(multi bool) {
-	if l.multicolor != multi {
-		l.multicolor = multi
-		l.calculateVirtualSize()
 	}
 }
 
@@ -496,7 +451,7 @@ func (l *TextView) SetWordWrap(wrap bool) {
 		l.wordWrap = wrap
 		l.calculateVirtualSize()
 		l.recalculateTopLine()
-		l.Repaint()
+		l.Draw()
 	}
 }
 

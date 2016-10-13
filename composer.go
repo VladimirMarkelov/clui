@@ -2,8 +2,6 @@ package clui
 
 import (
 	term "github.com/nsf/termbox-go"
-	"log"
-	"os"
 )
 
 // Composer is a service object that manages Views and console, processes
@@ -11,115 +9,93 @@ import (
 // one object of this type
 type Composer struct {
 	// list of visible Views
-	views []View
-	// console width and height
-	width, height int
-	// console canvas
-	canvas Canvas
-	// a channel to communicate with View(e.g, Views send redraw event to this channel)
-	channel chan Event
-
-	// current color scheme
-	themeManager *ThemeManager
-
-	// multi key sequences support. The flag below are true if the last keyboard combination was Ctrl+S or Ctrl+W respectively
-	ctrlKey term.Key
-	// last pressed key - to make repeatable actions simpler, e.g, at first one presses Ctrl+S and then just repeatedly presses arrow lest to resize View
+	windows  []Control
+	consumer Control
+	// last pressed key - to make repeatable actions simpler, e.g, at first
+	// one presses Ctrl+S and then just repeatedly presses arrow lest to
+	// resize Window
 	lastKey term.Key
-
-	//debug
-	logger *log.Logger
+	// coordinates when the mouse button was down, e.g to detect
+	// mouse click
+	mdownX, mdownY int
+	// last processed coordinates: e.g, for mouse move
+	lastX, lastY int
+	// Type of dragging
+	dragType DragType
 }
 
-func (c *Composer) initBuffer() {
-	c.canvas = NewFrameBuffer(c.width, c.height)
-	c.canvas.Clear(ColorBlack)
+var (
+	comp *Composer
+)
+
+func initComposer() {
+	comp = new(Composer)
+	comp.windows = make([]Control, 0)
+	comp.consumer = nil
+	comp.lastKey = term.KeyEsc
 }
 
-// InitLibrary initializes library and starts console management.
-// Retuns nil in case of error
-func InitLibrary() *Composer {
-	err := term.Init()
-	if err != nil {
-		return nil
-	}
-
-	c := new(Composer)
-	c.ctrlKey = term.KeyEsc
-
-	term.HideCursor()
-
-	file, _ := os.OpenFile("debugui.txt", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
-	c.logger = log.New(file, "", log.Ldate|log.Ltime|log.Lshortfile)
-	c.logger.Printf("----------------------------------")
-
-	c.channel = make(chan Event)
-
-	c.views = make([]View, 0)
-
-	c.width, c.height = term.Size()
-	c.initBuffer()
-
-	c.themeManager = NewThemeManager()
-
-	term.SetInputMode(term.InputAlt | term.InputMouse)
-
-	c.redrawAll()
-
-	return c
+func composer() *Composer {
+	return comp
 }
 
-func (c *Composer) redrawAll() {
-	for j := 0; j < c.height; j++ {
-		for i := 0; i < c.width; i++ {
-			sym, ok := c.canvas.Symbol(i, j)
-			if ok {
-				term.SetCell(i, j, sym.Ch, term.Attribute(sym.Fg), term.Attribute(sym.Bg))
-			}
-		}
+// GrabEvents makes control c as the exclusive event reciever. After calling
+// this function the control will recieve all mouse and keyboard events even
+// if it is not active or mouse is outside it. Useful to implement dragging
+// or alike stuff
+func GrabEvents(c Control) {
+	comp.consumer = c
+}
+
+// ReleaseEvents stops a control being exclusive evetn reciever and backs all
+// to normal event processing
+func ReleaseEvents() {
+	comp.consumer = nil
+}
+
+func termboxEventToLocal(ev term.Event) Event {
+	e := Event{Type: EventType(ev.Type), Ch: ev.Ch,
+		Key: ev.Key, Err: ev.Err, X: ev.MouseX, Y: ev.MouseY,
+		Mod: ev.Mod, Width: ev.Width, Height: ev.Height}
+	return e
+}
+
+// Repaints everything on the screen
+func RefreshScreen() {
+	term.Clear(ColorWhite, ColorBlack)
+
+	for _, wnd := range comp.windows {
+		wnd.Draw()
 	}
 
 	term.Flush()
 }
 
-// Repaints all View on the screen. Now the method is not efficient: at first clears a console and then draws all Views starting from the bottom
-func (c *Composer) refreshScreen(invalidate bool) {
-	c.canvas.Clear(ColorBlack)
+// AddWindow constucts a new Window, adds it to the composer automatically,
+// and makes it active
+// posX and posY are top left coordinates of the Window
+// width and height are Window size
+// title is a Window title
+func AddWindow(posX, posY, width, height int, title string) *Window {
+	window := CreateWindow(posX, posY, width, height, title)
 
-	for _, wnd := range c.views {
-		if invalidate {
-			wnd.Repaint()
-		}
-		wnd.Draw(c.canvas)
-	}
+	comp.windows = append(comp.windows, window)
+	window.Draw()
 
-	c.redrawAll()
+	comp.activateWindow(window)
+
+	RefreshScreen()
+
+	return window
 }
 
-// CreateView constucts a new View
-// posX and posY are top left coordinates of the View
-// width and height are View size
-// title is a View title shown inside the top View line
-func (c *Composer) CreateView(posX, posY, width, height int, title string) View {
-	view := NewWindow(c, posX, posY, width, height, title)
-
-	c.views = append(c.views, view)
-	view.Repaint()
-
-	c.activateView(view)
-
-	c.refreshScreen(false)
-
-	return view
-}
-
-func (c *Composer) checkWindowUnderMouse(screenX, screenY int) (View, HitResult) {
-	if len(c.views) == 0 {
+func (c *Composer) checkWindowUnderMouse(screenX, screenY int) (Control, HitResult) {
+	if len(c.windows) == 0 {
 		return nil, HitOutside
 	}
 
-	for i := len(c.views) - 1; i >= 0; i-- {
-		window := c.views[i]
+	for i := len(c.windows) - 1; i >= 0; i-- {
+		window := c.windows[i]
 		hit := window.HitTest(screenX, screenY)
 		if hit != HitOutside {
 			return window, hit
@@ -129,20 +105,20 @@ func (c *Composer) checkWindowUnderMouse(screenX, screenY int) (View, HitResult)
 	return nil, HitOutside
 }
 
-func (c *Composer) activateView(view View) bool {
-	if c.topView() == view {
-		for _, v := range c.views {
+func (c *Composer) activateWindow(window Control) bool {
+	if c.topWindow() == window {
+		for _, v := range c.windows {
 			v.SetActive(false)
 		}
-		view.SetActive(true)
+		window.SetActive(true)
 		return true
 	}
 
-	var wList []View
+	var wList []Control
 	found := false
 
-	for _, v := range c.views {
-		if v != view {
+	for _, v := range c.windows {
+		if v != window {
 			v.SetActive(false)
 			wList = append(wList, v)
 		} else {
@@ -154,48 +130,43 @@ func (c *Composer) activateView(view View) bool {
 		return false
 	}
 
-	view.SetActive(true)
-	c.views = append(wList, view)
+	window.SetActive(true)
+	c.windows = append(wList, window)
 	return true
 }
 
 func (c *Composer) moveActiveWindowToBottom() bool {
-	if len(c.views) < 2 {
+	if len(c.windows) < 2 {
 		return false
 	}
 
-	if c.topView().Modal() {
+	if c.topWindow().Modal() {
 		return false
 	}
 
 	event := Event{Type: EventActivate, X: 0} // send deactivated
-	c.sendEventToActiveView(event)
+	c.sendEventToActiveWindow(event)
 
-	last := c.topView()
+	last := c.topWindow()
 
-	for i := len(c.views) - 1; i > 0; i-- {
-		c.views[i] = c.views[i-1]
+	for i := len(c.windows) - 1; i > 0; i-- {
+		c.windows[i] = c.windows[i-1]
 	}
 
-	c.views[0] = last
-	if !c.activateView(c.topView()) {
+	c.windows[0] = last
+	if !c.activateWindow(c.topWindow()) {
 		return false
 	}
 
 	event = Event{Type: EventActivate, X: 1} // send 'activated'
-	c.sendEventToActiveView(event)
-	c.refreshScreen(true)
+	c.sendEventToActiveWindow(event)
+	RefreshScreen()
 
 	return true
 }
 
-func (c *Composer) termboxEventToLocal(ev term.Event) Event {
-	e := Event{Type: EventType(ev.Type), Ch: ev.Ch, Key: ev.Key, Err: ev.Err, X: ev.MouseX, Y: ev.MouseY, Mod: ev.Mod}
-	return e
-}
-
-func (c *Composer) sendEventToActiveView(ev Event) bool {
-	view := c.topView()
+func (c *Composer) sendEventToActiveWindow(ev Event) bool {
+	view := c.topWindow()
 	if view != nil {
 		return view.ProcessEvent(ev)
 	}
@@ -203,16 +174,16 @@ func (c *Composer) sendEventToActiveView(ev Event) bool {
 	return false
 }
 
-func (c *Composer) topView() View {
-	if len(c.views) == 0 {
+func (c *Composer) topWindow() Control {
+	if len(c.windows) == 0 {
 		return nil
 	}
 
-	return c.views[len(c.views)-1]
+	return c.windows[len(c.windows)-1]
 }
 
-func (c *Composer) resizeTopView(ev term.Event) bool {
-	view := c.topView()
+func (c *Composer) resizeTopWindow(ev Event) bool {
+	view := c.topWindow()
 	if view == nil {
 		return false
 	}
@@ -232,17 +203,17 @@ func (c *Composer) resizeTopView(ev term.Event) bool {
 
 	if w1 != w || h1 != h {
 		view.SetSize(w, h)
-		// event := Event{Type: EventResize, X: w, Y: h}
-		// c.sendEventToActiveView(event)
-		c.refreshScreen(true)
+		event := Event{Type: EventResize, X: w, Y: h}
+		c.sendEventToActiveWindow(event)
+		RefreshScreen()
 	}
 
 	return true
 }
 
-func (c *Composer) moveTopView(ev term.Event) bool {
-	if len(c.views) > 0 {
-		view := c.topView()
+func (c *Composer) moveTopWindow(ev Event) bool {
+	if len(c.windows) > 0 {
+		view := c.topWindow()
 		if view != nil {
 			x, y := view.Pos()
 			w, h := view.Size()
@@ -260,9 +231,9 @@ func (c *Composer) moveTopView(ev term.Event) bool {
 
 			if x1 != x || y1 != y {
 				view.SetPos(x, y)
-				// event := Event{Type: EventMove, X: x, Y: y}
-				// c.sendEventToActiveView(event)
-				c.refreshScreen(true)
+				event := Event{Type: EventMove, X: x, Y: y}
+				c.sendEventToActiveWindow(event)
+				RefreshScreen()
 			}
 		}
 		return true
@@ -271,255 +242,381 @@ func (c *Composer) moveTopView(ev term.Event) bool {
 	return false
 }
 
-func (c *Composer) isDeadKey(ev term.Event) bool {
-	if ev.Key == term.KeyCtrlS || ev.Key == term.KeyCtrlP || ev.Key == term.KeyCtrlW || ev.Key == term.KeyCtrlQ {
-		c.ctrlKey = ev.Key
-		c.lastKey = term.KeyEsc
-		return true
-	}
-
-	c.ctrlKey = term.KeyEsc
-	return false
-}
-
-func (c *Composer) processKeySeq(ev term.Event) bool {
-	if c.ctrlKey == term.KeyEsc {
-		return false
-	}
-
-	if c.ctrlKey == term.KeyCtrlQ {
-		if c.ctrlKey == ev.Key {
-			go c.Stop()
-		} else if c.lastKey == term.KeyEsc {
-			c.ctrlKey = ev.Key
-		} else {
-			c.ctrlKey = term.KeyEsc
-			return false
-		}
-
-		return true
-	}
-
-	if c.ctrlKey == term.KeyCtrlS {
-		if c.lastKey == term.KeyEsc {
-			c.lastKey = ev.Key
-		} else if c.lastKey != ev.Key {
-			c.ctrlKey = term.KeyEsc
-			return false
-		}
-
-		switch ev.Key {
-		case term.KeyArrowUp, term.KeyArrowDown, term.KeyArrowLeft, term.KeyArrowRight:
-			evCopy := ev
-			c.resizeTopView(evCopy)
-			return true
-		}
-
-		return false
-	}
-
-	if c.ctrlKey == term.KeyCtrlP {
-		if c.lastKey == term.KeyEsc {
-			c.lastKey = ev.Key
-		} else if c.lastKey != ev.Key {
-			c.ctrlKey = term.KeyEsc
-			return false
-		}
-
-		switch ev.Key {
-		case term.KeyArrowUp, term.KeyArrowDown, term.KeyArrowLeft, term.KeyArrowRight:
-			evCopy := ev
-			c.moveTopView(evCopy)
-			return true
-		default:
-			return false
-		}
-	}
-
-	if c.ctrlKey == term.KeyCtrlW {
-		switch ev.Key {
-		case term.KeyCtrlH:
-			return c.moveActiveWindowToBottom()
-		case term.KeyCtrlM:
-			v := c.topView()
-			maximized := v.Maximized()
-			v.SetMaximized(!maximized)
-			c.refreshScreen(true)
-			return true
-		case term.KeyCtrlC:
-			c.closeTopView()
-			return true
-		default:
-			return false
-		}
-	}
-
-	c.ctrlKey = term.KeyEsc
-	return true
-}
-
-// processKey returns false in case of the application should be terminated
-func (c *Composer) processKey(ev term.Event) bool {
-	if c.processKeySeq(ev) {
-		return false
-	}
-	if c.isDeadKey(ev) {
-		return false
-	}
-
-	if c.sendEventToActiveView(c.termboxEventToLocal(ev)) {
-		c.topView().Repaint()
-		c.refreshScreen(false)
-	}
-
-	return false
-}
-
-func (c *Composer) closeTopView() {
-	if len(c.views) > 1 {
-		view := c.topView()
+func (c *Composer) closeTopWindow() {
+	if len(c.windows) > 1 {
+		view := c.topWindow()
 		event := Event{Type: EventClose, X: 1}
-		c.sendEventToActiveView(event)
+		c.sendEventToActiveWindow(event)
 
-		c.DestroyView(view)
-		activate := c.topView()
-		c.activateView(activate)
+		c.DestroyWindow(view)
+		activate := c.topWindow()
+		c.activateWindow(activate)
 		event = Event{Type: EventActivate, X: 1} // send 'activated'
-		c.sendEventToActiveView(event)
+		c.sendEventToActiveWindow(event)
 
-		c.refreshScreen(true)
+		RefreshScreen()
 	} else {
-		go c.Stop()
+		go Stop()
 	}
 }
 
-func (c *Composer) processMouseClick(ev term.Event) {
-	view, hit := c.checkWindowUnderMouse(ev.MouseX, ev.MouseY)
+func (c *Composer) processWindowDrag(ev Event) {
+	if ev.Mod != term.ModMotion || c.dragType == DragNone {
+		return
+	}
+	dx := ev.X - c.lastX
+	dy := ev.Y - c.lastY
+	if dx == 0 && dy == 0 {
+		return
+	}
+
+	w := c.topWindow()
+	newX, newY := w.Pos()
+	newW, newH := w.Size()
+	cw, ch := ScreenSize()
+
+	switch c.dragType {
+	case DragMove:
+		newX = newX + dx
+		newY = newY + dy
+		if newX >= 0 && newY >= 0 && newX+newW < cw && newY+newH < ch {
+			c.lastX = ev.X
+			c.lastY = ev.Y
+
+			w.SetPos(newX, newY)
+			event := Event{Type: EventMove, X: newX, Y: newY}
+			c.sendEventToActiveWindow(event)
+			RefreshScreen()
+		}
+	case DragResizeLeft:
+		newX = newX + dx
+		newW = newW - dx
+		if newX >= 0 && newY >= 0 && newX+newW < cw && newY+newH < ch {
+			c.lastX = ev.X
+			c.lastY = ev.Y
+
+			w.SetPos(newX, newY)
+			w.SetSize(newW, newH)
+			event := Event{Type: EventMove, X: newX, Y: newY}
+			c.sendEventToActiveWindow(event)
+			event.Type = EventResize
+			c.sendEventToActiveWindow(event)
+			RefreshScreen()
+		}
+	case DragResizeRight:
+		newW = newW + dx
+		if newX >= 0 && newY >= 0 && newX+newW < cw && newY+newH < ch {
+			c.lastX = ev.X
+			c.lastY = ev.Y
+
+			w.SetSize(newW, newH)
+			event := Event{Type: EventResize}
+			c.sendEventToActiveWindow(event)
+			RefreshScreen()
+		}
+	case DragResizeBottom:
+		newH = newH + dy
+		if newX >= 0 && newY >= 0 && newX+newW < cw && newY+newH < ch {
+			c.lastX = ev.X
+			c.lastY = ev.Y
+
+			w.SetSize(newW, newH)
+			event := Event{Type: EventResize}
+			c.sendEventToActiveWindow(event)
+			RefreshScreen()
+		}
+	case DragResizeTopLeft:
+		newX = newX + dx
+		newW = newW - dx
+		newY = newY + dy
+		newH = newH - dy
+		if newX >= 0 && newY >= 0 && newX+newW < cw && newY+newH < ch {
+			c.lastX = ev.X
+			c.lastY = ev.Y
+
+			w.SetPos(newX, newY)
+			w.SetSize(newW, newH)
+			event := Event{Type: EventMove, X: newX, Y: newY}
+			c.sendEventToActiveWindow(event)
+			event.Type = EventResize
+			c.sendEventToActiveWindow(event)
+			RefreshScreen()
+		}
+	case DragResizeBottomLeft:
+		newX = newX + dx
+		newW = newW - dx
+		newH = newH + dy
+		if newX >= 0 && newY >= 0 && newX+newW < cw && newY+newH < ch {
+			c.lastX = ev.X
+			c.lastY = ev.Y
+
+			w.SetPos(newX, newY)
+			w.SetSize(newW, newH)
+			event := Event{Type: EventMove, X: newX, Y: newY}
+			c.sendEventToActiveWindow(event)
+			event.Type = EventResize
+			c.sendEventToActiveWindow(event)
+			RefreshScreen()
+		}
+	case DragResizeBottomRight:
+		newW = newW + dx
+		newH = newH + dy
+		if newX >= 0 && newY >= 0 && newX+newW < cw && newY+newH < ch {
+			c.lastX = ev.X
+			c.lastY = ev.Y
+
+			w.SetSize(newW, newH)
+			event := Event{Type: EventResize}
+			c.sendEventToActiveWindow(event)
+			RefreshScreen()
+		}
+	case DragResizeTopRight:
+		newY = newY + dy
+		newW = newW + dx
+		newH = newH - dy
+		if newX >= 0 && newY >= 0 && newX+newW < cw && newY+newH < ch {
+			c.lastX = ev.X
+			c.lastY = ev.Y
+
+			w.SetPos(newX, newY)
+			w.SetSize(newW, newH)
+			event := Event{Type: EventMove, X: newX, Y: newY}
+			c.sendEventToActiveWindow(event)
+			event.Type = EventResize
+			c.sendEventToActiveWindow(event)
+			RefreshScreen()
+		}
+	}
+}
+
+func (c *Composer) processMouse(ev Event) {
+	if c.consumer != nil {
+		tmp := c.consumer
+		tmp.ProcessEvent(ev)
+		tmp.Draw()
+		term.Flush()
+		return
+	}
+
+	view, hit := c.checkWindowUnderMouse(ev.X, ev.Y)
+	if c.dragType != DragNone {
+		view = c.topWindow()
+	}
+
+	if c.topWindow() == view {
+		if ev.Key == term.MouseRelease && c.dragType != DragNone {
+			c.dragType = DragNone
+			return
+		}
+
+		if ev.Mod == term.ModMotion && c.dragType != DragNone {
+			c.processWindowDrag(ev)
+			return
+		}
+
+		if hit != HitInside && ev.Key == term.MouseLeft {
+			if hit != HitButtonClose && hit != HitButtonBottom && hit != HitButtonMaximize {
+				c.lastX = ev.X
+				c.lastY = ev.Y
+				c.mdownX = ev.X
+				c.mdownY = ev.Y
+			}
+			switch hit {
+			case HitButtonClose:
+				c.closeTopWindow()
+			case HitButtonBottom:
+				c.moveActiveWindowToBottom()
+			case HitButtonMaximize:
+				v := c.topWindow().(*Window)
+				maximized := v.Maximized()
+				v.SetMaximized(!maximized)
+			case HitTop:
+				c.dragType = DragMove
+			case HitBottom:
+				c.dragType = DragResizeBottom
+			case HitLeft:
+				c.dragType = DragResizeLeft
+			case HitRight:
+				c.dragType = DragResizeRight
+			case HitTopLeft:
+				c.dragType = DragResizeTopLeft
+			case HitTopRight:
+				c.dragType = DragResizeTopRight
+			case HitBottomRight:
+				c.dragType = DragResizeBottomRight
+			case HitBottomLeft:
+				c.dragType = DragResizeBottomLeft
+			}
+
+			return
+		}
+	}
+
+	if ev.Key == term.MouseLeft {
+		c.lastX = ev.X
+		c.lastY = ev.Y
+		c.mdownX = ev.X
+		c.mdownY = ev.Y
+		c.sendEventToActiveWindow(ev)
+		return
+	} else if ev.Key == term.MouseRelease {
+		c.sendEventToActiveWindow(ev)
+		if c.lastX != ev.X && c.lastY != ev.Y {
+			return
+		}
+
+		ev.Type = EventClick
+		c.sendEventToActiveWindow(ev)
+		return
+	} else {
+		c.sendEventToActiveWindow(ev)
+		return
+	}
 
 	if view == nil {
 		return
 	}
 
-	if c.topView() != view {
-		if c.topView().Modal() {
+	if c.topWindow() != view {
+		if c.topWindow().Modal() {
 			return
 		}
 		event := Event{Type: EventActivate, X: 0} // send 'deactivated'
-		c.sendEventToActiveView(event)
-		c.activateView(view)
+		c.sendEventToActiveWindow(event)
+		c.activateWindow(view)
 		event = Event{Type: EventActivate, X: 1} // send 'activated'
-		c.sendEventToActiveView(event)
-		c.refreshScreen(true)
+		c.sendEventToActiveWindow(event)
 	} else if hit == HitInside {
-		c.sendEventToActiveView(c.termboxEventToLocal(ev))
-		c.refreshScreen(true)
-	} else if hit == HitButtonClose {
-		c.closeTopView()
-	} else if hit == HitButtonBottom {
-		c.moveActiveWindowToBottom()
-	} else if hit == HitButtonMaximize {
-		v := c.topView()
-		maximized := v.Maximized()
-		v.SetMaximized(!maximized)
-		c.refreshScreen(true)
+		c.sendEventToActiveWindow(ev)
 	}
 }
 
 // Stop sends termination event to Composer. Composer should stop
 // console management and quit application
-func (c *Composer) Stop() {
+func Stop() {
 	ev := Event{Type: EventQuit}
-	go c.PutEvent(ev)
+	go PutEvent(ev)
 }
 
-// MainLoop starts the main application event loop
-func (c *Composer) MainLoop() {
-	c.refreshScreen(true)
-
-	eventQueue := make(chan term.Event)
-	go func() {
-		for {
-			eventQueue <- term.PollEvent()
-		}
-	}()
-
-	for {
-		select {
-		case ev := <-eventQueue:
-			switch ev.Type {
-			case term.EventKey:
-				if c.processKey(ev) {
-					return
-				}
-			case term.EventMouse:
-				c.processMouseClick(ev)
-			case term.EventError:
-				panic(ev.Err)
-			case term.EventResize:
-				term.Flush()
-				c.width, c.height = term.Size()
-				c.initBuffer()
-				for _, view := range c.views {
-					if view.Maximized() {
-						view.SetSize(c.width, c.height)
-					}
-				}
-				c.refreshScreen(true)
-			}
-		case cmd := <-c.channel:
-			if cmd.Type == EventRedraw {
-				c.refreshScreen(true)
-			} else if cmd.Type == EventQuit {
-				return
-			}
-		}
-	}
-}
-
-// PutEvent send event to a Composer directly.
-// Used by Views to ask for repainting or for quitting the application
-func (c *Composer) PutEvent(ev Event) {
-	c.channel <- ev
-}
-
-// Close closes console management and makes a console cursor visible
-func (c *Composer) Close() {
-	term.SetCursor(3, 3)
-	term.Close()
-}
-
-// SetCursorPos shows consolse cursor at given position.
-// Setting cursor to -1,-1 hides cursor
-func (c *Composer) SetCursorPos(x, y int) {
-	term.SetCursor(x, y)
-}
-
-// DestroyView removes the View from the list of managed views
-func (c *Composer) DestroyView(view View) {
+// DestroyWindow removes the Window from the list of managed Windows
+func (c *Composer) DestroyWindow(view Control) {
 	ev := Event{Type: EventClose}
-	c.sendEventToActiveView(ev)
+	c.sendEventToActiveWindow(ev)
 
-	var newOrder []View
-	for i := 0; i < len(c.views); i++ {
-		if c.views[i] != view {
-			newOrder = append(newOrder, c.views[i])
+	var newOrder []Control
+	for i := 0; i < len(c.windows); i++ {
+		if c.windows[i] != view {
+			newOrder = append(newOrder, c.windows[i])
 		}
 	}
-	c.views = newOrder
-	c.activateView(c.topView())
+	c.windows = newOrder
+	c.activateWindow(c.topWindow())
 }
 
-// Theme returns the theme manager. Theme manager implements
-// Theme interface, so a caller can read the current colors
-func (c *Composer) Theme() Theme {
-	return c.themeManager
+// IsDeadKey returns true if the pressed key is the first key in
+// the key sequence understood by composer. Dead key is never sent to
+// any control
+func IsDeadKey(key term.Key) bool {
+	if key == term.KeyCtrlS || key == term.KeyCtrlP ||
+		key == term.KeyCtrlW || key == term.KeyCtrlQ {
+		return true
+	}
+
+	return false
 }
 
-// Size returns size of the console(visible) buffer
-func (c *Composer) Size() (int, int) {
-	return term.Size()
+func (c *Composer) processKey(ev Event) {
+	if ev.Key == term.KeyEsc {
+		if IsDeadKey(c.lastKey) {
+			c.lastKey = term.KeyEsc
+			return
+		}
+	}
+
+	if IsDeadKey(ev.Key) && !IsDeadKey(c.lastKey) {
+		c.lastKey = ev.Key
+		return
+	}
+
+	if !IsDeadKey(ev.Key) {
+		if c.consumer != nil {
+			tmp := c.consumer
+			tmp.ProcessEvent(ev)
+			tmp.Draw()
+			term.Flush()
+		} else {
+			c.sendEventToActiveWindow(ev)
+			c.topWindow().Draw()
+			term.Flush()
+		}
+	}
+
+	newKey := term.KeyEsc
+	switch c.lastKey {
+	case term.KeyCtrlQ:
+		switch ev.Key {
+		case term.KeyCtrlQ:
+			Stop()
+		default:
+			newKey = ev.Key
+		}
+	case term.KeyCtrlS:
+		switch ev.Key {
+		case term.KeyArrowUp, term.KeyArrowDown, term.KeyArrowLeft, term.KeyArrowRight:
+			c.resizeTopWindow(ev)
+		default:
+			newKey = ev.Key
+		}
+	case term.KeyCtrlP:
+		switch ev.Key {
+		case term.KeyArrowUp, term.KeyArrowDown, term.KeyArrowLeft, term.KeyArrowRight:
+			c.moveTopWindow(ev)
+		default:
+			newKey = ev.Key
+		}
+	case term.KeyCtrlW:
+		switch ev.Key {
+		case term.KeyCtrlH:
+			c.moveActiveWindowToBottom()
+		case term.KeyCtrlM:
+			w := c.topWindow().(*Window)
+			maxxed := w.Maximized()
+			w.SetMaximized(!maxxed)
+			RefreshScreen()
+		case term.KeyCtrlC:
+			c.closeTopWindow()
+		default:
+			newKey = ev.Key
+		}
+	}
+
+	if newKey != term.KeyEsc {
+		event := Event{Key: c.lastKey, Type: EventKey}
+		c.sendEventToActiveWindow(event)
+		event.Key = newKey
+		c.sendEventToActiveWindow(event)
+		c.lastKey = term.KeyEsc
+	}
 }
 
-func (c *Composer) Logger() *log.Logger {
-	return c.logger
+func ProcessEvent(ev Event) {
+	switch ev.Type {
+	case EventRedraw:
+		RefreshScreen()
+	case EventResize:
+		SetScreenSize(ev.Width, ev.Height)
+		for _, c := range comp.windows {
+			wnd := c.(*Window)
+			if wnd.Maximized() {
+				wnd.SetSize(ev.Width, ev.Height)
+				wnd.ResizeChildren()
+				wnd.PlaceChildren()
+				RefreshScreen()
+			}
+		}
+	case EventKey:
+		comp.processKey(ev)
+	case EventMouse:
+		comp.processMouse(ev)
+	}
 }

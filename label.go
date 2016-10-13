@@ -2,8 +2,6 @@ package clui
 
 import (
 	xs "github.com/huandu/xstrings"
-	term "github.com/nsf/termbox-go"
-	"strings"
 )
 
 /*
@@ -15,10 +13,9 @@ of alignment feature: if text is longer than Label width the text
 is always left aligned
 */
 type Label struct {
-	ControlBase
-	direction  Direction
-	multiline  bool
-	multicolor bool
+	BaseControl
+	direction Direction
+	multiline bool
 }
 
 /*
@@ -30,7 +27,7 @@ title - is Label title.
 scale - the way of scaling the control when the parent is resized. Use DoNotScale constant if the
 control should keep its original size.
 */
-func NewLabel(view View, parent Control, w, h int, title string, scale int) *Label {
+func CreateLabel(parent Control, w, h int, title string, scale int) *Label {
 	c := new(Label)
 
 	if w == AutoSize {
@@ -40,16 +37,16 @@ func NewLabel(view View, parent Control, w, h int, title string, scale int) *Lab
 		h = 1
 	}
 
-	c.view = view
 	c.parent = parent
 
 	c.SetTitle(title)
 	c.SetSize(w, h)
 	c.SetConstraints(w, h)
+	c.SetScale(scale)
 	c.tabSkip = true
 
 	if parent != nil {
-		parent.AddChild(c, scale)
+		parent.AddChild(c)
 	}
 
 	return c
@@ -65,68 +62,64 @@ func (l *Label) SetDirection(dir Direction) {
 	l.direction = dir
 }
 
-// Repaint draws the control on its View surface
-func (l *Label) Repaint() {
-	canvas := l.view.Canvas()
-	tm := l.view.Screen().Theme()
+func (l *Label) Draw() {
+	PushAttributes()
+	defer PopAttributes()
 
-	fg, bg := RealColor(tm, l.fg, ColorText), RealColor(tm, l.bg, ColorBack)
+	fg, bg := RealColor(l.fg, ColorText), RealColor(l.bg, ColorBack)
 	if !l.Enabled() {
-		fg = RealColor(tm, l.fg, ColorDisabledText)
+		fg = RealColor(l.fg, ColorDisabledText)
 	}
 
-	canvas.FillRect(l.x, l.y, l.width, l.height, term.Cell{Ch: ' ', Fg: fg, Bg: bg})
+	SetTextColor(fg)
+	SetBackColor(bg)
+	FillRect(l.x, l.y, l.width, l.height, ' ')
+
+	if l.title == "" {
+		return
+	}
 
 	if l.multiline {
-		lineCnt, lineLen := l.height, l.width
-		if l.direction == Vertical {
-			lineCnt, lineLen = l.width, l.height
-		}
-
-		lines := strings.Split(l.title, "\n")
-
-		var realLines []string
-		for _, s := range lines {
-			curr := s
-			for xs.Len(curr) > lineLen {
-				realLines = append(realLines, xs.Slice(curr, 0, lineLen))
-				curr = xs.Slice(curr, lineLen, -1)
+		parser := NewColorParser(l.title, ColorWhite, ColorBlack)
+		elem := parser.NextElement()
+		xx, yy := l.x, l.y
+		for elem.Type != ElemEndOfText {
+			if xx >= l.x+l.width || yy >= l.y+l.height {
+				break
 			}
-			realLines = append(realLines, curr)
-		}
 
-		idx := 0
-		for idx < lineCnt && idx < len(realLines) {
-			if l.direction == Horizontal {
-				shift, text := AlignText(realLines[idx], l.width, l.align)
-				canvas.PutText(l.x+shift, l.y+idx, text, fg, bg)
-			} else {
-				shift, text := AlignText(realLines[idx], l.height, l.align)
-				canvas.PutVerticalText(l.x+idx, l.y+shift, text, fg, bg)
+			if elem.Type == ElemLineBreak {
+				xx = l.x
+				yy += 1
+			} else if elem.Type == ElemPrintable {
+				SetTextColor(elem.Fg)
+				SetBackColor(elem.Bg)
+				putCharUnsafe(xx, yy, elem.Ch)
+
+				if l.direction == Horizontal {
+					xx += 1
+					if xx >= l.x+l.width {
+						xx = l.x
+						yy += 1
+					}
+				} else {
+					yy += 1
+					if yy >= l.y+l.height {
+						yy = l.y
+						xx += 1
+					}
+				}
 			}
-			idx++
+
+			elem = parser.NextElement()
 		}
 	} else {
-		if l.multicolor {
-			max := l.width
-			if l.direction == Vertical {
-				max = l.height
-			}
-
-			shift, text := AlignColorizedText(l.title, max, l.align)
-			if l.direction == Vertical {
-				canvas.PutColorizedText(l.x, l.y+shift, max, text, fg, bg, l.direction)
-			} else {
-				canvas.PutColorizedText(l.x+shift, l.y, max, text, fg, bg, l.direction)
-			}
+		if l.direction == Horizontal {
+			shift, str := AlignColorizedText(l.title, l.width, l.align)
+			DrawText(l.x+shift, l.y, str)
 		} else {
-			if l.direction == Horizontal {
-				shift, text := AlignText(l.title, l.width, l.align)
-				canvas.PutText(l.x+shift, l.y, text, fg, bg)
-			} else {
-				shift, text := AlignText(l.title, l.height, l.align)
-				canvas.PutVerticalText(l.x, l.y+shift, text, fg, bg)
-			}
+			shift, str := AlignColorizedText(l.title, l.height, l.align)
+			DrawTextVertical(l.x, l.y+shift, str)
 		}
 	}
 }
@@ -142,18 +135,4 @@ func (l *Label) Multiline() bool {
 // or automatically display it in several lines
 func (l *Label) SetMultiline(multi bool) {
 	l.multiline = multi
-}
-
-// MultiColored returns if the label checks and applies any
-// color related tags inside its title. If MultiColores is
-// false then title is displayed as is.
-// To read about available color tags, please see ColorParser
-func (l *Label) MultiColored() bool {
-	return l.multicolor
-}
-
-// SetMultiColored changes how the label output its title: as is
-// or parse and apply all internal color tags
-func (l *Label) SetMultiColored(multi bool) {
-	l.multicolor = multi
 }

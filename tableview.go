@@ -40,7 +40,7 @@ Events:
         column is changed
 */
 type TableView struct {
-	ControlBase
+	BaseControl
 	// own listbox members
 	topRow        int
 	topCol        int
@@ -124,7 +124,7 @@ width and heigth - are minimal size of the control.
 scale - the way of scaling the control when the parent is resized. Use DoNotScale constant if the
 control should keep its original size.
 */
-func NewTableView(view View, parent Control, width, height int, scale int) *TableView {
+func CreateTableView(parent Control, width, height int, scale int) *TableView {
 	l := new(TableView)
 
 	if height == AutoSize {
@@ -139,8 +139,8 @@ func NewTableView(view View, parent Control, width, height int, scale int) *Tabl
 	l.selectedCol = 0
 	l.selectedRow = 0
 	l.parent = parent
-	l.view = view
 	l.columns = make([]Column, 0)
+	l.SetScale(scale)
 
 	l.SetTabStop(true)
 
@@ -152,22 +152,27 @@ func NewTableView(view View, parent Control, width, height int, scale int) *Tabl
 	l.lastEventRow = -1
 
 	if parent != nil {
-		parent.AddChild(l, scale)
+		parent.AddChild(l)
 	}
 
 	return l
 }
 
-func (l *TableView) redrawHeader(canvas Canvas, tm Theme) {
-	fg, bg := RealColor(tm, l.fg, ColorTableHeaderText), RealColor(tm, l.bg, ColorTableHeaderBack)
-	fgLine := RealColor(tm, l.fg, ColorTableLineText)
+func (l *TableView) drawHeader() {
+	PushAttributes()
+	defer PopAttributes()
+
+	fg, bg := RealColor(l.fg, ColorTableHeaderText), RealColor(l.bg, ColorTableHeaderBack)
+	fgLine := RealColor(l.fg, ColorTableLineText)
 	x, y := l.Pos()
 	w, _ := l.Size()
-	canvas.FillRect(x, y, w, 1, term.Cell{Fg: fg, Bg: bg, Ch: ' '})
-	parts := []rune(tm.SysObject(ObjTableView))
+	SetTextColor(fg)
+	SetBackColor(bg)
+	FillRect(x, y, w, 1, ' ')
+	parts := []rune(SysObject(ObjTableView))
 
 	for i := 0; i < w; i++ {
-		canvas.PutSymbol(x+i, y+1, term.Cell{Ch: parts[0], Fg: fg, Bg: bg})
+		PutChar(x+i, y+1, parts[0])
 	}
 	w-- // scrollbar
 
@@ -177,13 +182,16 @@ func (l *TableView) redrawHeader(canvas Canvas, tm Theme) {
 	}
 
 	pos := 0
+	SetBackColor(bg)
 	if l.showRowNo {
 		cW := l.counterWidth()
 		shift, str := AlignText("#", cW, AlignRight)
-		canvas.PutText(x+pos+shift, y, str, fg, bg)
+		SetTextColor(fg)
+		DrawRawText(x+pos+shift, y, str)
 		if l.showVLines {
-			canvas.PutSymbol(x+pos+cW, y, term.Cell{Ch: parts[1], Fg: fgLine, Bg: bg})
-			canvas.PutSymbol(x+pos+cW, y+1, term.Cell{Ch: parts[2], Fg: fgLine, Bg: bg})
+			SetTextColor(fgLine)
+			PutChar(x+pos+cW, y, parts[1])
+			PutChar(x+pos+cW, y+1, parts[2])
 			pos++
 		}
 		pos = cW + dx
@@ -206,16 +214,19 @@ func (l *TableView) redrawHeader(canvas Canvas, tm Theme) {
 			if l.columns[idx].Sort == SortDesc {
 				ch = parts[4]
 			}
-			canvas.PutSymbol(x+pos+w-1, y, term.Cell{Ch: ch, Fg: fg, Bg: bg})
+			SetTextColor(fg)
+			PutChar(x+pos+w-1, y, ch)
 		}
 
-		shift, str := AlignText(l.columns[idx].Title, w+dw, l.columns[idx].Alignment)
-		canvas.PutText(x+pos+shift, y, str, fg, bg)
+		shift, str := AlignColorizedText(l.columns[idx].Title, w+dw, l.columns[idx].Alignment)
+		SetTextColor(fg)
+		DrawText(x+pos+shift, y, str)
 		pos += w
 
 		if l.showVLines && idx < len(l.columns)-1 {
-			canvas.PutSymbol(x+pos, y, term.Cell{Ch: parts[1], Fg: fgLine, Bg: bg})
-			canvas.PutSymbol(x+pos, y+1, term.Cell{Ch: parts[2], Fg: fgLine, Bg: bg})
+			SetTextColor(fgLine)
+			PutChar(x+pos, y, parts[1])
+			PutChar(x+pos, y+1, parts[2])
 			pos++
 		}
 
@@ -237,29 +248,30 @@ func (l *TableView) counterWidth() int {
 	return width
 }
 
-func (l *TableView) redrawScroll(canvas Canvas, tm Theme) {
-	fg, bg := RealColor(tm, l.fg, ColorScrollText), RealColor(tm, l.bg, ColorScrollBack)
-	fgThumb, bgThumb := RealColor(tm, l.fg, ColorThumbText), RealColor(tm, l.bg, ColorThumbBack)
+func (l *TableView) drawScroll() {
 
 	pos := ThumbPosition(l.selectedRow, l.rowCount, l.height-1)
-	canvas.DrawScroll(l.x+l.width-1, l.y, 1, l.height-1, pos, fg, bg, fgThumb, bgThumb, tm.SysObject(ObjScrollBar))
+	DrawScrollBar(l.x+l.width-1, l.y, 1, l.height-1, pos)
 
 	pos = ThumbPosition(l.selectedCol, len(l.columns), l.width-1)
-	canvas.DrawScroll(l.x, l.y+l.height-1, l.width-1, 1, pos, fg, bg, fgThumb, bgThumb, tm.SysObject(ObjScrollBar))
-	canvas.PutSymbol(l.x+l.width-1, l.y+l.height-1, term.Cell{Ch: ' ', Fg: fg, Bg: bg})
+	DrawScrollBar(l.x, l.y+l.height-1, l.width-1, 1, pos)
+	PutChar(l.x+l.width-1, l.y+l.height-1, ' ')
 }
 
-func (l *TableView) redrawCells(canvas Canvas, tm Theme) {
+func (l *TableView) drawCells() {
+	PushAttributes()
+	defer PopAttributes()
+
 	maxRow := l.rowCount - 1
 	rowNo := l.topRow
 	dy := 2
 	maxDy := l.height - 2
 
-	fg, bg := RealColor(tm, l.fg, ColorTableText), RealColor(tm, l.bg, ColorTableBack)
-	fgRow, bgRow := RealColor(tm, l.fg, ColorTableSelectedText), RealColor(tm, l.bg, ColorTableSelectedBack)
-	fgCell, bgCell := RealColor(tm, l.fg, ColorTableActiveCellText), RealColor(tm, l.bg, ColorTableActiveCellBack)
-	fgLine := RealColor(tm, l.fg, ColorTableLineText)
-	parts := []rune(tm.SysObject(ObjTableView))
+	fg, bg := RealColor(l.fg, ColorTableText), RealColor(l.bg, ColorTableBack)
+	fgRow, bgRow := RealColor(l.fg, ColorTableSelectedText), RealColor(l.bg, ColorTableSelectedBack)
+	fgCell, bgCell := RealColor(l.fg, ColorTableActiveCellText), RealColor(l.bg, ColorTableActiveCellBack)
+	fgLine := RealColor(l.fg, ColorTableLineText)
+	parts := []rune(SysObject(ObjTableView))
 
 	start := 0
 	if l.showRowNo {
@@ -270,9 +282,12 @@ func (l *TableView) redrawCells(canvas Canvas, tm Theme) {
 			}
 			s := fmt.Sprintf("%v", idx+l.topRow)
 			shift, str := AlignText(s, start, AlignRight)
-			canvas.PutText(l.x+shift, l.y+dy+idx-1, str, fg, bg)
+			SetTextColor(fg)
+			SetBackColor(bg)
+			DrawText(l.x+shift, l.y+dy+idx-1, str)
 			if l.showVLines {
-				canvas.PutSymbol(l.x+start, l.y+dy+idx-1, term.Cell{Ch: parts[1], Fg: fgLine, Bg: bg})
+				SetTextColor(fgLine)
+				PutChar(l.x+start, l.y+dy+idx-1, parts[1])
 			}
 		}
 		if l.showVLines {
@@ -308,13 +323,17 @@ func (l *TableView) redrawCells(canvas Canvas, tm Theme) {
 			if length+dx >= l.width-1 {
 				length = l.width - 1 - dx
 			}
-			canvas.FillRect(l.x+dx, l.y+dy, length, 1, term.Cell{Bg: info.Bg, Ch: ' ', Fg: info.Fg})
-			shift, text := AlignText(info.Text, length, info.Alignment)
-			canvas.PutText(l.x+dx+shift, l.y+dy, text, info.Fg, info.Bg)
+			SetTextColor(info.Fg)
+			SetBackColor(info.Bg)
+			FillRect(l.x+dx, l.y+dy, length, 1, ' ')
+			shift, text := AlignColorizedText(info.Text, length, info.Alignment)
+			DrawText(l.x+dx+shift, l.y+dy, text)
 
 			dx += c.Width
 			if l.showVLines && dx < l.width-1 && colNo < len(l.columns)-1 {
-				canvas.PutSymbol(l.x+dx, l.y+dy, term.Cell{Ch: parts[1], Fg: fg, Bg: bg})
+				SetTextColor(fg)
+				SetBackColor(bg)
+				PutChar(l.x+dx, l.y+dy, parts[1])
 				dx++
 			}
 
@@ -327,18 +346,19 @@ func (l *TableView) redrawCells(canvas Canvas, tm Theme) {
 }
 
 // Repaint draws the control on its View surface
-func (l *TableView) Repaint() {
-	canvas := l.view.Canvas()
-	tm := l.view.Screen().Theme()
+func (l *TableView) Draw() {
+	PushAttributes()
+	defer PopAttributes()
 
 	x, y := l.Pos()
 	w, h := l.Size()
 
-	bg := RealColor(tm, l.bg, ColorTableBack)
-	canvas.FillRect(x, y+2, w, h-2, term.Cell{Bg: bg, Ch: ' '})
-	l.redrawHeader(canvas, tm)
-	l.redrawScroll(canvas, tm)
-	l.redrawCells(canvas, tm)
+	bg := RealColor(l.bg, ColorTableBack)
+	SetBackColor(bg)
+	FillRect(x, y+2, w, h-2, ' ')
+	l.drawHeader()
+	l.drawScroll()
+	l.drawCells()
 }
 
 func (l *TableView) emitSelectionChange() {

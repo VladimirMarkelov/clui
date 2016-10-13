@@ -10,7 +10,7 @@ CheckBox control. It can be two-state one(on and off) - it is default mode - or 
 State values are 0=off, 1=on, 2=third state
 */
 type CheckBox struct {
-	ControlBase
+	BaseControl
 	state       int
 	allow3state bool
 
@@ -18,8 +18,7 @@ type CheckBox struct {
 }
 
 /*
-NewCheckBox creates a new CheckBox control.
-view - is a View that manages the control.
+CreateCheckBox creates a new CheckBox control.
 parent - is container that keeps the control. The same View can be a view and a parent at the same time.
 width - is minimal width of the control.
 title - button title.
@@ -27,9 +26,8 @@ scale - the way of scaling the control when the parent is resized. Use DoNotScal
 control should keep its original size.
 CheckBox state can be changed using mouse or pressing space on keyboard while the control is active
 */
-func NewCheckBox(view View, parent Control, width int, title string, scale int) *CheckBox {
+func CreateCheckBox(parent Control, width int, title string, scale int) *CheckBox {
 	c := new(CheckBox)
-	c.view = view
 	c.parent = parent
 
 	if width == AutoSize {
@@ -43,48 +41,52 @@ func NewCheckBox(view View, parent Control, width int, title string, scale int) 
 	c.SetTabStop(true)
 	c.allow3state = false
 	c.onChange = nil
+	c.SetScale(scale)
 
 	if parent != nil {
-		parent.AddChild(c, scale)
+		parent.AddChild(c)
 	}
 
 	return c
 }
 
 // Repaint draws the control on its View surface
-func (c *CheckBox) Repaint() {
+func (c *CheckBox) Draw() {
+	PushAttributes()
+	defer PopAttributes()
+
 	x, y := c.Pos()
 	w, h := c.Size()
-	canvas := c.view.Canvas()
-	tm := c.view.Screen().Theme()
 
-	fg, bg := RealColor(tm, c.fg, ColorControlText), RealColor(tm, c.bg, ColorControlBack)
+	fg, bg := RealColor(c.fg, ColorControlText), RealColor(c.bg, ColorControlBack)
 	if !c.Enabled() {
-		fg, bg = RealColor(tm, c.fg, ColorControlDisabledText), RealColor(tm, c.bg, ColorControlDisabledBack)
+		fg, bg = RealColor(c.fg, ColorControlDisabledText), RealColor(c.bg, ColorControlDisabledBack)
 	} else if c.Active() {
-		fg, bg = RealColor(tm, c.fg, ColorControlActiveText), RealColor(tm, c.bg, ColorControlActiveBack)
+		fg, bg = RealColor(c.fg, ColorControlActiveText), RealColor(c.bg, ColorControlActiveBack)
 	}
 
-	parts := []rune(tm.SysObject(ObjCheckBox))
+	parts := []rune(SysObject(ObjCheckBox))
 
 	cOpen, cClose, cEmpty, cCheck, cUnknown := parts[0], parts[1], parts[2], parts[3], parts[4]
 	cState := []rune{cEmpty, cCheck, cUnknown}
 
-	canvas.FillRect(x, y, w, h, term.Cell{Ch: ' ', Bg: bg})
+	SetTextColor(fg)
+	SetBackColor(bg)
+	FillRect(x, y, w, h, ' ')
 	if w < 3 {
 		return
 	}
 
-	canvas.PutSymbol(x, y, term.Cell{Ch: cOpen, Fg: fg, Bg: bg})
-	canvas.PutSymbol(x+2, y, term.Cell{Ch: cClose, Fg: fg, Bg: bg})
-	canvas.PutSymbol(x+1, y, term.Cell{Ch: cState[c.state], Fg: fg, Bg: bg})
+	PutChar(x, y, cOpen)
+	PutChar(x+2, y, cClose)
+	PutChar(x+1, y, cState[c.state])
 
 	if w < 5 {
 		return
 	}
 
-	shift, text := AlignText(c.title, w-4, c.align)
-	canvas.PutText(x+4+shift, y, text, fg, bg)
+	shift, text := AlignColorizedText(c.title, w-4, c.align)
+	DrawText(x+4+shift, y, text)
 }
 
 //ProcessEvent processes all events come from the control parent. If a control
@@ -96,7 +98,7 @@ func (c *CheckBox) ProcessEvent(event Event) bool {
 		return false
 	}
 
-	if (event.Type == EventKey && event.Key == term.KeySpace) || event.Type == EventMouse {
+	if (event.Type == EventKey && event.Key == term.KeySpace) || (event.Type == EventClick) {
 		if c.state == 0 {
 			c.SetState(1)
 		} else if c.state == 2 {
@@ -165,14 +167,14 @@ func (c *CheckBox) Allow3State() bool {
 // Method does nothing if new size is less than minimal size
 // CheckBox height cannot be changed - it equals 1 always
 func (c *CheckBox) SetSize(width, height int) {
-	if width != DoNotChange && (width > 1000 || width < c.minW) {
+	if width != KeepValue && (width > 1000 || width < c.minW) {
 		return
 	}
-	if height != DoNotChange && (height > 200 || height < c.minH) {
+	if height != KeepValue && (height > 200 || height < c.minH) {
 		return
 	}
 
-	if width != DoNotChange {
+	if width != KeepValue {
 		c.width = width
 	}
 
