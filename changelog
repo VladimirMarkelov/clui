@@ -1,4 +1,4 @@
-﻿2016-10-13 - Version 0.5
+﻿2016-10-13 - Version 0.5.0
 
 [+] Added mouse move and mouse button release support:
     Now all windows can be dragged and resized with mouse
@@ -19,11 +19,10 @@
     a set of methods are just global library functions:
         Event processing functions like Stop(), PutEvent() etc
         Theme manager related functions like SysColor(), SysObject() etc
-[*] All functions to create new objects New* are renamed to New* functions.
-    CreateWindow now is very useful: it creates a window but it does not do
-    anything else, so the window is not displayed and a user cannot interact
-    it. Use AddWindow function instead of CreateWindows. The latter one is for
-    internal use by the library
+[*] All functions to create new objects New* are renamed to Create* functions.
+    CreateWindow now is for internal use only: it creates a window but it does
+    not do anything else, so the window is not displayed and a user cannot
+    interact with it. Use AddWindow function instead of CreateWindows.
 [*] All text output is colorized by default. So, Multicolor property is
     removed. If you want to draw text as is then use DrawRaw* functions.
 [*] Now all drawing function uses the current canvas colors, so all color
