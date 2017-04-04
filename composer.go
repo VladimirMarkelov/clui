@@ -472,23 +472,6 @@ func (c *Composer) processMouse(ev Event) {
 		c.sendEventToActiveWindow(ev)
 		return
 	}
-
-	if view == nil {
-		return
-	}
-
-	if c.topWindow() != view {
-		if c.topWindow().Modal() {
-			return
-		}
-		event := Event{Type: EventActivate, X: 0} // send 'deactivated'
-		c.sendEventToActiveWindow(event)
-		c.activateWindow(view)
-		event = Event{Type: EventActivate, X: 1} // send 'activated'
-		c.sendEventToActiveWindow(event)
-	} else if hit == HitInside {
-		c.sendEventToActiveWindow(ev)
-	}
 }
 
 // Stop sends termination event to Composer. Composer should stop
