@@ -5,7 +5,7 @@ Command Line User Interface (Console UI inspired by TurboVision) with built-in t
 The current version is 0.5 and it has a lot of breaking changes comparing to previous one. Please see details in [changelog](./changelog).
 
 ## The list of available controls
-* View (Main control container - with maximize, window order and other window features)
+* Window (Main control container - with maximize, window order and other window features)
 * Label (Horizontal and Vertical with basic color control tags)
 * Button (Simple push button control)
 * EditField (One line text edit control with basic clipboard control)
