@@ -9,7 +9,7 @@ The list of available controls:
 * View (Main control container - with maximize, window order and other window features)
 * Label (Horizontal and Vertical with basic color control tags)
 * Button (Simple push button control)
-* EditFiled (One line text edit control with basic clipboard control)
+* EditField (One line text edit control with basic clipboard control)
 * ListBox (string list control with vertical scroll)
 * TextView (ListBox-alike control with vertical and horizontal scroll, and wordwrap mode)
 * ProgressBar (Vertical and horizontal. The latter one supports custom text over control)
