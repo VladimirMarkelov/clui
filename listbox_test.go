@@ -6,7 +6,7 @@ import (
 
 func TestListBox(t *testing.T) {
 	width, height := 10, 5
-	lbox := CreateListBox(nil, width, height, DoNotScale)
+	lbox := CreateListBox(nil, width, height, Fixed)
 
 	w, h := lbox.Size()
 	if w != width {
