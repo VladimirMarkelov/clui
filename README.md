@@ -1,11 +1,10 @@
-# clui
-Command Line User Interface (Console UI inspired by TurboVision) with built-in theme support.
+# CLUI
+Command Line User Interface (Console UI inspired by TurboVision) with built-in theme support. Please see screenshots of working examples at the end of the README.
 
 ## Current version
-The current version is 0.5 and it has a lot of breaking changes comparing to previous one. The library was refactored and added support for new termbox features like mouse move event. Some constants and function changes their names. Please see details in [changelog](./changelog).
+The current version is 0.5 and it has a lot of breaking changes comparing to previous one. Please see details in [changelog](./changelog).
 
-## Introduction
-The list of available controls:
+## The list of available controls
 * View (Main control container - with maximize, window order and other window features)
 * Label (Horizontal and Vertical with basic color control tags)
 * Button (Simple push button control)
@@ -22,9 +21,6 @@ The list of available controls:
 * BarChart (Horizontal bar chart without scroll)
 * SparkChart (Show tabular data as a bar graph)
 * GridView (Table to show structured data - only virtual and readonly mode with scroll support)
-
-#### TODO
-* More to come
 
 ## Screenshots
 The main demo (theme changing and radio group control)
