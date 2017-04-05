@@ -27,7 +27,9 @@ An UI application without a window is useless. Let's create an empty window. Add
 view := ui.AddWindow(0, 0, 10, 7, "Hello World!")
 ```
 0, 0 - is the position of the new window. The top left corner in our case
+
 10, 7 - minimal width and height of the window
+
 "Hello World!" - is the window title
 
 ### Make the application work
