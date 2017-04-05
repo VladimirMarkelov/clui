@@ -2,7 +2,7 @@
 Command Line User Interface (Console UI inspired by TurboVision) with built-in theme support. Please see screenshots of working examples at the end of the README.
 
 ## Current version
-The current version is 0.5 and it has a lot of breaking changes comparing to previous one. Please see details in [changelog](./changelog).
+The current version is 0.5.0 and it has a lot of breaking changes comparing to previous one. Please see details in [changelog](./changelog).
 
 ## The list of available controls
 * Window (Main control container - with maximize, window order and other window features)

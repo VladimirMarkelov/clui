@@ -20,10 +20,10 @@
         - Event processing functions like Stop(), PutEvent() etc
         - Theme manager related functions like SysColor(), SysObject() etc
 [*] All functions to create new objects New* are renamed to Create* functions.
-    Exclusion: CreateWindow is for internal use only: it creates a window but it 
+    Exclusion: CreateWindow is for internal use only: it creates a window but it
     does not do anything else, so the window is not displayed and a user cannot
     interact with it. Use AddWindow function instead of CreateWindow.
-[*] All text output is colorized by default. Multicolor property is removed. 
+[*] All text output is colorized by default. Multicolor property is removed.
     If you want to draw text as is then use DrawRaw* functions.
 [*] Now all drawing function uses the current canvas colors, so all color
     function arguments of all drawing functions are removed. Use global
