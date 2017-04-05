@@ -4,6 +4,10 @@ Command Line User Interface (Console UI inspired by TurboVision) with built-in t
 ## Current version
 The current version is 0.5.0 and it has a lot of breaking changes comparing to previous one. Please see details in [changelog](./changelog).
 
+## Documentation
+* ![Introduction](/docs/intro.md)
+** ![Getting started](/docs/hello.md)
+
 ## The list of available controls
 * Window (Main control container - with maximize, window order and other window features)
 * Label (Horizontal and Vertical with basic color control tags)
