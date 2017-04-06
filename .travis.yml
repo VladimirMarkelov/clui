@@ -1,8 +1,1 @@
 ﻿language: go
-
-install:
-- go get ./...
-
-script:
-- go vet ./...
-- go test .
