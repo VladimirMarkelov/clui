@@ -1,2 +1,10 @@
 ﻿language: go
 sudo: false
+
+install:
+    - go get ./...
+    - go get -t ./...
+
+script:
+    - go vet ./...
+    - go test .
