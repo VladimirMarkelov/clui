@@ -1,2 +1,4 @@
 ﻿language: go
 sudo: false
+install:
+  - go get github.com/VladimirMarkelov/clui
