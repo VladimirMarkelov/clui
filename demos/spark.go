@@ -1,7 +1,7 @@
 package main
 
 import (
-	ui "github.com/VladimirMarkelov/clu"
+	ui "github.com/VladimirMarkelov/clui"
 	"math/rand"
 	"time"
 )
