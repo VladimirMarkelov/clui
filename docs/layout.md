@@ -8,7 +8,7 @@ control.SetPack(newPackDirection)
 ```
 where newPackDirection either Horizontal(default value) or Vertical.
 
-Automatic control placement can be tuned up with extra container properties for nicer-looking result. It is padding and gap values. By default all of them are 0 (except paddings for Window and Frame with a border - in this case default paddings are 1). Padding is a number of character between the container edge and the first child, gap is a number of characters between children inside container. The default padding and gap sizes can be changed with calls:
+Automatic control placement can be tuned up with extra container properties for nicer-looking result. It is padding and gap values. By default all of them are 0 (except paddings for Window and Frame with a border - in this case default paddings are 1, and gapX for Window is 1 by default). Padding is a number of character between the container edge and the first child, gap is a number of characters between children inside container. The default padding and gap sizes can be changed with calls:
 ```
 container.SetGaps(gapX, gapY)
 container.SetPaddings(identX, identY)
