@@ -7,6 +7,7 @@ The current version is 0.5.0 and it has a lot of breaking changes comparing to p
 ## Documentation
 * ![Introduction](/docs/intro.md)
 * ![Getting started](/docs/hello.md)
+* ![Layout manager](/docs/layout.md)
 
 ## The list of available controls
 * Window (Main control container - with maximize, window order and other window features)
