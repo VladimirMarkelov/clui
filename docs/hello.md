@@ -1,4 +1,4 @@
-﻿# First application
+# First application
 
 ### Add the library to project
 Create an empty application. At first you need to import CLUI library:
