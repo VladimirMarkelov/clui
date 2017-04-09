@@ -8,6 +8,7 @@ The current version is 0.5.0 and it has a lot of breaking changes comparing to p
 * ![Introduction](/docs/intro.md)
 * ![Getting started](/docs/hello.md)
 * ![Layout manager](/docs/layout.md)
+* ![Basic standrd control methods and properties](/docs/widget.md)
 * ![About Windows](/docs/window.md)
 
 ## The list of available controls

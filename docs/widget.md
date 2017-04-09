@@ -1,4 +1,4 @@
-# About Widgets
+# About Standard Widgets
 
 ### Creating a widget
 Every widget should have parent at creation time otherwise the widget will be invisible and will not recieve any message. Parent and minimal width are the only common arguments of all functions that creates a new widget. Other arguments may vary but there are set of common ones. Generic create function may look like this (except `Frame` that has its own argument 'frameWidth': `BorderThick` or `BorderThin`) - note that it is not real function:
@@ -20,6 +20,16 @@ All methods follow one rule: for every property there is a Set**Property** metho
 1. Title/text/caption: `SetTitle(string)`
 1. Disable or enable widget - `SetEnable(bool)`. Disabled controls usually has its own look and does not respond to mouse and keyboard events
 1. Activate control - `SetActive(bool)`. A Window can has only one active widget at a time, so `SetActive` deactivates previously activated control before activating a new one
+1. Tab control: `SetTabStop(bool)`. Sets if the control can be selected by pressing TAB key or the control is skipped while traversing widgets with keyboard. In any case the widget can be selected with mouse
+1. Layout type: `SetPack(PackType)`. Sets packing direction of widget children - Horizontal or Vertical
+1. Space between the first(or last) child and widget edge: `SetPaddings(identX, identY)`
+1. Space between children: `SetGaps(gapX, gapY)`
+1. Set scaling mode: `SetScale(scale)`. The function defines the widget behavior when its parent is resizing. You can forbid widget resizing by setting scale to `Fixed` or you can set the scaling coefficient. Please read more about scaling in the next section
+1. Text align: `SetAlign(Align)`. Sets alignment for the widget caption. The property is applied to widgets that do not allow to edit its content: text of `Label`, caption of `Frame` etc. Multiline and editable widgets(`EditField`, `TextView` etc) does not use the property. As for `TableView` - each of its column has its own alignment
+1. Basic widget colors: `SetTextColor(Color)` and `SetBackColor(Color)`. It is default colors to display a widget content (see below in section 'Title color tags' a bit more about default color usage). There is a special color `Default` that is set bt default for each widget: if you set widget color to `Default` the widget will use colors from current theme(it works only for standard widget included into the library). So, for simple application you do not need to set colors - the library does it for you
+
+#### Methods that do not follow rule of method naming (since they are not often used)
+1. Active widget colors. Set it with `SetActiveTextColor(Color)` and `SetActiveBackColor(Color)` but read with `ActiveColors() (textColor, backColor)`. There are some widgets that a user can interact while those widgets are active. E.g, only active `EditField` can be modified, only active `Button` can be pressed with key Space. Setting your own active color for a widget may help to indentify an active widget easier. And as in basic color case you can use `Default` color if you are fine with the colors provided by current theme - default theme has active colors different from basic ones
 
 ### How scaling works
 Every container has its starting size that calculated as maximum of two values: its minimal size and sum of minimal sizes of its children. When the container changes its size then a layout manager does children resizing:
