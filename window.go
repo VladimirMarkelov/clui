@@ -18,6 +18,7 @@ type Window struct {
 	origY      int
 
 	onClose func(Event)
+    onKeyDown func(Event) bool
 }
 
 func CreateWindow(x, y, w, h int, title string) *Window {
@@ -228,7 +229,13 @@ func (c *Window) ProcessEvent(ev Event) bool {
 			}
 			return true
 		} else {
-			return SendEventToChild(c, ev)
+            if SendEventToChild(c, ev) {
+                return true
+            }
+            if c.onKeyDown != nil {
+                return c.onKeyDown(ev)
+            }
+            return false
 		}
 	default:
 		if ev.Type == EventMouse && ev.Key == term.MouseLeft {
@@ -242,6 +249,10 @@ func (c *Window) ProcessEvent(ev Event) bool {
 
 func (w *Window) OnClose(fn func(Event)) {
 	w.onClose = fn
+}
+
+func (w *Window) OnKeyDown(fn func(Event) bool) {
+	w.onKeyDown = fn
 }
 
 // SetMaximized opens the view to full screen or restores its
