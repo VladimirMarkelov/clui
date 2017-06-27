@@ -11,7 +11,8 @@ type TextReader struct {
 	topLine   int
 	lineCount int
 
-	onDrawLine func(int) string
+	onDrawLine        func(int) string
+	onPositionChanged func(int, int)
 }
 
 func CreateTextReader(parent Control, width, height int, scale int) *TextReader {
@@ -35,6 +36,7 @@ func CreateTextReader(parent Control, width, height int, scale int) *TextReader 
 	}
 
 	l.onDrawLine = nil
+	l.onPositionChanged = nil
 
 	return l
 }
@@ -98,12 +100,20 @@ func (l *TextReader) Draw() {
 func (l *TextReader) home() {
 	if l.topLine != 0 {
 		l.topLine = 0
+
+		if l.onPositionChanged != nil {
+			l.onPositionChanged(l.topLine, l.lineCount)
+		}
 	}
 }
 
 func (l *TextReader) end() {
 	if l.lineCount > 0 && l.topLine != l.lineCount-1 {
 		l.topLine = l.lineCount - 1
+
+		if l.onPositionChanged != nil {
+			l.onPositionChanged(l.topLine, l.lineCount)
+		}
 	}
 }
 
@@ -113,6 +123,10 @@ func (l *TextReader) moveUp(count int) {
 		if l.topLine < 0 {
 			l.topLine = 0
 		}
+
+		if l.onPositionChanged != nil {
+			l.onPositionChanged(l.topLine, l.lineCount)
+		}
 	}
 }
 
@@ -121,6 +135,10 @@ func (l *TextReader) moveDown(count int) {
 		l.topLine += count
 		if l.topLine > l.lineCount-1 {
 			l.topLine = l.lineCount - 1
+		}
+
+		if l.onPositionChanged != nil {
+			l.onPositionChanged(l.topLine, l.lineCount)
 		}
 	}
 }
@@ -205,15 +223,31 @@ func (l *TextReader) OnDrawLine(fn func(int) string) {
 	l.onDrawLine = fn
 }
 
+// OnPositionChanged is called every time the reader changes the top line or
+// the total number of lines is changed
+// Callback gets two numbers: the current top line, and the total number of
+// lines. Top line number starts from 0.
+func (l *TextReader) OnPositionChanged(fn func(int, int)) {
+	l.onPositionChanged = fn
+}
+
 func (l *TextReader) LineCount() int {
 	return l.lineCount
 }
 
 func (l *TextReader) SetLineCount(lineNo int) {
+	if l.topLine == lineNo {
+		return
+	}
+
 	if lineNo < l.topLine-1 {
 		l.topLine = lineNo - 1
 	}
 	l.lineCount = lineNo
+
+	if l.onPositionChanged != nil {
+		l.onPositionChanged(l.topLine, l.lineCount)
+	}
 }
 
 func (l *TextReader) TopLine() int {
