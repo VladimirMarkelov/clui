@@ -253,3 +253,13 @@ func (l *TextReader) SetLineCount(lineNo int) {
 func (l *TextReader) TopLine() int {
 	return l.topLine
 }
+
+func (l *TextReader) SetTopLine(top int) {
+	if top < l.lineCount {
+        l.topLine = top
+
+        if l.onPositionChanged != nil {
+            l.onPositionChanged(l.topLine, l.lineCount)
+        }
+    }
+}
