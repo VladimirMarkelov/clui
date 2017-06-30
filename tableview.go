@@ -16,9 +16,10 @@ Predefined hotkeys:
   Home, End - move cursor to first and last column, respectively
   Alt+Home, Alt+End - move cursor to first and last row, respectively
   PgDn, PgUp - move cursor to a screen down and up
-  Enter, F2 - emits event TableActionEdit (
+  Enter, F2 - emits event TableActionEdit
   Insert - emits event TableActionNew
   Delete - emits event TableActionDelete
+  F4 - Change sort mode
 
 Events:
   OnDrawCell - called every time the table is going to draw a cell.
@@ -795,6 +796,27 @@ func (l *TableView) ProcessEvent(event Event) bool {
 			if l.onAction != nil {
 				ev := TableEvent{Action: TableActionNew, Col: l.selectedCol, Row: l.selectedRow}
 				go l.onAction(ev)
+			}
+		case term.KeyF4:
+			if l.onAction != nil {
+                colID := l.selectedCol
+				sort := l.columns[colID].Sort
+
+				for idx := range l.columns {
+					l.columns[idx].Sort = SortNone
+				}
+
+				if sort == SortAsc {
+					sort = SortDesc
+				} else if sort == SortNone {
+					sort = SortAsc
+				} else {
+					sort = SortNone
+				}
+				l.columns[colID].Sort = sort
+
+				ev := TableEvent{Action: TableActionSort, Col: colID, Row: -1, Sort: sort}
+				l.onAction(ev)
 			}
 		default:
 			return false
