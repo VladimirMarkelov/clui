@@ -286,6 +286,8 @@ const (
 	EventDialogClose
 	// Close application
 	EventQuit
+    // Close top window - or application is there is only one window
+    EventCloseWindow
 )
 
 // ConfirmationDialog and SelectDialog exit codes

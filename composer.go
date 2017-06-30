@@ -584,6 +584,8 @@ func (c *Composer) processKey(ev Event) {
 
 func ProcessEvent(ev Event) {
 	switch ev.Type {
+	case EventCloseWindow:
+		comp.closeTopWindow()
 	case EventRedraw:
 		RefreshScreen()
 	case EventResize:
