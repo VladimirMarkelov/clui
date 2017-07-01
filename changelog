@@ -1,4 +1,11 @@
-﻿2016-10-13 - Version 0.5.0
+﻿2017-06-30 - Version 0.6.0
+[+] Added new control TextReader - a virtual text view control with
+    built-in support of some hots keys to list the text
+[+] Added a new global event to close active view
+[+] Added a hotkey F4 to sort TableView by current column
+[+] Added onKeyDown for Window
+
+2016-10-13 - Version 0.5.0
 
 [+] Added mouse move and mouse button release support:
     Now all windows can be dragged and resized with mouse
