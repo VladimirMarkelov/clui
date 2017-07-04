@@ -450,7 +450,10 @@ func (c *Composer) processMouse(ev Event) {
 
 			return
 		}
-	}
+	} else if !c.topWindow().Modal() {
+        c.activateWindow(view)
+        return
+    }
 
 	if ev.Key == term.MouseLeft {
 		c.lastX = ev.X
