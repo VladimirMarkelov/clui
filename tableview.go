@@ -660,9 +660,9 @@ func (l *TableView) processMouseClick(ev Event) bool {
 	dx := ev.X - l.x
 	dy := ev.Y - l.y
 
-    if l.topRow + dy - 2 >= l.rowCount {
-        return false
-    }
+	if l.topRow+dy-2 >= l.rowCount {
+		return false
+	}
 
 	if dy == l.height-1 && dx == l.width-1 {
 		l.selectedRow = l.rowCount - 1
@@ -686,7 +686,7 @@ func (l *TableView) processMouseClick(ev Event) bool {
 	}
 
 	dy -= 2
-    newRow := l.topRow + dy
+	newRow := l.topRow + dy
 
 	newCol := l.mouseToCol(dx)
 	if newCol != l.selectedCol || newRow != l.selectedRow {
@@ -804,7 +804,7 @@ func (l *TableView) ProcessEvent(event Event) bool {
 			}
 		case term.KeyF4:
 			if l.onAction != nil {
-                colID := l.selectedCol
+				colID := l.selectedCol
 				sort := l.columns[colID].Sort
 
 				for idx := range l.columns {
