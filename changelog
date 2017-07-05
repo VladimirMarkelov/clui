@@ -1,4 +1,18 @@
-﻿2017-06-30 - Version 0.6.0
+﻿2017-07-04 - Version 0.6.1
+[*] Fix selection Window with mouse: clicking non-active Window makes the
+    Window active (unless the top Window is modal one)
+[*] TableView does not fire OnSelectionChange event if a user clicked outside
+    the table. Before the fix a callback got selected index greater than
+    the total number of rows and might crash a callback
+[+] Add a new feature to Windows: to keep all changes the Windows can be
+    hidden instead of destroying when a user clicks window close button. It
+    can be done with overriding OnClose and returning 'true' if Windows must
+    be kept. To remove the Window from screen use SetVisible(false)
+[*] Window OnClose callback event now must return boolean. See change above
+[*] Fix typo: TableView did not send TableDelete event if the selected Row
+    was Row number 1
+
+2017-06-30 - Version 0.6.0
 [+] Added new control TextReader - a virtual text view control with
     built-in support of some hots keys to list the text
 [+] Added a new global event to close active view

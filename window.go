@@ -16,9 +16,10 @@ type Window struct {
 	origHeight int
 	origX      int
 	origY      int
+	hidden     bool
 
-	onClose func(Event)
-    onKeyDown func(Event) bool
+	onClose   func(Event) bool
+	onKeyDown func(Event) bool
 }
 
 func CreateWindow(x, y, w, h int, title string) *Window {
@@ -211,8 +212,11 @@ func (c *Window) ProcessEvent(ev Event) bool {
 		c.PlaceChildren()
 	case EventClose:
 		if c.onClose != nil {
-			c.onClose(ev)
+			if !c.onClose(ev) {
+				return false
+			}
 		}
+        return true
 	case EventKey:
 		if ev.Key == term.KeyTab {
 			aC := ActiveControl(c)
@@ -229,13 +233,13 @@ func (c *Window) ProcessEvent(ev Event) bool {
 			}
 			return true
 		} else {
-            if SendEventToChild(c, ev) {
-                return true
-            }
-            if c.onKeyDown != nil {
-                return c.onKeyDown(ev)
-            }
-            return false
+			if SendEventToChild(c, ev) {
+				return true
+			}
+			if c.onKeyDown != nil {
+				return c.onKeyDown(ev)
+			}
+			return false
 		}
 	default:
 		if ev.Type == EventMouse && ev.Key == term.MouseLeft {
@@ -247,7 +251,7 @@ func (c *Window) ProcessEvent(ev Event) bool {
 	return false
 }
 
-func (w *Window) OnClose(fn func(Event)) {
+func (w *Window) OnClose(fn func(Event) bool) {
 	w.onClose = fn
 }
 
@@ -281,4 +285,25 @@ func (w *Window) SetMaximized(maximize bool) {
 // Maximized returns if the view is in full screen mode
 func (w *Window) Maximized() bool {
 	return w.maximized
+}
+
+// Visible returns if the window must be drawn on the screen
+func (w *Window) Visible() bool {
+	return !w.hidden
+}
+
+// SetVisible allows to temporarily remove the window from screen
+// and show it later without reconstruction
+func (w *Window) SetVisible(visible bool) {
+	if w.hidden == visible {
+		w.hidden = !visible
+		if w.hidden {
+			w.SetModal(false)
+			if composer().topWindow() == w {
+				composer().moveActiveWindowToBottom()
+			}
+		} else {
+			composer().activateWindow(w)
+		}
+	}
 }

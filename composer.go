@@ -65,7 +65,10 @@ func RefreshScreen() {
 	term.Clear(ColorWhite, ColorBlack)
 
 	for _, wnd := range comp.windows {
-		wnd.Draw()
+		v := comp.topWindow().(*Window)
+		if v.Visible() {
+			wnd.Draw()
+		}
 	}
 
 	term.Flush()
@@ -144,18 +147,36 @@ func (c *Composer) moveActiveWindowToBottom() bool {
 		return false
 	}
 
+	anyVisible := false
+	for _, w := range c.windows {
+		v := w.(*Window)
+		if v.Visible() {
+			anyVisible = true
+			break
+		}
+	}
+	if !anyVisible {
+		return false
+	}
+
 	event := Event{Type: EventActivate, X: 0} // send deactivated
 	c.sendEventToActiveWindow(event)
 
-	last := c.topWindow()
+	for {
+		last := c.topWindow()
+		for i := len(c.windows) - 1; i > 0; i-- {
+			c.windows[i] = c.windows[i-1]
+		}
+		c.windows[0] = last
 
-	for i := len(c.windows) - 1; i > 0; i-- {
-		c.windows[i] = c.windows[i-1]
-	}
+		v := c.topWindow().(*Window)
+		if v.Visible() {
+			if !c.activateWindow(c.topWindow()) {
+				return false
+			}
 
-	c.windows[0] = last
-	if !c.activateWindow(c.topWindow()) {
-		return false
+			break
+		}
 	}
 
 	event = Event{Type: EventActivate, X: 1} // send 'activated'
@@ -246,13 +267,14 @@ func (c *Composer) closeTopWindow() {
 	if len(c.windows) > 1 {
 		view := c.topWindow()
 		event := Event{Type: EventClose, X: 1}
-		c.sendEventToActiveWindow(event)
 
-		c.DestroyWindow(view)
-		activate := c.topWindow()
-		c.activateWindow(activate)
-		event = Event{Type: EventActivate, X: 1} // send 'activated'
-		c.sendEventToActiveWindow(event)
+		if c.sendEventToActiveWindow(event) {
+			c.DestroyWindow(view)
+			activate := c.topWindow()
+			c.activateWindow(activate)
+			event = Event{Type: EventActivate, X: 1} // send 'activated'
+			c.sendEventToActiveWindow(event)
+		}
 
 		RefreshScreen()
 	} else {
@@ -451,9 +473,9 @@ func (c *Composer) processMouse(ev Event) {
 			return
 		}
 	} else if !c.topWindow().Modal() {
-        c.activateWindow(view)
-        return
-    }
+		c.activateWindow(view)
+		return
+	}
 
 	if ev.Key == term.MouseLeft {
 		c.lastX = ev.X

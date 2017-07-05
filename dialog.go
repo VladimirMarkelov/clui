@@ -111,7 +111,7 @@ func CreateConfirmationDialog(title, question string, buttons []string, defaultB
 
 	CreateFrame(frm1, 1, 1, BorderNone, 1)
 
-	dlg.view.OnClose(func(ev Event) {
+	dlg.view.OnClose(func(ev Event) bool {
 		if dlg.result == DialogAlive {
 			dlg.result = DialogClosed
 			if ev.X != 1 {
@@ -121,6 +121,7 @@ func CreateConfirmationDialog(title, question string, buttons []string, defaultB
 				go dlg.onClose()
 			}
 		}
+		return true
 	})
 
 	return dlg
@@ -220,7 +221,7 @@ func CreateSelectDialog(title string, items []string, selectedItem int, typ Sele
 	ActivateControl(dlg.view, btn2)
 	CreateFrame(frm1, 1, 1, BorderNone, 1)
 
-	dlg.view.OnClose(func(ev Event) {
+	dlg.view.OnClose(func(ev Event) bool {
 		if dlg.result == DialogAlive {
 			dlg.result = DialogClosed
 			if ev.X != 1 {
@@ -230,6 +231,8 @@ func CreateSelectDialog(title string, items []string, selectedItem int, typ Sele
 				go dlg.onClose()
 			}
 		}
+
+		return true
 	})
 
 	return dlg

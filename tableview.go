@@ -793,7 +793,7 @@ func (l *TableView) ProcessEvent(event Event) bool {
 				go l.onAction(ev)
 			}
 		case term.KeyDelete:
-			if l.selectedRow != 1 && l.onAction != nil {
+			if l.selectedRow != -1 && l.onAction != nil {
 				ev := TableEvent{Action: TableActionDelete, Col: l.selectedCol, Row: l.selectedRow}
 				go l.onAction(ev)
 			}
