@@ -2,7 +2,10 @@
 Command Line User Interface (Console UI inspired by TurboVision) with built-in theme support. Please see screenshots of working examples at the end of the README.
 
 ## Current version
-The current version is 0.5.0 and it has a lot of breaking changes comparing to previous one. Please see details in [changelog](./changelog).
+The current version is 0.6.1. Please see details in [changelog](./changelog).
+
+## Applications that uses the library
+* Terminal FB2 reader: !(termfb2)[https://github.com/VladimirMarkelov/termfb2]
 
 ## Documentation
 * ![Introduction](/docs/intro.md)
