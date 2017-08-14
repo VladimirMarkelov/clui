@@ -1,6 +1,11 @@
 # CLUI ![](https://travis-ci.org/VladimirMarkelov/clui.svg)
 Command Line User Interface (Console UI inspired by TurboVision) with built-in theme support. Please see screenshots of working examples at the end of the README.
 
+## Installation
+
+    go get -u github.com/VladimirMarkelov/clui
+
+
 ## Current version
 The current version is 0.6.1. Please see details in [changelog](./changelog).
 
