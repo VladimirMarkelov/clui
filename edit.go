@@ -49,7 +49,6 @@ func CreateEditField(parent Control, width int, text string, scale int) *EditFie
 	e.cursorPos = xs.Len(text)
 	e.offset = 0
 	e.parent = parent
-	e.parent = parent
 	e.readonly = false
 	e.SetScale(scale)
 
