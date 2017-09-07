@@ -1,4 +1,10 @@
-﻿2017-07-04 - Version 0.6.1
+﻿2017-09-07 - version 0.6.2
+[*] Setting the first button of confirmation dialog as default one did not work
+[*] TableView does not use 'go' to fire events that allows to create on the
+    fly any required dialog. That is useful, e.g., to create a simple
+    confirmation dialog to a user to approve a row deletion
+
+2017-07-04 - Version 0.6.1
 [*] Fix selection Window with mouse: clicking non-active Window makes the
     Window active (unless the top Window is modal one)
 [*] TableView does not fire OnSelectionChange event if a user clicked outside
