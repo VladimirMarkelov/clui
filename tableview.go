@@ -790,17 +790,17 @@ func (l *TableView) ProcessEvent(event Event) bool {
 		case term.KeyF2:
 			if l.selectedRow != -1 && l.selectedCol != -1 && l.onAction != nil {
 				ev := TableEvent{Action: TableActionEdit, Col: l.selectedCol, Row: l.selectedRow}
-				go l.onAction(ev)
+				l.onAction(ev)
 			}
 		case term.KeyDelete:
 			if l.selectedRow != -1 && l.onAction != nil {
 				ev := TableEvent{Action: TableActionDelete, Col: l.selectedCol, Row: l.selectedRow}
-				go l.onAction(ev)
+				l.onAction(ev)
 			}
 		case term.KeyInsert:
 			if l.onAction != nil {
 				ev := TableEvent{Action: TableActionNew, Col: l.selectedCol, Row: l.selectedRow}
-				go l.onAction(ev)
+				l.onAction(ev)
 			}
 		case term.KeyF4:
 			if l.onAction != nil {

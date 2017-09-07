@@ -36,6 +36,29 @@ func mainLoop() {
 		info.Text = fmt.Sprintf("%v:%v", info.Row, info.Col)
 	})
 
+	b.OnAction(func(ev ui.TableEvent) {
+		btns := []string{"Close", "Dismiss"}
+		var action string
+		switch ev.Action {
+		case ui.TableActionSort:
+			action = "Sort table"
+		case ui.TableActionEdit:
+			action = "Edit row/cell"
+		case ui.TableActionNew:
+			action = "Add new row"
+		case ui.TableActionDelete:
+			action = "Delete row"
+		default:
+			action = "Unknown action"
+		}
+
+		dlg := ui.CreateConfirmationDialog(
+			"<c:blue>"+action,
+            "Click any button or press <c:yellow>SPACE<c:> to close the dialog",
+			btns, ui.DialogButton1)
+        dlg.OnClose(func() {})
+	})
+
 	// start event processing loop - the main core of the library
 	ui.MainLoop()
 }

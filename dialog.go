@@ -75,9 +75,6 @@ func CreateConfirmationDialog(title, question string, buttons []string, defaultB
 			go dlg.onClose()
 		}
 	})
-	if defaultButton == DialogButton1 {
-		ActivateControl(dlg.view, btn1)
-	}
 	var btn2, btn3 *Button
 
 	if len(buttons) > 1 {
@@ -90,9 +87,6 @@ func CreateConfirmationDialog(title, question string, buttons []string, defaultB
 				go dlg.onClose()
 			}
 		})
-		if defaultButton == DialogButton2 {
-			ActivateControl(dlg.view, btn2)
-		}
 	}
 	if len(buttons) > 2 {
 		CreateFrame(frm1, 1, 1, BorderNone, 1)
@@ -104,12 +98,17 @@ func CreateConfirmationDialog(title, question string, buttons []string, defaultB
 				go dlg.onClose()
 			}
 		})
-		if defaultButton == DialogButton3 {
-			ActivateControl(dlg.view, btn3)
-		}
 	}
 
 	CreateFrame(frm1, 1, 1, BorderNone, 1)
+
+	if defaultButton == DialogButton2 && len(buttons) > 1 {
+        ActivateControl(dlg.view, btn2)
+	} else if defaultButton == DialogButton3 && len(buttons) > 2 {
+        ActivateControl(dlg.view, btn3)
+    } else {
+		ActivateControl(dlg.view, btn1)
+    }
 
 	dlg.view.OnClose(func(ev Event) bool {
 		if dlg.result == DialogAlive {
