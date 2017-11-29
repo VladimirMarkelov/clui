@@ -1,4 +1,8 @@
 ﻿2017-09-07 - version 0.6.2
+[*] Fix races (that racy tool shows). The work is not completed but all demos
+    and termfb2 application works without warnings
+
+2017-09-07 - version 0.6.2
 [*] Setting the first button of confirmation dialog as default one did not work
 [*] TableView does not use 'go' to fire events that allows to create on the
     fly any required dialog. That is useful, e.g., to create a simple

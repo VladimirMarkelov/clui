@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"os"
 	"strings"
+	"sync"
 	"unicode/utf8"
 )
 
@@ -87,6 +88,7 @@ const themeSuffix = ".theme"
 
 var (
 	themeManager *ThemeManager
+	thememtx     sync.RWMutex
 )
 
 // ThemeDesc is a detailed information about theme:
@@ -122,6 +124,9 @@ func initThemeManager() {
 // Reset removes all loaded themes from cache and reinitialize
 // the default theme
 func ThemeReset() {
+	thememtx.Lock()
+	defer thememtx.Unlock()
+
 	themeManager.current = defaultTheme
 	themeManager.themes = make(map[string]theme, 0)
 
@@ -209,10 +214,12 @@ func ThemeReset() {
 // The method panics if theme loop is detected - check if
 // parent attribute is correct
 func SysColor(color string) term.Attribute {
+	thememtx.RLock()
 	sch, ok := themeManager.themes[themeManager.current]
 	if !ok {
 		sch = themeManager.themes[defaultTheme]
 	}
+	thememtx.RUnlock()
 
 	clr, okclr := sch.colors[color]
 	if !okclr {
@@ -226,9 +233,11 @@ func SysColor(color string) term.Attribute {
 			if sch.parent == "" {
 				break
 			}
-			themeManager.LoadTheme(sch.parent)
+			themeManager.loadTheme(sch.parent)
+			thememtx.RLock()
 			sch = themeManager.themes[sch.parent]
 			clr, okclr = sch.colors[color]
+			thememtx.RUnlock()
 
 			if ok {
 				break
@@ -250,10 +259,12 @@ func SysColor(color string) term.Attribute {
 // The method panics if theme loop is detected - check if
 // parent attribute is correct
 func SysObject(object string) string {
+	thememtx.RLock()
 	sch, ok := themeManager.themes[themeManager.current]
 	if !ok {
 		sch = themeManager.themes[defaultTheme]
 	}
+	thememtx.RUnlock()
 
 	obj, okobj := sch.objects[object]
 	if !okobj {
@@ -268,9 +279,11 @@ func SysObject(object string) string {
 				break
 			}
 
-			themeManager.LoadTheme(sch.parent)
+			themeManager.loadTheme(sch.parent)
+			thememtx.RLock()
 			sch = themeManager.themes[sch.parent]
 			obj, okobj = sch.objects[object]
+			thememtx.RUnlock()
 
 			if ok {
 				break
@@ -313,21 +326,31 @@ func ThemeNames() []string {
 
 // CurrentTheme returns name of the current theme
 func CurrentTheme() string {
+	thememtx.RLock()
+	defer thememtx.RUnlock()
+
 	return themeManager.current
 }
 
 // SetCurrentTheme changes the current theme.
 // Returns false if changing failed - e.g, theme does not exist
 func SetCurrentTheme(name string) bool {
-	if _, ok := themeManager.themes[name]; !ok {
+	thememtx.RLock()
+	_, ok := themeManager.themes[name]
+	thememtx.RUnlock()
+
+	if !ok {
 		tnames := ThemeNames()
 		for _, theme := range tnames {
 			if theme == name {
-				themeManager.LoadTheme(theme)
+				themeManager.loadTheme(theme)
 				break
 			}
 		}
 	}
+
+	thememtx.Lock()
+	defer thememtx.Unlock()
 
 	if _, ok := themeManager.themes[name]; ok {
 		themeManager.current = name
@@ -352,9 +375,12 @@ func SetThemePath(path string) {
 	ThemeReset()
 }
 
-// LoadTheme loads the theme if it is not in the cache already.
-// If theme is in the cache LoadTheme does nothing
-func (s *ThemeManager) LoadTheme(name string) {
+// loadTheme loads the theme if it is not in the cache already.
+// If theme is in the cache loadTheme does nothing
+func (s *ThemeManager) loadTheme(name string) {
+	thememtx.Lock()
+	defer thememtx.Unlock()
+
 	if _, ok := s.themes[name]; ok {
 		return
 	}
@@ -442,25 +468,31 @@ func (s *ThemeManager) LoadTheme(name string) {
 	s.themes[name] = theme
 }
 
-// ReLoadTheme refresh cache entry for the theme with new
+// ReloadTheme refresh cache entry for the theme with new
 // data loaded from file. Use it to apply theme changes on
 // the fly without resetting manager or restarting application
-func ReLoadTheme(name string) {
+func ReloadTheme(name string) {
 	if name == defaultTheme {
 		// default theme cannot be reloaded
 		return
 	}
 
+	thememtx.Lock()
 	if _, ok := themeManager.themes[name]; ok {
 		delete(themeManager.themes, name)
 	}
+	thememtx.Unlock()
 
-	themeManager.LoadTheme(name)
+	themeManager.loadTheme(name)
 }
 
 // ThemeInfo returns detailed info about theme
 func ThemeInfo(name string) ThemeDesc {
-	themeManager.LoadTheme(name)
+	themeManager.loadTheme(name)
+
+	thememtx.RLock()
+	defer thememtx.RUnlock()
+
 	var theme ThemeDesc
 	if t, ok := themeManager.themes[name]; !ok {
 		theme.parent = t.parent

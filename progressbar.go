@@ -71,6 +71,8 @@ func CreateProgressBar(parent Control, width, height int, scale int) *ProgressBa
 //      pb.SetTitle("{{value}} of {{max}}")
 //      pb.SetTitle("{{percent}}%")
 func (b *ProgressBar) Draw() {
+    b.mtx.RLock()
+    defer b.mtx.RUnlock()
 	if b.max <= b.min {
 		return
 	}
@@ -162,6 +164,8 @@ func (b *ProgressBar) Draw() {
 // SetValue sets new progress value. If value exceeds ProgressBar
 // limits then the limit value is used
 func (b *ProgressBar) SetValue(pos int) {
+    b.mtx.Lock()
+    defer b.mtx.Unlock()
 	if pos < b.min {
 		b.value = b.min
 	} else if pos > b.max {
@@ -173,6 +177,8 @@ func (b *ProgressBar) SetValue(pos int) {
 
 // Value returns the current ProgressBar value
 func (b *ProgressBar) Value() int {
+    b.mtx.RLock()
+    defer b.mtx.RUnlock()
 	return b.value
 }
 
@@ -198,6 +204,8 @@ func (b *ProgressBar) SetLimits(min, max int) {
 // Step increases ProgressBar value by 1 if the value is less
 // than ProgressBar high limit
 func (b *ProgressBar) Step() int {
+    b.mtx.Lock()
+    defer b.mtx.Unlock()
 	b.value++
 
 	if b.value > b.max {

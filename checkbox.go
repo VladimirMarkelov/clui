@@ -52,6 +52,9 @@ func CreateCheckBox(parent Control, width int, title string, scale int) *CheckBo
 
 // Repaint draws the control on its View surface
 func (c *CheckBox) Draw() {
+	c.mtx.RLock()
+	defer c.mtx.RUnlock()
+
 	PushAttributes()
 	defer PopAttributes()
 
@@ -120,6 +123,9 @@ func (c *CheckBox) ProcessEvent(event Event) bool {
 // Value must be 0 or 1 if Allow3State is off,
 // and 0, 1, or 2 if Allow3State is on
 func (c *CheckBox) SetState(val int) {
+	c.mtx.Lock()
+	defer c.mtx.Unlock()
+
 	if val == c.state {
 		return
 	}
@@ -143,6 +149,9 @@ func (c *CheckBox) SetState(val int) {
 
 // State returns current state of CheckBox
 func (c *CheckBox) State() int {
+	c.mtx.RLock()
+	defer c.mtx.RUnlock()
+
 	return c.state
 }
 
@@ -185,5 +194,8 @@ func (c *CheckBox) SetSize(width, height int) {
 // of the CheckBox is changed. Argument of callback is the current
 // CheckBox state: 0 - off, 1 - on, 2 - third state
 func (c *CheckBox) OnChange(fn func(int)) {
+	c.mtx.Lock()
+	defer c.mtx.Unlock()
+
 	c.onChange = fn
 }

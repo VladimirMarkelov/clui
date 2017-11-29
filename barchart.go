@@ -4,6 +4,7 @@ import (
 	"fmt"
 	xs "github.com/huandu/xstrings"
 	term "github.com/nsf/termbox-go"
+	"sync/atomic"
 )
 
 // BarData is info about one bar in the chart. Every
@@ -59,10 +60,10 @@ type BarChart struct {
 	BaseControl
 	data        []BarData
 	autosize    bool
-	gap         int
-	barWidth    int
-	legendWidth int
-	valueWidth  int
+	gap         int32
+	barWidth    int32
+	legendWidth int32
+	valueWidth  int32
 	showMarks   bool
 	showTitles  bool
 	onDrawCell  func(*BarDataCell)
@@ -105,6 +106,9 @@ func CreateBarChart(parent Control, w, h int, scale int) *BarChart {
 
 // Repaint draws the control on its View surface
 func (b *BarChart) Draw() {
+	b.mtx.RLock()
+	defer b.mtx.RUnlock()
+
 	PushAttributes()
 	defer PopAttributes()
 
@@ -214,7 +218,7 @@ func (b *BarChart) drawBars() {
 			DrawRawText(b.x+pos+shift, b.y+h+1, s)
 		}
 
-		pos += barW + b.gap
+		pos += barW + int(b.BarGap())
 	}
 }
 
@@ -242,7 +246,7 @@ func (b *BarChart) drawLegend() {
 		SetTextColor(d.Fg)
 		SetBackColor(d.Bg)
 		PutChar(b.x+pos+width, b.y+idx, c)
-		s := CutText(fmt.Sprintf(" - %v", d.Title), b.legendWidth)
+		s := CutText(fmt.Sprintf(" - %v", d.Title), int(b.LegendWidth()))
 		SetTextColor(fg)
 		SetBackColor(bg)
 		DrawRawText(b.x+pos+width+1, b.y+idx, s)
@@ -250,7 +254,8 @@ func (b *BarChart) drawLegend() {
 }
 
 func (b *BarChart) drawValues() {
-	if b.valueWidth <= 0 {
+	valVal := int(b.ValueWidth())
+	if valVal <= 0 {
 		return
 	}
 
@@ -266,11 +271,11 @@ func (b *BarChart) drawValues() {
 	}
 
 	dy := 0
-	format := fmt.Sprintf("%%%v.2f", b.valueWidth)
+	format := fmt.Sprintf("%%%v.2f", valVal)
 	for dy < h-1 {
 		v := float64(h-dy) / float64(h) * max
 		s := fmt.Sprintf(format, v)
-		s = CutText(s, b.valueWidth)
+		s = CutText(s, valVal)
 		DrawRawText(b.x, b.y+dy, s)
 
 		dy += 2
@@ -278,7 +283,7 @@ func (b *BarChart) drawValues() {
 }
 
 func (b *BarChart) drawRulers() {
-	if b.valueWidth <= 0 && b.legendWidth <= 0 && !b.showTitles {
+	if int(b.ValueWidth()) <= 0 && int(b.LegendWidth()) <= 0 && !b.showTitles {
 		return
 	}
 
@@ -314,13 +319,15 @@ func (b *BarChart) calculateBarArea() (int, int) {
 	w := b.width
 	pos := 0
 
-	if b.valueWidth < w/2 {
-		w = w - b.valueWidth - 1
-		pos = b.valueWidth + 1
+	valVal := int(b.ValueWidth())
+	if valVal < w/2 {
+		w = w - valVal - 1
+		pos = valVal + 1
 	}
 
-	if b.legendWidth < w/2 {
-		w -= b.legendWidth
+	legVal := int(b.LegendWidth())
+	if legVal < w/2 {
+		w -= legVal
 	}
 
 	return pos, w
@@ -332,24 +339,28 @@ func (b *BarChart) calculateBarWidth() int {
 	}
 
 	if !b.autosize {
-		return b.barWidth
+		return int(b.MinBarWidth())
 	}
 
 	w := b.width
-	if b.valueWidth < w/2 {
-		w = w - b.valueWidth - 1
+	legVal := int(b.LegendWidth())
+	valVal := int(b.ValueWidth())
+	if valVal < w/2 {
+		w = w - valVal - 1
 	}
-	if b.legendWidth < w/2 {
-		w -= b.legendWidth
+	if legVal < w/2 {
+		w -= legVal
 	}
 
 	dataCount := len(b.data)
-	minSize := dataCount*b.barWidth + (dataCount-1)*b.gap
+	gapVal := int(b.BarGap())
+	barVal := int(b.MinBarWidth())
+	minSize := dataCount*barVal + (dataCount-1)*gapVal
 	if minSize >= w {
-		return b.barWidth
+		return barVal
 	}
 
-	sz := (w - (dataCount-1)*b.gap) / dataCount
+	sz := (w - (dataCount-1)*gapVal) / dataCount
 	if sz == 0 {
 		sz = 1
 	}
@@ -383,16 +394,25 @@ func (b *BarChart) calculateMultiplier() (float64, float64) {
 
 // AddData appends a new bar to a chart
 func (b *BarChart) AddData(val BarData) {
+	b.mtx.Lock()
+	defer b.mtx.Unlock()
+
 	b.data = append(b.data, val)
 }
 
 // ClearData removes all bar from chart
 func (b *BarChart) ClearData() {
+	b.mtx.Lock()
+	defer b.mtx.Unlock()
+
 	b.data = make([]BarData, 0)
 }
 
 // SetData assign a new bar list to a chart
 func (b *BarChart) SetData(data []BarData) {
+	b.mtx.Lock()
+	defer b.mtx.Unlock()
+
 	b.data = make([]BarData, len(data))
 	copy(b.data, data)
 }
@@ -410,39 +430,42 @@ func (b *BarChart) AutoSize() bool {
 // SetAutoSize enables or disables automatic bar
 // width calculation
 func (b *BarChart) SetAutoSize(auto bool) {
+	b.mtx.Lock()
+	defer b.mtx.Unlock()
+
 	b.autosize = auto
 }
 
 // Gap returns width of visual gap between two adjacent bars
-func (b *BarChart) BarGap() int {
-	return b.gap
+func (b *BarChart) BarGap() int32 {
+	return atomic.LoadInt32(&b.gap)
 }
 
 // SetGap sets the space width between two adjacent bars
-func (b *BarChart) SetBarGap(gap int) {
-	b.gap = gap
+func (b *BarChart) SetBarGap(gap int32) {
+	atomic.StoreInt32(&b.gap, gap)
 }
 
 // MinBarWidth returns current minimal bar width
-func (b *BarChart) MinBarWidth() int {
-	return b.barWidth
+func (b *BarChart) MinBarWidth() int32 {
+	return atomic.LoadInt32(&b.barWidth)
 }
 
 // SetMinBarWidth changes the minimal bar width
-func (b *BarChart) SetMinBarWidth(size int) {
-	b.barWidth = size
+func (b *BarChart) SetMinBarWidth(size int32) {
+	atomic.StoreInt32(&b.barWidth, size)
 }
 
 // ValueWidth returns the width of the area at the left of
 // chart used to draw values. Set it to 0 to turn off the
 // value panel
-func (b *BarChart) ValueWidth() int {
-	return b.valueWidth
+func (b *BarChart) ValueWidth() int32 {
+	return atomic.LoadInt32(&b.valueWidth)
 }
 
 // SetValueWidth changes width of the value panel on the left
-func (b *BarChart) SetValueWidth(width int) {
-	b.valueWidth = width
+func (b *BarChart) SetValueWidth(width int32) {
+	atomic.StoreInt32(&b.valueWidth, width)
 }
 
 // ShowTitles returns if chart displays horizontal axis and
@@ -453,18 +476,21 @@ func (b *BarChart) ShowTitles() bool {
 
 // SetShowTitles turns on and off horizontal axis and bar titles
 func (b *BarChart) SetShowTitles(show bool) {
+	b.mtx.Lock()
+	defer b.mtx.Unlock()
+
 	b.showTitles = show
 }
 
 // LegendWidth returns width of chart legend displayed at the
 // right side of the chart. Set it to 0 to disable legend
-func (b *BarChart) LegendWidth() int {
-	return b.legendWidth
+func (b *BarChart) LegendWidth() int32 {
+	return atomic.LoadInt32(&b.legendWidth)
 }
 
 // SetLegendWidth sets new legend panel width
-func (b *BarChart) SetLegendWidth(width int) {
-	b.legendWidth = width
+func (b *BarChart) SetLegendWidth(width int32) {
+	atomic.StoreInt32(&b.legendWidth, width)
 }
 
 // OnDrawCell sets callback that allows to draw multicolored
@@ -475,6 +501,9 @@ func (b *BarChart) SetLegendWidth(width int) {
 // changing colors and rune makes sense. Changing anything else
 // does not affect the chart
 func (b *BarChart) OnDrawCell(fn func(*BarDataCell)) {
+	b.mtx.Lock()
+	defer b.mtx.Unlock()
+
 	b.onDrawCell = fn
 }
 
@@ -486,5 +515,8 @@ func (b *BarChart) ShowMarks() bool {
 
 // SetShowMarks turns on and off marks under horizontal axis
 func (b *BarChart) SetShowMarks(show bool) {
+	b.mtx.Lock()
+	defer b.mtx.Unlock()
+
 	b.showMarks = show
 }

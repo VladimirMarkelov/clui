@@ -348,6 +348,8 @@ func (l *TableView) drawCells() {
 
 // Repaint draws the control on its View surface
 func (l *TableView) Draw() {
+	l.mtx.RLock()
+	defer l.mtx.RUnlock()
 	PushAttributes()
 	defer PopAttributes()
 
@@ -924,6 +926,9 @@ func (l *TableView) OnKeyPress(fn func(term.Key) bool) {
 // OnDrawCell is called every time the table is going to display
 // a cell
 func (l *TableView) OnDrawCell(fn func(*ColumnDrawInfo)) {
+	l.mtx.Lock()
+	defer l.mtx.Unlock()
+
 	l.onDrawCell = fn
 }
 

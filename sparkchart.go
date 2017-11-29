@@ -72,6 +72,9 @@ func CreateSparkChart(parent Control, w, h int, scale int) *SparkChart {
 
 // Repaint draws the control on its View surface
 func (b *SparkChart) Draw() {
+	b.mtx.RLock()
+	defer b.mtx.RUnlock()
+
 	PushAttributes()
 	defer PopAttributes()
 
@@ -212,6 +215,9 @@ func (b *SparkChart) calculateMultiplier() (float64, float64) {
 
 // AddData appends a new bar to a chart
 func (b *SparkChart) AddData(val float64) {
+	b.mtx.Lock()
+	defer b.mtx.Unlock()
+
 	b.data = append(b.data, val)
 
 	_, width := b.calculateBarArea()
@@ -222,11 +228,17 @@ func (b *SparkChart) AddData(val float64) {
 
 // ClearData removes all bar from chart
 func (b *SparkChart) ClearData() {
+	b.mtx.Lock()
+	defer b.mtx.Unlock()
+
 	b.data = make([]float64, 0)
 }
 
 // SetData assign a new bar list to a chart
 func (b *SparkChart) SetData(data []float64) {
+	b.mtx.Lock()
+	defer b.mtx.Unlock()
+
 	b.data = make([]float64, len(data))
 	copy(b.data, data)
 
@@ -245,6 +257,9 @@ func (b *SparkChart) ValueWidth() int {
 
 // SetValueWidth changes width of the value panel on the left
 func (b *SparkChart) SetValueWidth(width int) {
+	b.mtx.Lock()
+	defer b.mtx.Unlock()
+
 	b.valueWidth = width
 }
 
@@ -257,6 +272,9 @@ func (b *SparkChart) Top() float64 {
 // SetTop sets the theoretical highest value of data flow
 // to scale the chart
 func (b *SparkChart) SetTop(top float64) {
+	b.mtx.Lock()
+	defer b.mtx.Unlock()
+
 	b.topValue = top
 }
 
@@ -268,6 +286,9 @@ func (b *SparkChart) AutoScale() bool {
 
 // SetAutoScale changes the way of scaling the data flow
 func (b *SparkChart) SetAutoScale(auto bool) {
+	b.mtx.Lock()
+	defer b.mtx.Unlock()
+
 	b.autosize = auto
 }
 
@@ -280,5 +301,8 @@ func (b *SparkChart) HilitePeaks() bool {
 // SetHilitePeaks enables or disables hiliting maximum
 // values with different colors
 func (b *SparkChart) SetHilitePeaks(hilite bool) {
+	b.mtx.Lock()
+	defer b.mtx.Unlock()
+
 	b.hiliteMax = hilite
 }

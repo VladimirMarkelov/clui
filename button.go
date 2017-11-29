@@ -4,6 +4,7 @@ import (
 	xs "github.com/huandu/xstrings"
 	term "github.com/nsf/termbox-go"
 	"time"
+    "sync/atomic"
 )
 
 /*
@@ -15,7 +16,7 @@ type Button struct {
 	BaseControl
 	shadowColor term.Attribute
 	bgActive    term.Attribute
-	pressed     bool
+	pressed     int32
 	onClick     func(Event)
 }
 
@@ -62,6 +63,8 @@ func CreateButton(parent Control, width, height int, title string, scale int) *B
 
 // Repaint draws the control on its View surface
 func (b *Button) Draw() {
+	b.mtx.RLock()
+	defer b.mtx.RUnlock()
 	PushAttributes()
 	defer PopAttributes()
 
@@ -70,7 +73,7 @@ func (b *Button) Draw() {
 
 	fg, bg := b.fg, b.bg
 	shadow := RealColor(b.shadowColor, ColorButtonShadow)
-	if !b.Enabled() {
+	if b.disabled {
 		fg, bg = RealColor(fg, ColorButtonDisabledText), RealColor(bg, ColorButtonDisabledBack)
 	} else if b.Active() {
 		fg, bg = RealColor(b.fgActive, ColorButtonActiveText), RealColor(b.bgActive, ColorButtonActiveBack)
@@ -81,7 +84,7 @@ func (b *Button) Draw() {
 	dy := int((h - 1) / 2)
 	SetTextColor(fg)
 	shift, text := AlignColorizedText(b.title, w-1, b.align)
-	if !b.pressed {
+	if b.isPressed() == 0 {
 		SetBackColor(shadow)
 		FillRect(x+1, y+1, w-1, h-1, ' ')
 		SetBackColor(bg)
@@ -92,6 +95,14 @@ func (b *Button) Draw() {
 		FillRect(x+1, y+1, w-1, h-1, ' ')
 		DrawText(x+1+shift, y+1+dy, b.title)
 	}
+}
+
+func (b *Button) isPressed() int32 {
+	return atomic.LoadInt32(&b.pressed)
+}
+
+func (b *Button) setPressed(pressed int32) {
+	atomic.StoreInt32(&b.pressed, pressed)
 }
 
 /*
@@ -106,39 +117,39 @@ func (b *Button) ProcessEvent(event Event) bool {
 	}
 
 	if event.Type == EventKey {
-		if event.Key == term.KeySpace && !b.pressed {
-			b.pressed = true
+		if event.Key == term.KeySpace && b.isPressed() == 0 {
+			b.setPressed(1)
 			ev := Event{Type: EventRedraw}
+
 			go func() {
-				b.Draw()
-				PutEvent(ev)
+                PutEvent(ev)
 				time.Sleep(100 * time.Millisecond)
-				b.pressed = false
-				b.Draw()
+				b.setPressed(0)
 				PutEvent(ev)
 			}()
+
 			if b.onClick != nil {
 				b.onClick(event)
 			}
 			return true
-		} else if event.Key == term.KeyEsc && b.pressed {
-			b.pressed = false
+		} else if event.Key == term.KeyEsc && b.isPressed() != 0 {
+			b.setPressed(0)
 			ReleaseEvents()
 			return true
 		}
 	} else if event.Type == EventMouse {
 		if event.Key == term.MouseLeft {
-			b.pressed = true
+			b.setPressed(1)
 			GrabEvents(b)
 			return true
-		} else if event.Key == term.MouseRelease && b.pressed {
+		} else if event.Key == term.MouseRelease && b.isPressed() != 0 {
 			ReleaseEvents()
 			if event.X >= b.x && event.Y >= b.y && event.X < b.x+b.width && event.Y < b.y+b.height {
 				if b.onClick != nil {
 					b.onClick(event)
 				}
 			}
-			b.pressed = false
+			b.setPressed(0)
 			return true
 		}
 	}

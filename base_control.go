@@ -2,6 +2,7 @@ package clui
 
 import (
 	term "github.com/nsf/termbox-go"
+	"sync"
 )
 
 // BaseControl is a base for all visible controls.
@@ -26,6 +27,7 @@ type BaseControl struct {
 	gapX, gapY    int
 	pack          PackType
 	children      []Control
+	mtx           sync.RWMutex
 }
 
 func (c *BaseControl) Title() string {
@@ -103,10 +105,16 @@ func (c *BaseControl) SetTabStop(tabstop bool) {
 }
 
 func (c *BaseControl) Enabled() bool {
+	c.mtx.RLock()
+	defer c.mtx.RUnlock()
+
 	return !c.disabled
 }
 
 func (c *BaseControl) SetEnabled(enabled bool) {
+	c.mtx.Lock()
+	defer c.mtx.Unlock()
+
 	c.disabled = !enabled
 }
 
