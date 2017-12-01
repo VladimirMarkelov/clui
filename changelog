@@ -1,4 +1,7 @@
-﻿2017-09-07 - version 0.6.2
+﻿2017-12-01 - version 0.6.2
+[*] Fix selecting the next control with TAB key
+
+2017-11-28 - version 0.6.2
 [*] Fix races (that racy tool shows). The work is not completed but all demos
     and termfb2 application works without warnings
 

@@ -223,6 +223,7 @@ func _nextControl(parent Control, curr, prev Control, foundPrev, next bool) (boo
 		if nn != nil {
 			return fnd, nn
 		}
+		found = fnd
 	}
 
 	return found, nil
