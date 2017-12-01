@@ -149,8 +149,8 @@ func ThemeReset() {
 	defTheme.colors[ColorDisabledText] = ColorBlackBold
 	defTheme.colors[ColorDisabledBack] = ColorWhite
 	defTheme.colors[ColorText] = ColorWhite
-	defTheme.colors[ColorBack] = ColorBlackBold
-	defTheme.colors[ColorViewBack] = ColorBlackBold
+	defTheme.colors[ColorBack] = ColorBlack
+	defTheme.colors[ColorViewBack] = ColorBlack
 	defTheme.colors[ColorViewText] = ColorWhite
 
 	defTheme.colors[ColorControlText] = ColorWhite
@@ -159,7 +159,7 @@ func ThemeReset() {
 	defTheme.colors[ColorControlActiveBack] = ColorMagenta
 	defTheme.colors[ColorControlShadow] = ColorBlue
 	defTheme.colors[ColorControlDisabledText] = ColorWhite
-	defTheme.colors[ColorControlDisabledBack] = ColorBlackBold
+	defTheme.colors[ColorControlDisabledBack] = ColorBlack
 
 	defTheme.colors[ColorButtonText] = ColorWhite
 	defTheme.colors[ColorButtonBack] = ColorGreen
@@ -167,24 +167,24 @@ func ThemeReset() {
 	defTheme.colors[ColorButtonActiveBack] = ColorMagenta
 	defTheme.colors[ColorButtonShadow] = ColorBlue
 	defTheme.colors[ColorButtonDisabledText] = ColorWhite
-	defTheme.colors[ColorButtonDisabledBack] = ColorBlackBold
+	defTheme.colors[ColorButtonDisabledBack] = ColorBlack
 
 	defTheme.colors[ColorEditText] = ColorBlack
 	defTheme.colors[ColorEditBack] = ColorWhite
 	defTheme.colors[ColorEditActiveText] = ColorBlack
-	defTheme.colors[ColorEditActiveBack] = ColorWhiteBold
+	defTheme.colors[ColorEditActiveBack] = ColorYellow
 	defTheme.colors[ColorSelectionText] = ColorYellow
 	defTheme.colors[ColorSelectionBack] = ColorBlue
 
-	defTheme.colors[ColorScrollBack] = ColorBlackBold
+	defTheme.colors[ColorScrollBack] = ColorBlack
 	defTheme.colors[ColorScrollText] = ColorWhite
-	defTheme.colors[ColorThumbBack] = ColorBlackBold
+	defTheme.colors[ColorThumbBack] = ColorBlack
 	defTheme.colors[ColorThumbText] = ColorWhite
 
 	defTheme.colors[ColorProgressText] = ColorBlue
-	defTheme.colors[ColorProgressBack] = ColorBlackBold
+	defTheme.colors[ColorProgressBack] = ColorBlack
 	defTheme.colors[ColorProgressActiveText] = ColorBlack
-	defTheme.colors[ColorProgressActiveBack] = ColorBlueBold
+	defTheme.colors[ColorProgressActiveBack] = ColorBlue
 	defTheme.colors[ColorProgressTitleText] = ColorWhite
 
 	defTheme.colors[ColorBarChartBack] = ColorBlack
@@ -200,9 +200,9 @@ func ThemeReset() {
 	defTheme.colors[ColorTableText] = ColorWhite
 	defTheme.colors[ColorTableBack] = ColorBlack
 	defTheme.colors[ColorTableSelectedText] = ColorWhite
-	defTheme.colors[ColorTableSelectedBack] = ColorBlackBold
+	defTheme.colors[ColorTableSelectedBack] = ColorBlack
 	defTheme.colors[ColorTableActiveCellText] = ColorWhiteBold
-	defTheme.colors[ColorTableActiveCellBack] = ColorBlackBold
+	defTheme.colors[ColorTableActiveCellBack] = ColorBlack
 	defTheme.colors[ColorTableLineText] = ColorWhite
 	defTheme.colors[ColorTableHeaderText] = ColorWhite
 	defTheme.colors[ColorTableHeaderBack] = ColorBlack
