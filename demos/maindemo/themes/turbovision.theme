@@ -81,7 +81,7 @@ TableHeaderBack=black
 //----------------- Objects -----------------
 SingleBorder=─│┌┐└┘
 DoubleBorder=═║╔╗╚╝
-Edit=←→V
+Edit=←→V*
 ScrollBar=░■▲▼◄►
 ViewButtons=^↓○[]
 CheckBox=[] X?

@@ -4,6 +4,7 @@ import (
 	"github.com/atotto/clipboard"
 	xs "github.com/huandu/xstrings"
 	term "github.com/nsf/termbox-go"
+	"strings"
 )
 
 /*
@@ -20,9 +21,10 @@ type EditField struct {
 	// cursor position in edit text
 	cursorPos int
 	// the number of the first displayed text character - it is used in case of text is longer than edit width
-	offset   int
-	readonly bool
-	maxWidth int
+	offset    int
+	readonly  bool
+	maxWidth  int
+	showStars bool
 
 	onChange   func(Event)
 	onKeyPress func(term.Key) bool
@@ -97,26 +99,46 @@ func (e *EditField) Draw() {
 
 	parts := []rune(SysObject(ObjEdit))
 	chLeft, chRight := string(parts[0]), string(parts[1])
+	chStar := "*"
+	if len(parts) > 3 {
+		chStar = string(parts[3])
+	}
 
 	var textOut string
 	curOff := 0
 	if e.offset == 0 && xs.Len(e.title) < e.width {
-		textOut = e.title
+		if e.showStars {
+			textOut = strings.Repeat(chStar, xs.Len(e.title))
+		} else {
+			textOut = e.title
+		}
 	} else {
 		fromIdx := 0
 		toIdx := 0
 		if e.offset == 0 {
 			toIdx = e.width - 1
-			textOut = xs.Slice(e.title, 0, toIdx) + chRight
+			if e.showStars {
+				textOut = strings.Repeat(chStar, toIdx) + chRight
+			} else {
+				textOut = xs.Slice(e.title, 0, toIdx) + chRight
+			}
 			curOff = -e.offset
 		} else {
 			curOff = 1 - e.offset
 			fromIdx = e.offset
 			if e.width-1 <= xs.Len(e.title)-e.offset {
 				toIdx = e.offset + e.width - 2
-				textOut = chLeft + xs.Slice(e.title, fromIdx, toIdx) + chRight
+				if e.showStars {
+					textOut = chLeft + strings.Repeat(chStar, toIdx-fromIdx) + chRight
+				} else {
+					textOut = chLeft + xs.Slice(e.title, fromIdx, toIdx) + chRight
+				}
 			} else {
-				textOut = chLeft + xs.Slice(e.title, fromIdx, -1)
+				if e.showStars {
+					textOut = chLeft + strings.Repeat(chStar, xs.Len(e.title)-fromIdx)
+				} else {
+					textOut = chLeft + xs.Slice(e.title, fromIdx, -1)
+				}
 			}
 		}
 	}
@@ -360,4 +382,17 @@ func (e *EditField) SetSize(width, height int) {
 	}
 
 	e.height = 1
+}
+
+// PasswordMode returns whether password mode is enabled for the control
+func (e *EditField) PasswordMode() bool {
+	return e.showStars
+}
+
+// SetPasswordMode changes the way an EditField displays it content.
+// If PasswordMode is false then the EditField works as regular text entry
+// control. If PasswordMode is true then the EditField shows its content hidden
+// with star characters ('*' by default)
+func (e *EditField) SetPasswordMode(pass bool) {
+	e.showStars = pass
 }

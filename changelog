@@ -1,4 +1,13 @@
-﻿2017-12-01 - version 0.6.2
+﻿2018-01-02 - version 0.6.3
+[+] Add a new boolean property for EditField - PasswordMode. If PasswordMode is
+    true then the editfield text is hidden with 'stars'.
+    Please see demo demos/editfield for details
+[+] Change a theme for object 'Edit' - added non-obligatory forth character
+   that is used as replacement for any character inside EditField when Password
+   mode is on. By default it is '*' in all included themes. Old themes that
+   miss forth character use '*' as well.
+
+2017-12-01 - version 0.6.2
 [*] Fix selecting the next control with TAB key
 
 2017-11-28 - version 0.6.2

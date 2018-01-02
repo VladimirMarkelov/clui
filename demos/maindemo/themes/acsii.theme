@@ -15,7 +15,7 @@ ProgressActiveText = white
 //----------------- Objects -----------------
 SingleBorder=-|++++
 DoubleBorder==|++++
-Edit=<>V
+Edit=<>V*
 ScrollBar=|O^V<>
 ViewButtons=^_X[]
 CheckBox=[] X?
