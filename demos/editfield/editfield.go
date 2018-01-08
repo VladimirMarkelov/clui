@@ -13,15 +13,16 @@ func createView() {
     frmChk.SetGaps(1, 1)
     ui.CreateLabel(frmChk, ui.AutoSize, ui.AutoSize, "Enter password:", ui.Fixed)
 	edFld := ui.CreateEditField(frmChk, 20, "", ui.Fixed)
+    edFld.SetPasswordMode(true)
 	chkPass := ui.CreateCheckBox(frmChk, ui.AutoSize, "Show Password", ui.Fixed)
 
 	ui.ActivateControl(view, edFld)
 
 	chkPass.OnChange(func(state int) {
-		if state == 0 {
+		if state == 1 {
 			edFld.SetPasswordMode(false)
 			ui.PutEvent(ui.Event{Type: ui.EventRedraw})
-		} else if state == 1 {
+		} else if state == 0 {
 			edFld.SetPasswordMode(true)
 			ui.PutEvent(ui.Event{Type: ui.EventRedraw})
 		}
