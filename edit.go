@@ -305,7 +305,7 @@ func (e *EditField) ProcessEvent(event Event) bool {
 		case term.KeySpace:
 			e.insertRune(' ')
 			return true
-		case term.KeyBackspace:
+		case term.KeyBackspace, term.KeyBackspace2:
 			e.backspace()
 			return true
 		case term.KeyDelete:
