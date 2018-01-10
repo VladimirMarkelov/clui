@@ -329,7 +329,9 @@ func (e *EditField) ProcessEvent(event Event) bool {
 			e.charRight()
 			return true
 		case term.KeyCtrlC:
-			clipboard.WriteAll(e.Title())
+			if !e.showStars {
+				clipboard.WriteAll(e.Title())
+			}
 			return true
 		case term.KeyCtrlV:
 			if !e.readonly {
