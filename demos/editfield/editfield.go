@@ -9,11 +9,11 @@ func createView() {
 
 	frmChk := ui.CreateFrame(view, 8, 5, ui.BorderNone, ui.Fixed)
 	frmChk.SetPack(ui.Vertical)
-    frmChk.SetPaddings(1, 1)
-    frmChk.SetGaps(1, 1)
-    ui.CreateLabel(frmChk, ui.AutoSize, ui.AutoSize, "Enter password:", ui.Fixed)
+	frmChk.SetPaddings(1, 1)
+	frmChk.SetGaps(1, 1)
+	ui.CreateLabel(frmChk, ui.AutoSize, ui.AutoSize, "Enter password:", ui.Fixed)
 	edFld := ui.CreateEditField(frmChk, 20, "", ui.Fixed)
-    edFld.SetPasswordMode(true)
+	edFld.SetPasswordMode(true)
 	chkPass := ui.CreateCheckBox(frmChk, ui.AutoSize, "Show Password", ui.Fixed)
 
 	ui.ActivateControl(view, edFld)
