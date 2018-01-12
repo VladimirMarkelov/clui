@@ -86,6 +86,10 @@ func (e *EditField) ProcessEvent(event Event) bool {
 		term.HideCursor()
 	}
 
+	if event.Type == EventMouse && event.Key == term.MouseLeft {
+		e.lastEvent = time.Now()
+	}
+
 	if event.Type == EventKey && event.Key != term.KeyTab {
 		if e.onKeyPress != nil {
 			res := e.onKeyPress(event.Key)
