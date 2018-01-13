@@ -662,7 +662,7 @@ func (l *TableView) processMouseClick(ev Event) bool {
 	dx := ev.X - l.x
 	dy := ev.Y - l.y
 
-	if l.topRow+dy-2 >= l.rowCount {
+	if l.topRow+dy-2 >= l.rowCount && dy != l.height-1 && dx != l.width-1 {
 		return false
 	}
 
