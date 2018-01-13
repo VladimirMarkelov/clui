@@ -18,6 +18,7 @@ The current version is 0.6.2. Please see details in [changelog](./changelog).
 * ![Layout manager](/docs/layout.md)
 * ![Basic standrd control methods and properties](/docs/widget.md)
 * ![About Windows](/docs/window.md)
+* ![Predefined hotkeys](/docs/hotkeys.md)
 
 ## The list of available controls
 * Window (Main control container - with maximize, window order and other window features)

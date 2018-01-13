@@ -1,4 +1,6 @@
-﻿2018-01-02 - version 0.6.3
+﻿2018-01-13 - version 0.6.4
+[*] Add a workaround for 'false' key presses fired after clicking mouse on OSX
+2018-01-02 - version 0.6.3
 [+] Add a new boolean property for EditField - PasswordMode. If PasswordMode is
     true then the editfield text is hidden with 'stars'.
     Please see demo demos/editfield for details
