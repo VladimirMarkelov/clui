@@ -5,7 +5,7 @@ The following hotkeys are built-in ones and cannot be overrided or disabled from
 - Ctrl+Q Ctrl+Q - exit application
 
 ### Window manipulations
-- Ctrl+W Ctrl+H - moves the active Window to the bottom of window stack
+- Ctrl+W Ctrl+H - moves the active Window to the bottom of window stack ("hides" active Window)
 - Ctrl+W Ctrl+M - maximizes/restores the active Window
 - Ctrl+W Ctrl+C - closes the active Window. If the windows is the last visible window of an application then application closes as well
 - Ctrl+P <arrow> - changes active Window position: moves Window to the direction of <arrow>
