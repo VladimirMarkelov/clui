@@ -691,7 +691,11 @@ func (l *TableView) processMouseClick(ev Event) bool {
 	newRow := l.topRow + dy
 
 	newCol := l.mouseToCol(dx)
-	if newCol != l.selectedCol || newRow != l.selectedRow {
+	if newCol == -1 && newRow != l.selectedRow {
+		l.selectedRow = newRow
+		l.EnsureColVisible()
+		l.emitSelectionChange()
+	} else if newCol != -1 && (newCol != l.selectedCol || newRow != l.selectedRow) {
 		l.selectedCol = newCol
 		l.selectedRow = newRow
 		l.EnsureColVisible()
