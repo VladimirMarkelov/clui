@@ -6,6 +6,7 @@ import (
 
 func createView() {
 	view := ui.AddWindow(0, 0, 10, 7, "EditField Demo")
+	view.SetTitleButtons(ui.ButtonMaximize | ui.ButtonClose)
 
 	frmChk := ui.CreateFrame(view, 8, 5, ui.BorderNone, ui.Fixed)
 	frmChk.SetPack(ui.Vertical)

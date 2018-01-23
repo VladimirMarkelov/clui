@@ -332,3 +332,13 @@ func (w *Window) SetMovable(movable bool) {
 func (w *Window) SetSizable(sizable bool) {
 	w.fixedSize = !sizable
 }
+
+// TitleButtons returns a set of buttons shown in the Window title bar
+func (w *Window) TitleButtons() ViewButton {
+	return w.buttons
+}
+
+// SetTitleButtons sets the title bar buttons available for a user
+func (w *Window) SetTitleButtons(buttons ViewButton) {
+	w.buttons = buttons
+}

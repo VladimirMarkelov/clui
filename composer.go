@@ -598,11 +598,11 @@ func (c *Composer) processKey(ev Event) {
 			c.moveActiveWindowToBottom()
 		case term.KeyCtrlM:
 			w := c.topWindow().(*Window)
-            if w.Sizable() {
-                maxxed := w.Maximized()
-                w.SetMaximized(!maxxed)
-                RefreshScreen()
-            }
+			if w.Sizable() && (w.TitleButtons()&ButtonMaximize == ButtonMaximize) {
+				maxxed := w.Maximized()
+				w.SetMaximized(!maxxed)
+				RefreshScreen()
+			}
 		case term.KeyCtrlC:
 			c.closeTopWindow()
 		default:
