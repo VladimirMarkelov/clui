@@ -1,6 +1,9 @@
 ﻿2018-01-23 - version 0.7.0
 [+] Added feature: Window method to set and read visible buttons in title bar
 [+] Added feature: Window manual resizing and moving can be disabled
+[*] Fix TableView scrollbars: both scrollbars did not response mouse clicks
+    if the last row or column were visible
+[*] Fix crash after clicking the first TableView column that shows row numbers
 
 2018-01-13 - version 0.6.4
 [*] Add a workaround for 'false' key presses fired after clicking mouse on OSX
