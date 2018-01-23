@@ -70,7 +70,7 @@ func CreateConfirmationDialog(title, question string, buttons []string, defaultB
 	btn1 := CreateButton(frm1, AutoSize, AutoSize, bText, Fixed)
 	btn1.OnClick(func(ev Event) {
 		dlg.result = DialogButton1
-		composer().DestroyWindow(dlg.view)
+		WindowManager().DestroyWindow(dlg.view)
 		if dlg.onClose != nil {
 			go dlg.onClose()
 		}
@@ -82,7 +82,7 @@ func CreateConfirmationDialog(title, question string, buttons []string, defaultB
 		btn2 = CreateButton(frm1, AutoSize, AutoSize, buttons[1], Fixed)
 		btn2.OnClick(func(ev Event) {
 			dlg.result = DialogButton2
-			composer().DestroyWindow(dlg.view)
+			WindowManager().DestroyWindow(dlg.view)
 			if dlg.onClose != nil {
 				go dlg.onClose()
 			}
@@ -93,7 +93,7 @@ func CreateConfirmationDialog(title, question string, buttons []string, defaultB
 		btn3 = CreateButton(frm1, AutoSize, AutoSize, buttons[2], Fixed)
 		btn3.OnClick(func(ev Event) {
 			dlg.result = DialogButton3
-			composer().DestroyWindow(dlg.view)
+			WindowManager().DestroyWindow(dlg.view)
 			if dlg.onClose != nil {
 				go dlg.onClose()
 			}
@@ -114,7 +114,7 @@ func CreateConfirmationDialog(title, question string, buttons []string, defaultB
 		if dlg.result == DialogAlive {
 			dlg.result = DialogClosed
 			if ev.X != 1 {
-				composer().DestroyWindow(dlg.view)
+				WindowManager().DestroyWindow(dlg.view)
 			}
 			if dlg.onClose != nil {
 				go dlg.onClose()
@@ -201,7 +201,7 @@ func CreateSelectDialog(title string, items []string, selectedItem int, typ Sele
 		} else {
 			dlg.value = dlg.rg.Selected()
 		}
-		composer().DestroyWindow(dlg.view)
+		WindowManager().DestroyWindow(dlg.view)
 		if dlg.onClose != nil {
 			go dlg.onClose()
 		}
@@ -212,7 +212,7 @@ func CreateSelectDialog(title string, items []string, selectedItem int, typ Sele
 	btn2.OnClick(func(ev Event) {
 		dlg.result = DialogButton2
 		dlg.value = -1
-		composer().DestroyWindow(dlg.view)
+		WindowManager().DestroyWindow(dlg.view)
 		if dlg.onClose != nil {
 			go dlg.onClose()
 		}
@@ -224,7 +224,7 @@ func CreateSelectDialog(title string, items []string, selectedItem int, typ Sele
 		if dlg.result == DialogAlive {
 			dlg.result = DialogClosed
 			if ev.X != 1 {
-				composer().DestroyWindow(dlg.view)
+				WindowManager().DestroyWindow(dlg.view)
 			}
 			if dlg.onClose != nil {
 				go dlg.onClose()

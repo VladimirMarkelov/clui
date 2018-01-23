@@ -4,6 +4,8 @@
 [*] Fix TableView scrollbars: both scrollbars did not response mouse clicks
     if the last row or column were visible
 [*] Fix crash after clicking the first TableView column that shows row numbers
+[*] Made function to get internal composer public for low level access to
+    function that manipulates Windows. Function name is WindowManager
 
 2018-01-13 - version 0.6.4
 [*] Add a workaround for 'false' key presses fired after clicking mouse on OSX

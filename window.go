@@ -302,11 +302,11 @@ func (w *Window) SetVisible(visible bool) {
 		w.hidden = !visible
 		if w.hidden {
 			w.SetModal(false)
-			if composer().topWindow() == w {
-				composer().moveActiveWindowToBottom()
+			if WindowManager().topWindow() == w {
+				WindowManager().moveActiveWindowToBottom()
 			}
 		} else {
-			composer().activateWindow(w)
+			WindowManager().activateWindow(w)
 		}
 	}
 }

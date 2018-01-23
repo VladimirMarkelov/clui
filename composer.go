@@ -35,7 +35,11 @@ func initComposer() {
 	comp.lastKey = term.KeyEsc
 }
 
-func composer() *Composer {
+// WindowManager returns main Window manager (that is Composer). Use it at
+// your own risk because it provides an access to some low level Window
+// manipulations.
+// Note: Now it is not thread safe to call Composer methods from a few threads.
+func WindowManager() *Composer {
 	return comp
 }
 
