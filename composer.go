@@ -209,6 +209,11 @@ func (c *Composer) resizeTopWindow(ev Event) bool {
 		return false
 	}
 
+	topwindow, ok := view.(*Window)
+	if ok && !topwindow.Sizable() {
+		return false
+	}
+
 	w, h := view.Size()
 	w1, h1 := w, h
 	minW, minH := view.Constraints()
@@ -236,6 +241,11 @@ func (c *Composer) moveTopWindow(ev Event) bool {
 	if len(c.windows) > 0 {
 		view := c.topWindow()
 		if view != nil {
+			topwindow, ok := view.(*Window)
+			if ok && !topwindow.Movable() {
+				return false
+			}
+
 			x, y := view.Pos()
 			w, h := view.Size()
 			x1, y1 := x, y
@@ -588,9 +598,11 @@ func (c *Composer) processKey(ev Event) {
 			c.moveActiveWindowToBottom()
 		case term.KeyCtrlM:
 			w := c.topWindow().(*Window)
-			maxxed := w.Maximized()
-			w.SetMaximized(!maxxed)
-			RefreshScreen()
+            if w.Sizable() {
+                maxxed := w.Maximized()
+                w.SetMaximized(!maxxed)
+                RefreshScreen()
+            }
 		case term.KeyCtrlC:
 			c.closeTopWindow()
 		default:

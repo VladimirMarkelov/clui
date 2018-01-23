@@ -17,6 +17,8 @@ type Window struct {
 	origX      int
 	origY      int
 	hidden     bool
+	immovable  bool
+	fixedSize  bool
 
 	onClose   func(Event) bool
 	onKeyDown func(Event) bool
@@ -147,60 +149,61 @@ func (c *Window) HitTest(x, y int) HitResult {
 		return HitInside
 	}
 
+	hResult := HitOutside
+
 	if x == c.x && y == c.y {
-		return HitTopLeft
-	}
-
-	if x == c.x+c.width-1 && y == c.y {
-		return HitTopRight
-	}
-
-	if x == c.x && y == c.y+c.height-1 {
-		return HitBottomLeft
-	}
-
-	if x == c.x+c.width-1 && y == c.y+c.height-1 {
-		return HitBottomRight
-	}
-
-	if x == c.x && y > c.y && y < c.y+c.height-1 {
-		return HitLeft
-	}
-
-	if x == c.x+c.width-1 && y > c.y && y < c.y+c.height-1 {
-		return HitRight
-	}
-
-	if y == c.y && x > c.x && x < c.x+c.width-1 {
+		hResult = HitTopLeft
+	} else if x == c.x+c.width-1 && y == c.y {
+		hResult = HitTopRight
+	} else if x == c.x && y == c.y+c.height-1 {
+		hResult = HitBottomLeft
+	} else if x == c.x+c.width-1 && y == c.y+c.height-1 {
+		hResult = HitBottomRight
+	} else if x == c.x && y > c.y && y < c.y+c.height-1 {
+		hResult = HitLeft
+	} else if x == c.x+c.width-1 && y > c.y && y < c.y+c.height-1 {
+		hResult = HitRight
+	} else if y == c.y && x > c.x && x < c.x+c.width-1 {
 		btnCount := c.buttonCount()
 		if x < c.x+c.width-1-btnCount {
-			return HitTop
-		}
+			hResult = HitTop
+		} else {
+			hitRes := []HitResult{HitTop, HitTop, HitTop}
+			pos := 0
 
-		hitRes := []HitResult{HitTop, HitTop, HitTop}
-		pos := 0
+			if c.buttons&ButtonBottom == ButtonBottom {
+				hitRes[pos] = HitButtonBottom
+				pos += 1
+			}
+			if c.buttons&ButtonMaximize == ButtonMaximize {
+				hitRes[pos] = HitButtonMaximize
+				pos += 1
+			}
+			if c.buttons&ButtonClose == ButtonClose {
+				hitRes[pos] = HitButtonClose
+				pos += 1
+			}
 
-		if c.buttons&ButtonBottom == ButtonBottom {
-			hitRes[pos] = HitButtonBottom
-			pos += 1
+			hResult = hitRes[x-(c.x+c.width-1-btnCount)]
 		}
-		if c.buttons&ButtonMaximize == ButtonMaximize {
-			hitRes[pos] = HitButtonMaximize
-			pos += 1
-		}
-		if c.buttons&ButtonClose == ButtonClose {
-			hitRes[pos] = HitButtonClose
-			pos += 1
-		}
-
-		return hitRes[x-(c.x+c.width-1-btnCount)]
+	} else if y == c.y+c.height-1 && x > c.x && x < c.x+c.width-1 {
+		hResult = HitBottom
 	}
 
-	if y == c.y+c.height-1 && x > c.x && x < c.x+c.width-1 {
-		return HitBottom
+	if hResult != HitOutside {
+		if c.immovable && hResult == HitTop {
+			hResult = HitInside
+		}
+		if c.fixedSize &&
+			(hResult == HitBottom || hResult == HitLeft ||
+				hResult == HitRight || hResult == HitTopLeft ||
+				hResult == HitTopRight || hResult == HitBottomRight ||
+				hResult == HitBottomLeft || hResult == HitButtonMaximize) {
+			hResult = HitInside
+		}
 	}
 
-	return HitOutside
+	return hResult
 }
 
 func (c *Window) ProcessEvent(ev Event) bool {
@@ -216,7 +219,7 @@ func (c *Window) ProcessEvent(ev Event) bool {
 				return false
 			}
 		}
-        return true
+		return true
 	case EventKey:
 		if ev.Key == term.KeyTab {
 			aC := ActiveControl(c)
@@ -306,4 +309,26 @@ func (w *Window) SetVisible(visible bool) {
 			composer().activateWindow(w)
 		}
 	}
+}
+
+// Movable returns if the Window can be moved with mouse or keyboard
+func (w *Window) Movable() bool {
+	return !w.immovable
+}
+
+// Sizable returns if size of the Window can be changed with mouse or keyboard
+func (w *Window) Sizable() bool {
+	return !w.fixedSize
+}
+
+// SetMovable turns on and off ability to change Window position with mouse
+// or keyboard
+func (w *Window) SetMovable(movable bool) {
+	w.immovable = !movable
+}
+
+// SetSizable turns on and off ability to change Window size with mouse
+// or keyboard
+func (w *Window) SetSizable(sizable bool) {
+	w.fixedSize = !sizable
 }
