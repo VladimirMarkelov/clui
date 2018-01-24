@@ -31,7 +31,15 @@ type SelectDialog struct {
 	onClose func()
 }
 
-// NewConfirmationDialog creates new confirmation dialog.
+// CreateAlertDialog creates a new alert dialog.
+// title is a dialog title
+// message is a text inside dialog for user to be notified of a fact
+// button is a title for button inside dialog.
+func CreateAlertDialog(title, message string, button string) *ConfirmationDialog {
+	return CreateConfirmationDialog(title, message, []string{button}, 0)
+}
+
+// CreateConfirmationDialog creates new confirmation dialog.
 // c is a composer that manages the dialog
 // title is a dialog title
 // question is a text inside dialog for user to explain what happens
@@ -103,12 +111,12 @@ func CreateConfirmationDialog(title, question string, buttons []string, defaultB
 	CreateFrame(frm1, 1, 1, BorderNone, 1)
 
 	if defaultButton == DialogButton2 && len(buttons) > 1 {
-        ActivateControl(dlg.view, btn2)
+		ActivateControl(dlg.view, btn2)
 	} else if defaultButton == DialogButton3 && len(buttons) > 2 {
-        ActivateControl(dlg.view, btn3)
-    } else {
+		ActivateControl(dlg.view, btn3)
+	} else {
 		ActivateControl(dlg.view, btn1)
-    }
+	}
 
 	dlg.view.OnClose(func(ev Event) bool {
 		if dlg.result == DialogAlive {
