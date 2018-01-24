@@ -4,6 +4,7 @@ import (
 	xs "github.com/huandu/xstrings"
 	term "github.com/nsf/termbox-go"
 	"strings"
+	"unicode"
 )
 
 type attr struct {
@@ -274,7 +275,13 @@ func DrawText(x, y int, text string) {
 			SetTextColor(elem.Fg)
 			SetBackColor(elem.Bg)
 			drawn := PutChar(x, y, elem.Ch)
-			x += 1
+
+			if unicode.Is(unicode.Scripts["Han"], elem.Ch){
+				x += 2
+			} else {
+				x += 1
+			}
+			
 			if firstdrawn && !drawn {
 				break
 			}
