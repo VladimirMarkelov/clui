@@ -125,6 +125,8 @@ func (wnd *Window) drawButtons() {
 }
 
 func (wnd *Window) Draw() {
+	WindowManager().BeginUpdate()
+	defer WindowManager().EndUpdate()
 	PushAttributes()
 	defer PopAttributes()
 

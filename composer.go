@@ -2,6 +2,7 @@ package clui
 
 import (
 	term "github.com/nsf/termbox-go"
+	"sync"
 )
 
 // Composer is a service object that manages Views and console, processes
@@ -22,6 +23,8 @@ type Composer struct {
 	lastX, lastY int
 	// Type of dragging
 	dragType DragType
+	// For safe Window manipulations
+	mtx sync.RWMutex
 }
 
 var (
@@ -66,16 +69,21 @@ func termboxEventToLocal(ev term.Event) Event {
 
 // Repaints everything on the screen
 func RefreshScreen() {
+	comp.BeginUpdate()
 	term.Clear(ColorWhite, ColorBlack)
+	comp.EndUpdate()
 
-	for _, wnd := range comp.windows {
-		v := comp.topWindow().(*Window)
+	windows := comp.getWindowList()
+	for _, wnd := range windows {
+		v := wnd.(*Window)
 		if v.Visible() {
 			wnd.Draw()
 		}
 	}
 
+	comp.BeginUpdate()
 	term.Flush()
+	comp.EndUpdate()
 }
 
 // AddWindow constucts a new Window, adds it to the composer automatically,
@@ -86,7 +94,9 @@ func RefreshScreen() {
 func AddWindow(posX, posY, width, height int, title string) *Window {
 	window := CreateWindow(posX, posY, width, height, title)
 
+	comp.BeginUpdate()
 	comp.windows = append(comp.windows, window)
+	comp.EndUpdate()
 	window.Draw()
 
 	comp.activateWindow(window)
@@ -96,13 +106,41 @@ func AddWindow(posX, posY, width, height int, title string) *Window {
 	return window
 }
 
+// BeginUpdate locks any screen update until EndUpdate is called.
+// Useful only in multithreading application if you create a new Window in
+// some thread that is not main one (e.g, create new Window inside
+// OnSelectItem handler of ListBox)
+// Note: Do not lock for a long time because while the lock is on the screen is
+// not updated
+func (c *Composer) BeginUpdate() {
+	c.mtx.Lock()
+}
+
+// EndUpdate unlocks the screen for any manipulations.
+// Useful only in multithreading application if you create a new Window in
+// some thread that is not main one (e.g, create new Window inside
+// OnSelectItem handler of ListBox)
+func (c *Composer) EndUpdate() {
+	c.mtx.Unlock()
+}
+
+func (c *Composer) getWindowList() []Control {
+	c.mtx.RLock()
+	defer c.mtx.RUnlock()
+
+	arr_copy := make([]Control, len(c.windows))
+	copy(arr_copy, c.windows)
+	return arr_copy
+}
+
 func (c *Composer) checkWindowUnderMouse(screenX, screenY int) (Control, HitResult) {
-	if len(c.windows) == 0 {
+	windows := c.getWindowList()
+	if len(windows) == 0 {
 		return nil, HitOutside
 	}
 
-	for i := len(c.windows) - 1; i >= 0; i-- {
-		window := c.windows[i]
+	for i := len(windows) - 1; i >= 0; i-- {
+		window := windows[i]
 		hit := window.HitTest(screenX, screenY)
 		if hit != HitOutside {
 			return window, hit
@@ -113,8 +151,9 @@ func (c *Composer) checkWindowUnderMouse(screenX, screenY int) (Control, HitResu
 }
 
 func (c *Composer) activateWindow(window Control) bool {
+	windows := c.getWindowList()
 	if c.topWindow() == window {
-		for _, v := range c.windows {
+		for _, v := range windows {
 			v.SetActive(false)
 		}
 		window.SetActive(true)
@@ -124,7 +163,7 @@ func (c *Composer) activateWindow(window Control) bool {
 	var wList []Control
 	found := false
 
-	for _, v := range c.windows {
+	for _, v := range windows {
 		if v != window {
 			v.SetActive(false)
 			wList = append(wList, v)
@@ -138,12 +177,15 @@ func (c *Composer) activateWindow(window Control) bool {
 	}
 
 	window.SetActive(true)
+	c.BeginUpdate()
+	defer c.EndUpdate()
 	c.windows = append(wList, window)
 	return true
 }
 
 func (c *Composer) moveActiveWindowToBottom() bool {
-	if len(c.windows) < 2 {
+	windows := c.getWindowList()
+	if len(windows) < 2 {
 		return false
 	}
 
@@ -152,7 +194,7 @@ func (c *Composer) moveActiveWindowToBottom() bool {
 	}
 
 	anyVisible := false
-	for _, w := range c.windows {
+	for _, w := range windows {
 		v := w.(*Window)
 		if v.Visible() {
 			anyVisible = true
@@ -168,10 +210,12 @@ func (c *Composer) moveActiveWindowToBottom() bool {
 
 	for {
 		last := c.topWindow()
+		c.BeginUpdate()
 		for i := len(c.windows) - 1; i > 0; i-- {
 			c.windows[i] = c.windows[i-1]
 		}
 		c.windows[0] = last
+		c.EndUpdate()
 
 		v := c.topWindow().(*Window)
 		if v.Visible() {
@@ -200,11 +244,13 @@ func (c *Composer) sendEventToActiveWindow(ev Event) bool {
 }
 
 func (c *Composer) topWindow() Control {
-	if len(c.windows) == 0 {
+	windows := c.getWindowList()
+
+	if len(windows) == 0 {
 		return nil
 	}
 
-	return c.windows[len(c.windows)-1]
+	return windows[len(windows)-1]
 }
 
 func (c *Composer) resizeTopWindow(ev Event) bool {
@@ -242,34 +288,32 @@ func (c *Composer) resizeTopWindow(ev Event) bool {
 }
 
 func (c *Composer) moveTopWindow(ev Event) bool {
-	if len(c.windows) > 0 {
-		view := c.topWindow()
-		if view != nil {
-			topwindow, ok := view.(*Window)
-			if ok && !topwindow.Movable() {
-				return false
-			}
+	view := c.topWindow()
+	if view != nil {
+		topwindow, ok := view.(*Window)
+		if ok && !topwindow.Movable() {
+			return false
+		}
 
-			x, y := view.Pos()
-			w, h := view.Size()
-			x1, y1 := x, y
-			cx, cy := term.Size()
-			if ev.Key == term.KeyArrowUp && y > 0 {
-				y--
-			} else if ev.Key == term.KeyArrowDown && y+h < cy {
-				y++
-			} else if ev.Key == term.KeyArrowLeft && x > 0 {
-				x--
-			} else if ev.Key == term.KeyArrowRight && x+w < cx {
-				x++
-			}
+		x, y := view.Pos()
+		w, h := view.Size()
+		x1, y1 := x, y
+		cx, cy := term.Size()
+		if ev.Key == term.KeyArrowUp && y > 0 {
+			y--
+		} else if ev.Key == term.KeyArrowDown && y+h < cy {
+			y++
+		} else if ev.Key == term.KeyArrowLeft && x > 0 {
+			x--
+		} else if ev.Key == term.KeyArrowRight && x+w < cx {
+			x++
+		}
 
-			if x1 != x || y1 != y {
-				view.SetPos(x, y)
-				event := Event{Type: EventMove, X: x, Y: y}
-				c.sendEventToActiveWindow(event)
-				RefreshScreen()
-			}
+		if x1 != x || y1 != y {
+			view.SetPos(x, y)
+			event := Event{Type: EventMove, X: x, Y: y}
+			c.sendEventToActiveWindow(event)
+			RefreshScreen()
 		}
 		return true
 	}
@@ -525,13 +569,16 @@ func (c *Composer) DestroyWindow(view Control) {
 	ev := Event{Type: EventClose}
 	c.sendEventToActiveWindow(ev)
 
+	windows := c.getWindowList()
 	var newOrder []Control
-	for i := 0; i < len(c.windows); i++ {
-		if c.windows[i] != view {
-			newOrder = append(newOrder, c.windows[i])
+	for i := 0; i < len(windows); i++ {
+		if windows[i] != view {
+			newOrder = append(newOrder, windows[i])
 		}
 	}
+	c.BeginUpdate()
 	c.windows = newOrder
+	c.EndUpdate()
 	c.activateWindow(c.topWindow())
 }
 

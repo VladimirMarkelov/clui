@@ -51,6 +51,8 @@ func CreateConfirmationDialog(title, question string, buttons []string, defaultB
 	cw, ch := term.Size()
 
 	dlg.view = AddWindow(cw/2-12, ch/2-8, 30, 3, title)
+	WindowManager().BeginUpdate()
+	defer WindowManager().EndUpdate()
 	dlg.view.SetConstraints(30, 3)
 	dlg.view.SetModal(true)
 	dlg.view.SetPack(Vertical)
@@ -71,8 +73,11 @@ func CreateConfirmationDialog(title, question string, buttons []string, defaultB
 	btn1.OnClick(func(ev Event) {
 		dlg.result = DialogButton1
 		WindowManager().DestroyWindow(dlg.view)
-		if dlg.onClose != nil {
-			go dlg.onClose()
+		WindowManager().BeginUpdate()
+		closeFunc := dlg.onClose
+		WindowManager().EndUpdate()
+		if closeFunc != nil {
+			go closeFunc()
 		}
 	})
 	var btn2, btn3 *Button
@@ -103,12 +108,12 @@ func CreateConfirmationDialog(title, question string, buttons []string, defaultB
 	CreateFrame(frm1, 1, 1, BorderNone, 1)
 
 	if defaultButton == DialogButton2 && len(buttons) > 1 {
-        ActivateControl(dlg.view, btn2)
+		ActivateControl(dlg.view, btn2)
 	} else if defaultButton == DialogButton3 && len(buttons) > 2 {
-        ActivateControl(dlg.view, btn3)
-    } else {
+		ActivateControl(dlg.view, btn3)
+	} else {
 		ActivateControl(dlg.view, btn1)
-    }
+	}
 
 	dlg.view.OnClose(func(ev Event) bool {
 		if dlg.result == DialogAlive {
@@ -129,6 +134,8 @@ func CreateConfirmationDialog(title, question string, buttons []string, defaultB
 // OnClose sets the callback that is called when the
 // dialog is closed
 func (d *ConfirmationDialog) OnClose(fn func()) {
+	WindowManager().BeginUpdate()
+	defer WindowManager().EndUpdate()
 	d.onClose = fn
 }
 
@@ -162,6 +169,8 @@ func CreateSelectDialog(title string, items []string, selectedItem int, typ Sele
 
 	dlg.typ = typ
 	dlg.view = AddWindow(cw/2-12, ch/2-8, 20, 10, title)
+	WindowManager().BeginUpdate()
+	defer WindowManager().EndUpdate()
 	dlg.view.SetModal(true)
 	dlg.view.SetPack(Vertical)
 
@@ -240,6 +249,8 @@ func CreateSelectDialog(title string, items []string, selectedItem int, typ Sele
 // OnClose sets the callback that is called when the
 // dialog is closed
 func (d *SelectDialog) OnClose(fn func()) {
+	WindowManager().BeginUpdate()
+	defer WindowManager().EndUpdate()
 	d.onClose = fn
 }
 

@@ -1,4 +1,13 @@
-﻿2018-01-23 - version 0.7.0
+﻿2018-01-25 - version 0.7.0
+[+] Added new methods to Composer: BeginUpdate and EndUpdate to use in
+    multithreading application. Call BeginUpdate before creating a new Window or
+    manipulating Composer Windows if the code runs in separate thread. And
+    call EndUpdate right after all changes are done. Do not lock for a long
+    time because while lock is on the screen is not updated.
+    Another usage: create new Window inside varios handlers (e.g, OnSelectItem
+    of ListBox)
+
+2018-01-23 - version 0.7.0
 [+] Added feature: Window method to set and read visible buttons in title bar
 [+] Added feature: Window manual resizing and moving can be disabled
 [*] Fix TableView scrollbars: both scrollbars did not response mouse clicks
