@@ -59,6 +59,8 @@ func CreateConfirmationDialog(title, question string, buttons []string, defaultB
 	cw, ch := term.Size()
 
 	dlg.View = AddWindow(cw/2-12, ch/2-8, 30, 3, title)
+	WindowManager().BeginUpdate()
+	defer WindowManager().EndUpdate()
 	dlg.View.SetConstraints(30, 3)
 	dlg.View.SetModal(true)
 	dlg.View.SetPack(Vertical)
@@ -78,9 +80,13 @@ func CreateConfirmationDialog(title, question string, buttons []string, defaultB
 	btn1 := CreateButton(frm1, AutoSize, AutoSize, bText, Fixed)
 	btn1.OnClick(func(ev Event) {
 		dlg.result = DialogButton1
+
 		WindowManager().DestroyWindow(dlg.View)
-		if dlg.onClose != nil {
-			go dlg.onClose()
+		WindowManager().BeginUpdate()
+		closeFunc := dlg.onClose
+		WindowManager().EndUpdate()
+		if closeFunc != nil {
+			go closeFunc()
 		}
 	})
 	var btn2, btn3 *Button
@@ -137,6 +143,8 @@ func CreateConfirmationDialog(title, question string, buttons []string, defaultB
 // OnClose sets the callback that is called when the
 // dialog is closed
 func (d *ConfirmationDialog) OnClose(fn func()) {
+	WindowManager().BeginUpdate()
+	defer WindowManager().EndUpdate()
 	d.onClose = fn
 }
 
@@ -170,6 +178,8 @@ func CreateSelectDialog(title string, items []string, selectedItem int, typ Sele
 
 	dlg.typ = typ
 	dlg.View = AddWindow(cw/2-12, ch/2-8, 20, 10, title)
+	WindowManager().BeginUpdate()
+	defer WindowManager().EndUpdate()
 	dlg.View.SetModal(true)
 	dlg.View.SetPack(Vertical)
 
@@ -248,6 +258,8 @@ func CreateSelectDialog(title string, items []string, selectedItem int, typ Sele
 // OnClose sets the callback that is called when the
 // dialog is closed
 func (d *SelectDialog) OnClose(fn func()) {
+	WindowManager().BeginUpdate()
+	defer WindowManager().EndUpdate()
 	d.onClose = fn
 }
 

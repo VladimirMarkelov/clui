@@ -253,9 +253,12 @@ func (l *ListBox) processMouseClick(ev Event) bool {
 	}
 
 	l.SelectItem(l.topLine + dy)
-	if l.onSelectItem != nil {
+	WindowManager().BeginUpdate()
+	onSelFunc := l.onSelectItem
+	WindowManager().EndUpdate()
+	if onSelFunc != nil {
 		ev := Event{Y: l.topLine + dy, Msg: l.SelectedItemText()}
-		go l.onSelectItem(ev)
+		go onSelFunc(ev)
 	}
 
 	return true
