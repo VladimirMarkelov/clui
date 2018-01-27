@@ -258,7 +258,7 @@ func (l *ListBox) processMouseClick(ev Event) bool {
 	WindowManager().EndUpdate()
 	if onSelFunc != nil {
 		ev := Event{Y: l.topLine + dy, Msg: l.SelectedItemText()}
-		go onSelFunc(ev)
+		onSelFunc(ev)
 	}
 
 	return true
@@ -316,7 +316,7 @@ func (l *ListBox) ProcessEvent(event Event) bool {
 		case term.KeyCtrlM:
 			if l.currSelection != -1 && l.onSelectItem != nil {
 				ev := Event{Y: l.currSelection, Msg: l.SelectedItemText()}
-				go l.onSelectItem(ev)
+				l.onSelectItem(ev)
 			}
 		default:
 			return false

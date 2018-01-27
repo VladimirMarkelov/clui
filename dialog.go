@@ -77,7 +77,7 @@ func CreateConfirmationDialog(title, question string, buttons []string, defaultB
 		closeFunc := dlg.onClose
 		WindowManager().EndUpdate()
 		if closeFunc != nil {
-			go closeFunc()
+			closeFunc()
 		}
 	})
 	var btn2, btn3 *Button
@@ -89,7 +89,7 @@ func CreateConfirmationDialog(title, question string, buttons []string, defaultB
 			dlg.result = DialogButton2
 			WindowManager().DestroyWindow(dlg.view)
 			if dlg.onClose != nil {
-				go dlg.onClose()
+				dlg.onClose()
 			}
 		})
 	}
@@ -100,7 +100,7 @@ func CreateConfirmationDialog(title, question string, buttons []string, defaultB
 			dlg.result = DialogButton3
 			WindowManager().DestroyWindow(dlg.view)
 			if dlg.onClose != nil {
-				go dlg.onClose()
+				dlg.onClose()
 			}
 		})
 	}
@@ -122,7 +122,7 @@ func CreateConfirmationDialog(title, question string, buttons []string, defaultB
 				WindowManager().DestroyWindow(dlg.view)
 			}
 			if dlg.onClose != nil {
-				go dlg.onClose()
+				dlg.onClose()
 			}
 		}
 		return true
@@ -212,7 +212,7 @@ func CreateSelectDialog(title string, items []string, selectedItem int, typ Sele
 		}
 		WindowManager().DestroyWindow(dlg.view)
 		if dlg.onClose != nil {
-			go dlg.onClose()
+			dlg.onClose()
 		}
 	})
 
@@ -223,7 +223,7 @@ func CreateSelectDialog(title string, items []string, selectedItem int, typ Sele
 		dlg.value = -1
 		WindowManager().DestroyWindow(dlg.view)
 		if dlg.onClose != nil {
-			go dlg.onClose()
+			dlg.onClose()
 		}
 	})
 	ActivateControl(dlg.view, btn2)
@@ -236,7 +236,7 @@ func CreateSelectDialog(title string, items []string, selectedItem int, typ Sele
 				WindowManager().DestroyWindow(dlg.view)
 			}
 			if dlg.onClose != nil {
-				go dlg.onClose()
+				dlg.onClose()
 			}
 		}
 

@@ -25,7 +25,7 @@ func (e *EditField) SetTitle(title string) {
 		e.title = title
 		if e.onChange != nil {
 			ev := Event{Msg: title}
-			go e.onChange(ev)
+			e.onChange(ev)
 		}
 	}
 }
