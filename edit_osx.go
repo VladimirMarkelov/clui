@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-const charInvervalMs = 50
+const charInvervalMs = 20
 
 /*
 EditField is a single-line text edit contol. Edit field consumes some keyboard
