@@ -20,8 +20,9 @@ type Window struct {
 	immovable  bool
 	fixedSize  bool
 
-	onClose   func(Event) bool
-	onKeyDown func(Event) bool
+	onClose        func(Event) bool
+	onKeyDown      func(Event) bool
+	onScreenResize func(Event)
 }
 
 func CreateWindow(x, y, w, h int, title string) *Window {
@@ -256,12 +257,20 @@ func (c *Window) ProcessEvent(ev Event) bool {
 	return false
 }
 
+// OnClose sets the callback that is called when the Window is about to destroy
 func (w *Window) OnClose(fn func(Event) bool) {
 	w.onClose = fn
 }
 
+// OnKeyDown sets the callback that is called when a user presses a key
+// while the Window is active
 func (w *Window) OnKeyDown(fn func(Event) bool) {
 	w.onKeyDown = fn
+}
+
+// OnScreenResize sets the callback that is called when size of terminal changes
+func (w *Window) OnScreenResize(fn func(Event)) {
+	w.onScreenResize = fn
 }
 
 // SetMaximized opens the view to full screen or restores its

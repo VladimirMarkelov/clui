@@ -686,6 +686,11 @@ func ProcessEvent(ev Event) {
 				wnd.PlaceChildren()
 				RefreshScreen()
 			}
+
+			if wnd.onScreenResize != nil {
+				wnd.onScreenResize(ev)
+			}
+
 		}
 	case EventKey:
 		comp.processKey(ev)
