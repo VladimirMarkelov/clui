@@ -12,9 +12,10 @@ package main
 
 import (
 	"fmt"
+	"strconv"
+
 	ui "github.com/VladimirMarkelov/clui"
 	term "github.com/nsf/termbox-go"
-	"strconv"
 )
 
 func updateProgress(value string, pb *ui.ProgressBar) {
