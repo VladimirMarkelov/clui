@@ -38,6 +38,9 @@ type Control interface {
 	// Enable return if a control can process keyboard and mouse events
 	Enabled() bool
 	SetEnabled(enabled bool)
+	// Visible return if a control is visible
+	Visible() bool
+	SetVisible(enabled bool)
 	// Parent return control's container or nil if there is no parent container
 	// that is true for Windows
 	Parent() Control

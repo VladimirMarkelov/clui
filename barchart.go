@@ -106,6 +106,10 @@ func CreateBarChart(parent Control, w, h int, scale int) *BarChart {
 
 // Repaint draws the control on its View surface
 func (b *BarChart) Draw() {
+	if b.hidden {
+		return
+	}
+
 	b.mtx.RLock()
 	defer b.mtx.RUnlock()
 

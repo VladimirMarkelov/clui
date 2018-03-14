@@ -211,7 +211,7 @@ func _nextControl(parent Control, curr, prev Control, foundPrev, next bool) (boo
 			}
 		}
 
-		if ctrl.Enabled() && ctrl.TabStop() {
+		if ctrl.Enabled() && ctrl.TabStop() && ctrl.Visible() {
 			if found {
 				return found, ctrl
 			} else if !next {
@@ -233,7 +233,7 @@ func _nextControl(parent Control, curr, prev Control, foundPrev, next bool) (boo
 // that has tab-stop feature on. Used by library when processing TAB key
 func NextControl(parent Control, curr Control, next bool) Control {
 	fnTab := func(c Control) bool {
-		return c.TabStop()
+		return c.TabStop() && c.Visible()
 	}
 
 	var defControl Control

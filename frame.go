@@ -59,6 +59,10 @@ func CreateFrame(parent Control, width, height int, bs BorderStyle, scale int) *
 
 // Repaint draws the control on its View surface
 func (f *Frame) Draw() {
+	if f.hidden {
+		return
+	}
+
 	PushAttributes()
 	defer PopAttributes()
 

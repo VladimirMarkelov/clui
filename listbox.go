@@ -111,6 +111,10 @@ func (l *ListBox) drawItems() {
 
 // Repaint draws the control on its View surface
 func (l *ListBox) Draw() {
+	if l.hidden {
+		return
+	}
+
 	PushAttributes()
 	defer PopAttributes()
 

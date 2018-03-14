@@ -72,6 +72,10 @@ func CreateSparkChart(parent Control, w, h int, scale int) *SparkChart {
 
 // Repaint draws the control on its View surface
 func (b *SparkChart) Draw() {
+	if b.hidden {
+		return
+	}
+
 	b.mtx.RLock()
 	defer b.mtx.RUnlock()
 

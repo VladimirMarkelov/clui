@@ -3,8 +3,8 @@ package clui
 import (
 	xs "github.com/huandu/xstrings"
 	term "github.com/nsf/termbox-go"
+	"sync/atomic"
 	"time"
-    "sync/atomic"
 )
 
 /*
@@ -63,6 +63,10 @@ func CreateButton(parent Control, width, height int, title string, scale int) *B
 
 // Repaint draws the control on its View surface
 func (b *Button) Draw() {
+	if b.hidden {
+		return
+	}
+
 	b.mtx.RLock()
 	defer b.mtx.RUnlock()
 	PushAttributes()
@@ -122,7 +126,7 @@ func (b *Button) ProcessEvent(event Event) bool {
 			ev := Event{Type: EventRedraw}
 
 			go func() {
-                PutEvent(ev)
+				PutEvent(ev)
 				time.Sleep(100 * time.Millisecond)
 				b.setPressed(0)
 				PutEvent(ev)

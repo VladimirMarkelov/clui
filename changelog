@@ -1,4 +1,15 @@
-﻿2018-01-26 - version 0.7.0
+﻿2018-03-13 - version 0.8.0-RC1
+[+] Added new property for all controls: Visible. It makes possible to show
+    and hide any control with its children(if there are any).
+    New Control interface methods: Visible and SetVisible
+[+] A new event to support hiding/displaying controls: EventLayout with one
+    argument - Control that should handle the event. On receiving the event
+    the Control must recalculate and reposition all its children.
+    At this moment only Windows handle this event. Other kinds of Control
+    never receieves the event
+[+] Add a new simple demo to play with Control visiblity: demos/visible
+
+2018-01-26 - version 0.7.0
 [+] Added new event handler for Window: set a callback OnScreenResize if you
     want to handle terminal resize event
 

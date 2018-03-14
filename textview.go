@@ -166,6 +166,10 @@ func (l *TextView) drawText() {
 
 // Repaint draws the control on its View surface
 func (l *TextView) Draw() {
+	if l.hidden {
+		return
+	}
+
 	PushAttributes()
 	defer PopAttributes()
 

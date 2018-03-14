@@ -85,6 +85,7 @@ type Event struct {
 	// For resize event - new terminal size
 	Width  int
 	Height int
+	Target Control
 }
 
 // BorderStyle constants
@@ -286,8 +287,10 @@ const (
 	EventDialogClose
 	// Close application
 	EventQuit
-    // Close top window - or application is there is only one window
-    EventCloseWindow
+	// Close top window - or application is there is only one window
+	EventCloseWindow
+	// Make a control (Target field of Event structure) to recalculate and reposition all its children
+	EventLayout
 )
 
 // ConfirmationDialog and SelectDialog exit codes

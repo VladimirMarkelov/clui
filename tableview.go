@@ -348,6 +348,10 @@ func (l *TableView) drawCells() {
 
 // Repaint draws the control on its View surface
 func (l *TableView) Draw() {
+	if l.hidden {
+		return
+	}
+
 	l.mtx.RLock()
 	defer l.mtx.RUnlock()
 	PushAttributes()

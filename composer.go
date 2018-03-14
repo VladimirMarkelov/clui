@@ -696,5 +696,13 @@ func ProcessEvent(ev Event) {
 		comp.processKey(ev)
 	case EventMouse:
 		comp.processMouse(ev)
+	case EventLayout:
+		for _, c := range comp.windows {
+			if c == ev.Target {
+				c.ResizeChildren()
+				c.PlaceChildren()
+				break
+			}
+		}
 	}
 }

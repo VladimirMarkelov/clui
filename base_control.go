@@ -19,6 +19,7 @@ type BaseControl struct {
 	bgActive      term.Attribute
 	tabSkip       bool
 	disabled      bool
+	hidden        bool
 	align         Align
 	parent        Control
 	inactive      bool
@@ -118,6 +119,34 @@ func (c *BaseControl) SetEnabled(enabled bool) {
 	c.disabled = !enabled
 }
 
+func (c *BaseControl) Visible() bool {
+	c.mtx.RLock()
+	defer c.mtx.RUnlock()
+
+	return !c.hidden
+}
+
+func (c *BaseControl) SetVisible(visible bool) {
+	c.mtx.Lock()
+	defer c.mtx.Unlock()
+
+	if visible == !c.hidden {
+		return
+	}
+
+	c.hidden = !visible
+	if c.parent == nil {
+		return
+	}
+
+	p := c.Parent()
+	for p.Parent() != nil {
+		p = p.Parent()
+	}
+
+    go PutEvent(Event{Type: EventLayout, Target: p})
+}
+
 func (c *BaseControl) Parent() Control {
 	return c.parent
 }
@@ -204,23 +233,39 @@ func (c *BaseControl) SetBackColor(clr term.Attribute) {
 	c.bg = clr
 }
 
+func (c *BaseControl) childCount() int {
+	cnt := 0
+	for _, child := range c.children {
+		if child.Visible() {
+			cnt++
+		}
+	}
+
+	return cnt
+}
+
 func (c *BaseControl) ResizeChildren() {
-	if len(c.children) == 0 {
+	children := c.childCount()
+	if children == 0 {
 		return
 	}
 
 	fullWidth := c.width - 2*c.padX
 	fullHeight := c.height - 2*c.padY
 	if c.pack == Horizontal {
-		fullWidth -= (len(c.children) - 1) * c.gapX
+		fullWidth -= (children - 1) * c.gapX
 	} else {
-		fullHeight -= (len(c.children) - 1) * c.gapY
+		fullHeight -= (children - 1) * c.gapY
 	}
 
 	totalSc := c.ChildrenScale()
 	minWidth := 0
 	minHeight := 0
 	for _, child := range c.children {
+		if !child.Visible() {
+			continue
+		}
+
 		cw, ch := child.MinimalSize()
 		if c.pack == Horizontal {
 			minWidth += cw
@@ -239,6 +284,10 @@ func (c *BaseControl) ResizeChildren() {
 	}
 
 	for _, ctrl := range c.children {
+		if !ctrl.Visible() {
+			continue
+		}
+
 		tw, th := ctrl.MinimalSize()
 		sc := ctrl.Scale()
 		d := int(ctrl.Scale() * aStep)
@@ -332,20 +381,23 @@ func (c *BaseControl) ChildExists(control Control) bool {
 }
 
 func (c *BaseControl) ChildrenScale() int {
-	if len(c.children) == 0 {
+	if c.childCount() == 0 {
 		return c.scale
 	}
 
 	total := 0
 	for _, ctrl := range c.children {
-		total += ctrl.Scale()
+		if ctrl.Visible() {
+			total += ctrl.Scale()
+		}
 	}
 
 	return total
 }
 
 func (c *BaseControl) MinimalSize() (w int, h int) {
-	if len(c.children) == 0 {
+	children := c.childCount()
+	if children == 0 {
 		return c.minW, c.minH
 	}
 
@@ -353,12 +405,15 @@ func (c *BaseControl) MinimalSize() (w int, h int) {
 	totalY := 2 * c.padY
 
 	if c.pack == Vertical {
-		totalY += (len(c.children) - 1) * c.gapY
+		totalY += (children - 1) * c.gapY
 	} else {
-		totalX += (len(c.children) - 1) * c.gapX
+		totalX += (children - 1) * c.gapX
 	}
 
 	for _, ctrl := range c.children {
+		if !ctrl.Visible() {
+			continue
+		}
 		ww, hh := ctrl.MinimalSize()
 		if c.pack == Vertical {
 			totalY += hh
@@ -388,6 +443,10 @@ func (c *BaseControl) Draw() {
 }
 
 func (c *BaseControl) DrawChildren() {
+	if c.hidden {
+		return
+	}
+
 	PushClip()
 	defer PopClip()
 
@@ -422,14 +481,18 @@ func (c *BaseControl) ProcessEvent(ev Event) bool {
 }
 
 func (c *BaseControl) PlaceChildren() {
-	if c.children == nil || len(c.children) == 0 {
+	children := c.childCount()
+	if c.children == nil || children == 0 {
 		return
 	}
 
 	xx, yy := c.x+c.padX, c.y+c.padY
 	for _, ctrl := range c.children {
-		ctrl.SetPos(xx, yy)
+		if !ctrl.Visible() {
+			continue
+		}
 
+		ctrl.SetPos(xx, yy)
 		ww, hh := ctrl.Size()
 		if c.pack == Vertical {
 			yy += c.gapY + hh

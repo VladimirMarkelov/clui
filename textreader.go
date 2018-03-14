@@ -80,6 +80,10 @@ func (l *TextReader) drawText() {
 
 // Repaint draws the control on its View surface
 func (l *TextReader) Draw() {
+	if l.hidden {
+		return
+	}
+
 	PushAttributes()
 	defer PopAttributes()
 

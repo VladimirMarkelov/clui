@@ -48,6 +48,10 @@ func CreateRadio(parent Control, width int, title string, scale int) *Radio {
 
 // Repaint draws the control on its View surface
 func (c *Radio) Draw() {
+	if c.hidden {
+		return
+	}
+
 	PushAttributes()
 	defer PopAttributes()
 

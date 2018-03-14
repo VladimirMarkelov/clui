@@ -32,6 +32,10 @@ func (e *EditField) SetTitle(title string) {
 
 // Repaint draws the control on its View surface
 func (e *EditField) Draw() {
+	if e.hidden {
+		return
+	}
+
 	PushAttributes()
 	defer PopAttributes()
 

@@ -52,6 +52,10 @@ func CreateCheckBox(parent Control, width int, title string, scale int) *CheckBo
 
 // Repaint draws the control on its View surface
 func (c *CheckBox) Draw() {
+	if c.hidden {
+		return
+	}
+
 	c.mtx.RLock()
 	defer c.mtx.RUnlock()
 

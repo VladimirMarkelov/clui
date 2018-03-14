@@ -63,6 +63,10 @@ func (l *Label) SetDirection(dir Direction) {
 }
 
 func (l *Label) Draw() {
+	if l.hidden {
+		return
+	}
+
 	PushAttributes()
 	defer PopAttributes()
 
