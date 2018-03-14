@@ -11,9 +11,10 @@ import (
 // The dialog is modal, so a user cannot interact other
 // Views until the user closes the dialog
 type ConfirmationDialog struct {
-	View    *Window
-	result  int
-	onClose func()
+	View      *Window
+	btnResult int
+	edtResult string
+	onClose   func()
 }
 
 // SelectDialog allows to user to select an item from
@@ -22,14 +23,17 @@ type ConfirmationDialog struct {
 // The dialog is modal, so a user cannot interact other
 // Views until the user closes the dialog
 type SelectDialog struct {
-	View    *Window
-	result  int
-	value   int
-	rg      *RadioGroup
-	list    *ListBox
-	typ     SelectDialogType
-	onClose func()
+	View      *Window
+	btnResult int
+	value     int
+	rg        *RadioGroup
+	list      *ListBox
+	typ       SelectDialogType
+	onClose   func()
 }
+
+// a separate function to avoid api changes; assign to this function to create an editbox
+var createEditbox func(parent Control, width int, text string, scale int, dlg *ConfirmationDialog) *EditField
 
 // CreateAlertDialog creates a new alert dialog.
 // title is a dialog title
@@ -37,6 +41,32 @@ type SelectDialog struct {
 // button is a title for button inside dialog.
 func CreateAlertDialog(title, message string, button string) *ConfirmationDialog {
 	return CreateConfirmationDialog(title, message, []string{button}, 0)
+}
+
+func CreateConfirmationEditDialog(title, message string) *ConfirmationDialog {
+	// lambda function to create editbox
+	createEditbox = func(parent Control, width int, text string, scale int, dlg *ConfirmationDialog) *EditField {
+		edit := CreateEditField(parent, width, text, scale)
+
+		edit.OnKeyPress(func(key term.Key) bool {
+			var input string
+			if key == term.KeyEnter {
+				input = edit.Title()
+				dlg.edtResult = input
+				dlg.btnResult = DialogButton1
+
+				WindowManager().DestroyWindow(dlg.View)
+				if dlg.onClose != nil {
+					dlg.onClose()
+				}
+			}
+			// returning false so that other keypresses work as usual
+			return false
+		})
+		return edit
+	}
+
+	return CreateConfirmationDialog(title, message, []string{"Enter", "Cancel"}, 0)
 }
 
 // CreateConfirmationDialog creates new confirmation dialog.
@@ -72,6 +102,15 @@ func CreateConfirmationDialog(title, question string, buttons []string, defaultB
 	lb.SetMultiline(true)
 	CreateFrame(fbtn, 1, 1, BorderNone, Fixed)
 
+	// create editbox if editbox fn is not nil
+	var editbox *EditField
+	if createEditbox != nil {
+		CreateFrame(dlg.View, 1, 1, BorderNone, Fixed)
+		frmedit := CreateFrame(dlg.View, 1, 1, BorderNone, 1)
+		frmwidth, _ := frmedit.Size()
+		editbox = createEditbox(frmedit, frmwidth, "", AutoSize, dlg)
+	}
+
 	CreateFrame(dlg.View, 1, 1, BorderNone, Fixed)
 	frm1 := CreateFrame(dlg.View, 16, 4, BorderNone, Fixed)
 	CreateFrame(frm1, 1, 1, BorderNone, 1)
@@ -79,7 +118,9 @@ func CreateConfirmationDialog(title, question string, buttons []string, defaultB
 	bText := buttons[0]
 	btn1 := CreateButton(frm1, AutoSize, AutoSize, bText, Fixed)
 	btn1.OnClick(func(ev Event) {
-		dlg.result = DialogButton1
+		// only click on first button stores editbox result
+		dlg.btnResult = DialogButton1
+		dlg.edtResult = editbox.Title()
 
 		WindowManager().DestroyWindow(dlg.View)
 		WindowManager().BeginUpdate()
@@ -95,7 +136,9 @@ func CreateConfirmationDialog(title, question string, buttons []string, defaultB
 		CreateFrame(frm1, 1, 1, BorderNone, 1)
 		btn2 = CreateButton(frm1, AutoSize, AutoSize, buttons[1], Fixed)
 		btn2.OnClick(func(ev Event) {
-			dlg.result = DialogButton2
+			dlg.btnResult = DialogButton2
+			dlg.edtResult = ""
+
 			WindowManager().DestroyWindow(dlg.View)
 			if dlg.onClose != nil {
 				dlg.onClose()
@@ -106,7 +149,9 @@ func CreateConfirmationDialog(title, question string, buttons []string, defaultB
 		CreateFrame(frm1, 1, 1, BorderNone, 1)
 		btn3 = CreateButton(frm1, AutoSize, AutoSize, buttons[2], Fixed)
 		btn3.OnClick(func(ev Event) {
-			dlg.result = DialogButton3
+			dlg.btnResult = DialogButton3
+			dlg.edtResult = ""
+
 			WindowManager().DestroyWindow(dlg.View)
 			if dlg.onClose != nil {
 				dlg.onClose()
@@ -116,7 +161,9 @@ func CreateConfirmationDialog(title, question string, buttons []string, defaultB
 
 	CreateFrame(frm1, 1, 1, BorderNone, 1)
 
-	if defaultButton == DialogButton2 && len(buttons) > 1 {
+	if editbox != nil {
+		ActivateControl(dlg.View, editbox)
+	} else if defaultButton == DialogButton2 && len(buttons) > 1 {
 		ActivateControl(dlg.View, btn2)
 	} else if defaultButton == DialogButton3 && len(buttons) > 2 {
 		ActivateControl(dlg.View, btn3)
@@ -125,8 +172,8 @@ func CreateConfirmationDialog(title, question string, buttons []string, defaultB
 	}
 
 	dlg.View.OnClose(func(ev Event) bool {
-		if dlg.result == DialogAlive {
-			dlg.result = DialogClosed
+		if dlg.btnResult == DialogAlive {
+			dlg.btnResult = DialogClosed
 			if ev.X != 1 {
 				WindowManager().DestroyWindow(dlg.View)
 			}
@@ -153,7 +200,11 @@ func (d *ConfirmationDialog) OnClose(fn func()) {
 // that means that the dialog is still visible and a
 // user still does not click any button
 func (d *ConfirmationDialog) Result() int {
-	return d.result
+	return d.btnResult
+}
+
+func (d *ConfirmationDialog) EditResult() string {
+	return d.edtResult
 }
 
 // ------------------------ Selection Dialog ---------------------
@@ -213,7 +264,7 @@ func CreateSelectDialog(title string, items []string, selectedItem int, typ Sele
 	CreateFrame(frm1, 1, 1, BorderNone, 1)
 	btn1 := CreateButton(frm1, AutoSize, AutoSize, "OK", Fixed)
 	btn1.OnClick(func(ev Event) {
-		dlg.result = DialogButton1
+		dlg.btnResult = DialogButton1
 		if dlg.typ == SelectDialogList {
 			dlg.value = dlg.list.SelectedItem()
 		} else {
@@ -228,7 +279,7 @@ func CreateSelectDialog(title string, items []string, selectedItem int, typ Sele
 	CreateFrame(frm1, 1, 1, BorderNone, 1)
 	btn2 := CreateButton(frm1, AutoSize, AutoSize, "Cancel", Fixed)
 	btn2.OnClick(func(ev Event) {
-		dlg.result = DialogButton2
+		dlg.btnResult = DialogButton2
 		dlg.value = -1
 		WindowManager().DestroyWindow(dlg.View)
 		if dlg.onClose != nil {
@@ -239,8 +290,8 @@ func CreateSelectDialog(title string, items []string, selectedItem int, typ Sele
 	CreateFrame(frm1, 1, 1, BorderNone, 1)
 
 	dlg.View.OnClose(func(ev Event) bool {
-		if dlg.result == DialogAlive {
-			dlg.result = DialogClosed
+		if dlg.btnResult == DialogAlive {
+			dlg.btnResult = DialogClosed
 			if ev.X != 1 {
 				WindowManager().DestroyWindow(dlg.View)
 			}
@@ -268,7 +319,7 @@ func (d *SelectDialog) OnClose(fn func()) {
 // that means that the dialog is still visible and a
 // user still does not click any button
 func (d *SelectDialog) Result() int {
-	return d.result
+	return d.btnResult
 }
 
 // Value returns the number of the selected item or
