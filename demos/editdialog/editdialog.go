@@ -1,7 +1,7 @@
 package main
 
 import (
-	ui "vivek-go/clui"
+	ui "github.com/Viv1k/clui"
 
 	termbox "github.com/nsf/termbox-go"
 )
