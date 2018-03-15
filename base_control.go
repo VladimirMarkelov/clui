@@ -320,6 +320,23 @@ func (c *BaseControl) ResizeChildren() {
 	}
 }
 
+func (c *BaseControl) RemoveChild(control Control) {
+	children := []Control{}
+
+	for _, child := range c.children {
+		if child == control {
+			continue
+		}
+
+		children = append(children, child)
+	}
+	c.children = nil
+
+	for _, child := range children {
+		c.AddChild(child)
+	}
+}
+
 func (c *BaseControl) AddChild(control Control) {
 	if c.children == nil {
 		c.children = make([]Control, 1)

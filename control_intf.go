@@ -110,6 +110,11 @@ type Control interface {
 	// The method should not be called manually. It is automatically called
 	// if parent is not nil in Create* function
 	AddChild(control Control)
+
+	// RemoveChild removes a child from a container
+	// It's used to "destroy" controls whenever a control is no longer used
+	// by the user
+	RemoveChild(control Control)
 	// Children returns the copy of the list of container child controls
 	Children() []Control
 	// ChildExists returns true if a control has argument as one of its
