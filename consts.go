@@ -291,6 +291,8 @@ const (
 	EventCloseWindow
 	// Make a control (Target field of Event structure) to recalculate and reposition all its children
 	EventLayout
+	// a control has changed its visibility
+	EventVisible
 )
 
 // ConfirmationDialog and SelectDialog exit codes
