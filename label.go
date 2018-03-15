@@ -140,3 +140,9 @@ func (l *Label) Multiline() bool {
 func (l *Label) SetMultiline(multi bool) {
 	l.multiline = multi
 }
+
+func (l *Label) Destroy() {
+	l.parent.RemoveChild(l)
+	l.parent.PlaceChildren()
+	l.parent.Draw()
+}
