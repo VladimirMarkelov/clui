@@ -576,6 +576,12 @@ func (c *Composer) DestroyWindow(view Control) {
 			newOrder = append(newOrder, windows[i])
 		}
 	}
+
+	if len(newOrder) == 0 {
+		go Stop()
+		return
+	}
+
 	c.BeginUpdate()
 	c.windows = newOrder
 	c.EndUpdate()

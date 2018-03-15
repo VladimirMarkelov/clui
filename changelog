@@ -1,4 +1,10 @@
-﻿2018-03-13 - version 0.8.0-RC1
+2018-03-14 - version 0.8.0-RC2
+[*] Fixed crash when the last Window is closed from a code call without user
+    interaction (e.g, when a Dialog button is pressed the button click handler
+    closes the Dialog and the applicaton crashes if the Dialog is the last
+    Window in the screen)
+
+2018-03-13 - version 0.8.0-RC1
 [+] Added new property for all controls: Visible. It makes possible to show
     and hide any control with its children(if there are any).
     New Control interface methods: Visible and SetVisible
