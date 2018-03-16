@@ -21,8 +21,14 @@ func (e *EditField) OnKeyPress(fn func(term.Key) bool) {
 
 // SetTitle changes the EditField content and emits OnChage eventif the new value does not equal to old one
 func (e *EditField) SetTitle(title string) {
+	e.setTitleInternal(title)
+	e.end()
+}
+
+func (e *EditField) setTitleInternal(title string) {
 	if e.title != title {
 		e.title = title
+
 		if e.onChange != nil {
 			ev := Event{Msg: title}
 			e.onChange(ev)
@@ -116,11 +122,11 @@ func (e *EditField) insertRune(ch rune) {
 	idx := e.cursorPos
 
 	if idx == 0 {
-		e.SetTitle(string(ch) + e.title)
+		e.setTitleInternal(string(ch) + e.title)
 	} else if idx >= xs.Len(e.title) {
-		e.SetTitle(e.title + string(ch))
+		e.setTitleInternal(e.title + string(ch))
 	} else {
-		e.SetTitle(xs.Slice(e.title, 0, idx) + string(ch) + xs.Slice(e.title, idx, -1))
+		e.setTitleInternal(xs.Slice(e.title, 0, idx) + string(ch) + xs.Slice(e.title, idx, -1))
 	}
 
 	e.cursorPos++
@@ -142,14 +148,14 @@ func (e *EditField) backspace() {
 	length := xs.Len(e.title)
 	if e.cursorPos >= length {
 		e.cursorPos--
-		e.SetTitle(xs.Slice(e.title, 0, length-1))
+		e.setTitleInternal(xs.Slice(e.title, 0, length-1))
 	} else if e.cursorPos == 1 {
 		e.cursorPos = 0
-		e.SetTitle(xs.Slice(e.title, 1, -1))
+		e.setTitleInternal(xs.Slice(e.title, 1, -1))
 		e.offset = 0
 	} else {
 		e.cursorPos--
-		e.SetTitle(xs.Slice(e.title, 0, e.cursorPos) + xs.Slice(e.title, e.cursorPos+1, -1))
+		e.setTitleInternal(xs.Slice(e.title, 0, e.cursorPos) + xs.Slice(e.title, e.cursorPos+1, -1))
 	}
 
 	if length-1 < e.width {
@@ -165,9 +171,9 @@ func (e *EditField) del() {
 	}
 
 	if e.cursorPos == length-1 {
-		e.SetTitle(xs.Slice(e.title, 0, length-1))
+		e.setTitleInternal(xs.Slice(e.title, 0, length-1))
 	} else {
-		e.SetTitle(xs.Slice(e.title, 0, e.cursorPos) + xs.Slice(e.title, e.cursorPos+1, -1))
+		e.setTitleInternal(xs.Slice(e.title, 0, e.cursorPos) + xs.Slice(e.title, e.cursorPos+1, -1))
 	}
 
 	if length-1 < e.width {
@@ -218,7 +224,7 @@ func (e *EditField) end() {
 // Clear empties the EditField and emits OnChange event
 func (e *EditField) Clear() {
 	e.home()
-	e.SetTitle("")
+	e.setTitleInternal("")
 }
 
 // SetMaxWidth sets the maximum lenght of the EditField text. If the current text is longer it is truncated
