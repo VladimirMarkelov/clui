@@ -1,3 +1,7 @@
+2018-03-15 - version 0.8.0-RC3
+[*] If active control is about to hide then the next control is acctivated
+[*] Setting EditField content with SetTitle moves cursor to the end of line
+
 2018-03-14 - version 0.8.0-RC2
 [*] Fixed crash when the last Window is closed from a code call without user
     interaction (e.g, when a Dialog button is pressed the button click handler

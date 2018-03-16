@@ -26,6 +26,7 @@ func main() {
 	btnHide1.OnClick(func(ev ui.Event) {
 		if btn1.Visible() {
 			btnHide1.SetTitle("Show 1")
+			ui.ActivateControl(view, btn1)
 			btn1.SetVisible(false)
 		} else {
 			btnHide1.SetTitle("Hide 1")
@@ -36,6 +37,7 @@ func main() {
 	btnHide2.OnClick(func(ev ui.Event) {
 		if btn2.Visible() {
 			btnHide2.SetTitle("Show 2")
+			ui.ActivateControl(view, btn2)
 			btn2.SetVisible(false)
 		} else {
 			btnHide2.SetTitle("Hide 2")
@@ -46,6 +48,7 @@ func main() {
 	btnHide3.OnClick(func(ev ui.Event) {
 		if btn3.Visible() {
 			btnHide3.SetTitle("Show 3")
+			ui.ActivateControl(view, btn3)
 			btn3.SetVisible(false)
 		} else {
 			btnHide3.SetTitle("Hide 3")

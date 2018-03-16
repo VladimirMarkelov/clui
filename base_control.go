@@ -144,7 +144,12 @@ func (c *BaseControl) SetVisible(visible bool) {
 		p = p.Parent()
 	}
 
-    go PutEvent(Event{Type: EventLayout, Target: p})
+	go func() {
+		if !c.inactive {
+			PutEvent(Event{Type: EventKey, Key: term.KeyTab})
+		}
+		PutEvent(Event{Type: EventLayout, Target: p})
+	}()
 }
 
 func (c *BaseControl) Parent() Control {
