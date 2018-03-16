@@ -84,7 +84,7 @@ func (l *Label) Draw() {
 	}
 
 	if l.multiline {
-		parser := NewColorParser(l.title, ColorWhite, ColorBlack)
+		parser := NewColorParser(l.title, fg, bg)
 		elem := parser.NextElement()
 		xx, yy := l.x, l.y
 		for elem.Type != ElemEndOfText {
@@ -139,4 +139,10 @@ func (l *Label) Multiline() bool {
 // or automatically display it in several lines
 func (l *Label) SetMultiline(multi bool) {
 	l.multiline = multi
+}
+
+func (l *Label) Destroy() {
+	l.parent.RemoveChild(l)
+	l.parent.PlaceChildren()
+	l.parent.Draw()
 }
