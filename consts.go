@@ -318,8 +318,10 @@ var (
 const (
 	// SelectDialogList - all items are displayed in a ListBox
 	SelectDialogList SelectDialogType = iota
-	// SelectDialogList - all items are displayed in a RadioGroup
+	// SelectDialogRadio - all items are displayed in a RadioGroup
 	SelectDialogRadio
+	// SelectDialogEdit - Creates an editbox for user input
+	SelectDialogEdit
 )
 
 // TableAction constants
