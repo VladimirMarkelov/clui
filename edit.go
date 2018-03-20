@@ -34,6 +34,10 @@ func (e *EditField) setTitleInternal(title string) {
 			e.onChange(ev)
 		}
 	}
+
+	if title == "" {
+		e.cursorPos = xs.Len(title)
+	}
 }
 
 // Repaint draws the control on its View surface
