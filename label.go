@@ -84,7 +84,7 @@ func (l *Label) Draw() {
 	}
 
 	if l.multiline {
-		parser := NewColorParser(l.title, ColorWhite, ColorBlack)
+		parser := NewColorParser(l.title, fg, bg)
 		elem := parser.NextElement()
 		xx, yy := l.x, l.y
 		for elem.Type != ElemEndOfText {

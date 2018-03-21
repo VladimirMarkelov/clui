@@ -171,6 +171,11 @@ func (l *ListBox) moveUp(dy int) {
 	}
 
 	l.EnsureVisible()
+
+	if l.onSelectItem != nil {
+		ev := Event{Y: l.currSelection, Msg: l.SelectedItemText()}
+		l.onSelectItem(ev)
+	}
 }
 
 func (l *ListBox) moveDown(dy int) {
@@ -187,6 +192,11 @@ func (l *ListBox) moveDown(dy int) {
 	}
 
 	l.EnsureVisible()
+
+	if l.onSelectItem != nil {
+		ev := Event{Y: l.currSelection, Msg: l.SelectedItemText()}
+		l.onSelectItem(ev)
+	}
 }
 
 // EnsureVisible makes the currently selected item visible and scrolls the item list if it is required
