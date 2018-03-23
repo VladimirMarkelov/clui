@@ -542,3 +542,25 @@ func (c *BaseControl) SetActiveTextColor(clr term.Attribute) {
 func (c *BaseControl) SetActiveBackColor(clr term.Attribute) {
 	c.bgActive = clr
 }
+
+func (c *BaseControl) removeChild(control Control) {
+	children := []Control{}
+
+	for _, child := range c.children {
+		if child.RefID() == control.RefID() {
+			continue
+		}
+
+		children = append(children, child)
+	}
+	c.children = nil
+
+	for _, child := range children {
+		c.AddChild(child)
+	}
+}
+
+// Destroy removes an object from its parental chain
+func (c *BaseControl) Destroy() {
+	c.parent.removeChild(c)
+}

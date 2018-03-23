@@ -149,4 +149,12 @@ type Control interface {
 	ProcessEvent(ev Event) bool
 	// RefID returns the controls internal reference id
 	RefID() int64
+	// removeChild removes a child from a container
+	// It's used to "destroy" controls whenever a control is no longer used
+	// by the user
+	removeChild(control Control)
+	// Destroy is the public interface to remove an object from its parental chain
+	// it implies this control will stop receiving events and will not be drawn nor
+	// will impact on other objects position and size calculation
+	Destroy()
 }
