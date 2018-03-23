@@ -3,12 +3,14 @@ package clui
 import (
 	term "github.com/nsf/termbox-go"
 	"sync"
+	"sync/atomic"
 )
 
 // BaseControl is a base for all visible controls.
 // Every new control must inherit it or implement
 // the same set of methods
 type BaseControl struct {
+	refID         int64
 	title         string
 	x, y          int
 	width, height int
@@ -29,6 +31,22 @@ type BaseControl struct {
 	pack          PackType
 	children      []Control
 	mtx           sync.RWMutex
+}
+
+var (
+	globalRefId int64
+)
+
+func nextRefId() int64 {
+	return atomic.AddInt64(&globalRefId, 1)
+}
+
+func NewBaseControl() BaseControl {
+	return BaseControl{refID: nextRefId()}
+}
+
+func (c *BaseControl) RefID() int64 {
+	return c.refID
 }
 
 func (c *BaseControl) Title() string {

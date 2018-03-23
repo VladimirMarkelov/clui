@@ -17,6 +17,7 @@ type TextReader struct {
 
 func CreateTextReader(parent Control, width, height int, scale int) *TextReader {
 	l := new(TextReader)
+	l.BaseControl = NewBaseControl()
 
 	if height == AutoSize {
 		height = 10
@@ -260,10 +261,10 @@ func (l *TextReader) TopLine() int {
 
 func (l *TextReader) SetTopLine(top int) {
 	if top < l.lineCount {
-        l.topLine = top
+		l.topLine = top
 
-        if l.onPositionChanged != nil {
-            l.onPositionChanged(l.topLine, l.lineCount)
-        }
-    }
+		if l.onPositionChanged != nil {
+			l.onPositionChanged(l.topLine, l.lineCount)
+		}
+	}
 }

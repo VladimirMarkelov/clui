@@ -40,6 +40,7 @@ type EditField struct {
 //  control should keep its original size.
 func CreateEditField(parent Control, width int, text string, scale int) *EditField {
 	e := new(EditField)
+	e.BaseControl = NewBaseControl()
 	e.onChange = nil
 	e.SetTitle(text)
 	e.SetEnabled(true)

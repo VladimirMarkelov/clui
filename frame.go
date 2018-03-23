@@ -28,6 +28,7 @@ control should keep its original size.
 */
 func CreateFrame(parent Control, width, height int, bs BorderStyle, scale int) *Frame {
 	f := new(Frame)
+	f.BaseControl = NewBaseControl()
 
 	if width == AutoSize {
 		width = 5

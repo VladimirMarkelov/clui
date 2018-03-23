@@ -32,6 +32,7 @@ control should keep its original size.
 */
 func CreateProgressBar(parent Control, width, height int, scale int) *ProgressBar {
 	b := new(ProgressBar)
+	b.BaseControl = NewBaseControl()
 
 	if height == AutoSize {
 		height = 1

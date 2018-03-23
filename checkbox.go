@@ -28,6 +28,7 @@ CheckBox state can be changed using mouse or pressing space on keyboard while th
 */
 func CreateCheckBox(parent Control, width int, title string, scale int) *CheckBox {
 	c := new(CheckBox)
+	c.BaseControl = NewBaseControl()
 	c.parent = parent
 
 	if width == AutoSize {

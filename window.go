@@ -27,6 +27,8 @@ type Window struct {
 
 func CreateWindow(x, y, w, h int, title string) *Window {
 	wnd := new(Window)
+	wnd.BaseControl = NewBaseControl()
+
 	if w == AutoSize || w < 1 || w > 1000 {
 		w = 10
 	}

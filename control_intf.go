@@ -147,4 +147,6 @@ type Control interface {
 	// that the control do not want or cannot process the event and the caller sends
 	// the event to the control parent
 	ProcessEvent(ev Event) bool
+	// RefID returns the controls internal reference id
+	RefID() int64
 }
