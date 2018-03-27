@@ -26,6 +26,7 @@ control should keep its original size.
 */
 func CreateRadio(parent Control, width int, title string, scale int) *Radio {
 	c := new(Radio)
+	c.BaseControl = NewBaseControl()
 
 	if width == AutoSize {
 		width = xs.Len(title) + 4

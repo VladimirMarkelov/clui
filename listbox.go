@@ -38,6 +38,7 @@ control should keep its original size.
 */
 func CreateListBox(parent Control, width, height int, scale int) *ListBox {
 	l := new(ListBox)
+	l.BaseControl = NewBaseControl()
 
 	if height == AutoSize {
 		height = 3

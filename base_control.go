@@ -3,12 +3,14 @@ package clui
 import (
 	term "github.com/nsf/termbox-go"
 	"sync"
+	"sync/atomic"
 )
 
 // BaseControl is a base for all visible controls.
 // Every new control must inherit it or implement
 // the same set of methods
 type BaseControl struct {
+	refID         int64
 	title         string
 	x, y          int
 	width, height int
@@ -29,6 +31,22 @@ type BaseControl struct {
 	pack          PackType
 	children      []Control
 	mtx           sync.RWMutex
+}
+
+var (
+	globalRefId int64
+)
+
+func nextRefId() int64 {
+	return atomic.AddInt64(&globalRefId, 1)
+}
+
+func NewBaseControl() BaseControl {
+	return BaseControl{refID: nextRefId()}
+}
+
+func (c *BaseControl) RefID() int64 {
+	return c.refID
 }
 
 func (c *BaseControl) Title() string {
@@ -523,4 +541,26 @@ func (c *BaseControl) SetActiveTextColor(clr term.Attribute) {
 // SetActiveBackColor changes background color of the active control
 func (c *BaseControl) SetActiveBackColor(clr term.Attribute) {
 	c.bgActive = clr
+}
+
+func (c *BaseControl) removeChild(control Control) {
+	children := []Control{}
+
+	for _, child := range c.children {
+		if child.RefID() == control.RefID() {
+			continue
+		}
+
+		children = append(children, child)
+	}
+	c.children = nil
+
+	for _, child := range children {
+		c.AddChild(child)
+	}
+}
+
+// Destroy removes an object from its parental chain
+func (c *BaseControl) Destroy() {
+	c.parent.removeChild(c)
 }

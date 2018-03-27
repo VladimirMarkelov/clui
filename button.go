@@ -31,6 +31,7 @@ control should keep its original size.
 */
 func CreateButton(parent Control, width, height int, title string, scale int) *Button {
 	b := new(Button)
+	b.BaseControl = NewBaseControl()
 
 	b.parent = parent
 	b.align = AlignCenter

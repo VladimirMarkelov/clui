@@ -45,6 +45,7 @@ control should keep its original size.
 */
 func CreateSparkChart(parent Control, w, h int, scale int) *SparkChart {
 	c := new(SparkChart)
+	c.BaseControl = NewBaseControl()
 
 	if w == AutoSize {
 		w = 10

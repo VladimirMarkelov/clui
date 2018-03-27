@@ -79,6 +79,7 @@ control should keep its original size.
 */
 func CreateBarChart(parent Control, w, h int, scale int) *BarChart {
 	c := new(BarChart)
+	c.BaseControl = NewBaseControl()
 
 	if w == AutoSize {
 		w = 10
