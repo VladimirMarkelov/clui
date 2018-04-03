@@ -91,7 +91,7 @@ func createView() {
 
 	ui.ActivateControl(view, edit)
 
-	edit.OnKeyPress(func(key term.Key) bool {
+	edit.OnKeyPress(func(key term.Key, ch rune) bool {
 		if key == term.KeyCtrlM {
 			v := edit.Title()
 			logBox.AddItem(fmt.Sprintf("New PB value(KeyPress): %v", v))

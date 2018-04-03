@@ -15,7 +15,7 @@ func (e *EditField) OnChange(fn func(Event)) {
 // the controls is active. If a handler processes the key it should return
 // true. If handler returns false it means that the default handler will
 // process the key
-func (e *EditField) OnKeyPress(fn func(term.Key) bool) {
+func (e *EditField) OnKeyPress(fn func(term.Key, rune) bool) {
 	e.onKeyPress = fn
 }
 

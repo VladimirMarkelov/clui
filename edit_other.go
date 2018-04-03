@@ -28,7 +28,7 @@ type EditField struct {
 	showStars bool
 
 	onChange   func(Event)
-	onKeyPress func(term.Key) bool
+	onKeyPress func(term.Key, rune) bool
 }
 
 // NewEditField creates a new EditField control
@@ -84,7 +84,7 @@ func (e *EditField) ProcessEvent(event Event) bool {
 
 	if event.Type == EventKey && event.Key != term.KeyTab {
 		if e.onKeyPress != nil {
-			res := e.onKeyPress(event.Key)
+			res := e.onKeyPress(event.Key, event.Ch)
 			if res {
 				return true
 			}
