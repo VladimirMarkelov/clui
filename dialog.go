@@ -209,7 +209,7 @@ func CreateSelectDialog(title string, items []string, selectedItem int, typ Sele
 		dlg.edit = CreateEditField(dlg.View, fWidth-2, items[1], AutoSize)
 		CreateFrame(dlg.View, 1, 1, BorderNone, Fixed)
 
-		dlg.edit.OnKeyPress(func(key term.Key) bool {
+		dlg.edit.OnKeyPress(func(key term.Key, r rune) bool {
 			var input string
 			if key == term.KeyEnter {
 				input = dlg.edit.Title()
@@ -270,7 +270,12 @@ func CreateSelectDialog(title string, items []string, selectedItem int, typ Sele
 			dlg.onClose()
 		}
 	})
-	ActivateControl(dlg.View, dlg.edit)
+
+	if typ == SelectDialogEdit {
+		ActivateControl(dlg.View, dlg.edit)
+	} else {
+		ActivateControl(dlg.View, btn2)
+	}
 	CreateFrame(frm1, 1, 1, BorderNone, 1)
 
 	dlg.View.OnClose(func(ev Event) bool {

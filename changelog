@@ -1,3 +1,8 @@
+2018-04-07 - version 0.8.0
+[+] New dialog type: SelectDialogEdit - a dialog with an edit box
+[+] Added Control method destroy
+[*] EditField event OnKeyPress now receives two arguments: key code and rune
+
 2018-03-15 - version 0.8.0-RC3
 [*] If active control is about to hide then the next control is acctivated
 [*] Setting EditField content with SetTitle moves cursor to the end of line
