@@ -22,13 +22,15 @@ type ConfirmationDialog struct {
 // The dialog is modal, so a user cannot interact other
 // Views until the user closes the dialog
 type SelectDialog struct {
-	View    *Window
-	result  int
-	value   int
-	rg      *RadioGroup
-	list    *ListBox
-	typ     SelectDialogType
-	onClose func()
+	View      *Window
+	result    int
+	value     int
+	edtResult string
+	rg        *RadioGroup
+	list      *ListBox
+	edit      *EditField
+	typ       SelectDialogType
+	onClose   func()
 }
 
 // CreateAlertDialog creates a new alert dialog.
@@ -158,6 +160,10 @@ func (d *ConfirmationDialog) Result() int {
 
 // ------------------------ Selection Dialog ---------------------
 
+func CreateEditDialog(title, message, initialText string) *SelectDialog {
+	return CreateSelectDialog(title, []string{message, initialText}, 0, SelectDialogEdit)
+}
+
 // NewSelectDialog creates new dialog to select an item from list.
 // c is a composer that manages the dialog
 // title is a dialog title
@@ -194,6 +200,31 @@ func CreateSelectDialog(title string, items []string, selectedItem int, typ Sele
 		if selectedItem >= 0 && selectedItem < len(items) {
 			dlg.list.SelectItem(selectedItem)
 		}
+	} else if typ == SelectDialogEdit {
+		CreateFrame(dlg.View, 1, 1, BorderNone, Fixed)
+		lb := CreateLabel(dlg.View, 10, 3, items[0], 1)
+		lb.SetMultiline(true)
+
+		fWidth, _ := dlg.View.Size()
+		dlg.edit = CreateEditField(dlg.View, fWidth-2, items[1], AutoSize)
+		CreateFrame(dlg.View, 1, 1, BorderNone, Fixed)
+
+		dlg.edit.OnKeyPress(func(key term.Key) bool {
+			var input string
+			if key == term.KeyEnter {
+				input = dlg.edit.Title()
+				dlg.edtResult = input
+				dlg.value = -1
+				dlg.result = DialogButton1
+
+				WindowManager().DestroyWindow(dlg.View)
+				if dlg.onClose != nil {
+					dlg.onClose()
+				}
+			}
+			// returning false so that other keypresses work as usual
+			return false
+		})
 	} else {
 		fRadio := CreateFrame(dlg.View, 1, 1, BorderNone, Fixed)
 		fRadio.SetPaddings(1, 1)
@@ -216,6 +247,9 @@ func CreateSelectDialog(title string, items []string, selectedItem int, typ Sele
 		dlg.result = DialogButton1
 		if dlg.typ == SelectDialogList {
 			dlg.value = dlg.list.SelectedItem()
+		} else if dlg.typ == SelectDialogEdit {
+			dlg.edtResult = dlg.edit.Title()
+			dlg.value = -1
 		} else {
 			dlg.value = dlg.rg.Selected()
 		}
@@ -229,13 +263,14 @@ func CreateSelectDialog(title string, items []string, selectedItem int, typ Sele
 	btn2 := CreateButton(frm1, AutoSize, AutoSize, "Cancel", Fixed)
 	btn2.OnClick(func(ev Event) {
 		dlg.result = DialogButton2
+		dlg.edtResult = ""
 		dlg.value = -1
 		WindowManager().DestroyWindow(dlg.View)
 		if dlg.onClose != nil {
 			dlg.onClose()
 		}
 	})
-	ActivateControl(dlg.View, btn2)
+	ActivateControl(dlg.View, dlg.edit)
 	CreateFrame(frm1, 1, 1, BorderNone, 1)
 
 	dlg.View.OnClose(func(ev Event) bool {
@@ -275,4 +310,9 @@ func (d *SelectDialog) Result() int {
 // -1 if nothing is selected or the dialog is cancelled
 func (d *SelectDialog) Value() int {
 	return d.value
+}
+
+// EditResult returns the text from editfield
+func (d *SelectDialog) EditResult() string {
+	return d.edtResult
 }
