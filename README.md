@@ -7,7 +7,7 @@ Command Line User Interface (Console UI inspired by TurboVision) with built-in t
 
 
 ## Current version
-The current version is 0.7.0. Please see details in [changelog](./changelog).
+The current version is 0.8.0. Please see details in [changelog](./changelog).
 
 ## Applications that uses the library
 * Terminal FB2 reader(termfb2): https://github.com/VladimirMarkelov/termfb2
@@ -34,6 +34,7 @@ The current version is 0.7.0. Please see details in [changelog](./changelog).
 * RadioGroup (Non-visual control to manage a group of a few RadioButtons)
 * ConfirmationDialog (modal View to ask a user confirmation, button titles are custom)
 * SelectDialog (modal View to ask a user to select an item from the list - list can be ListBox or RadioGroup)
+* SelectEditDialog (modal View to ask a user to enter a value)
 * BarChart (Horizontal bar chart without scroll)
 * SparkChart (Show tabular data as a bar graph)
 * GridView (Table to show structured data - only virtual and readonly mode with scroll support)
