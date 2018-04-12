@@ -31,6 +31,7 @@ type BaseControl struct {
 	pack          PackType
 	children      []Control
 	mtx           sync.RWMutex
+	onActive      func(active bool)
 }
 
 var (
@@ -113,6 +114,14 @@ func (c *BaseControl) Active() bool {
 
 func (c *BaseControl) SetActive(active bool) {
 	c.inactive = !active
+
+	if c.onActive != nil {
+		c.onActive(active)
+	}
+}
+
+func (c *BaseControl) OnActive(fn func(active bool)) {
+	c.onActive = fn
 }
 
 func (c *BaseControl) TabStop() bool {
