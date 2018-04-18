@@ -148,37 +148,25 @@ func IsMouseClickEvent(ev Event) bool {
 // FindFirstControl returns the first child for that fn returns true.
 // The function is used to find active or tab-stop control
 func FindFirstControl(parent Control, fn func(Control) bool) Control {
-	for _, child := range parent.Children() {
-		if fn(child) {
-			return child
-		}
-
-		ch := FindFirstControl(child, fn)
-		if ch != nil {
-			return ch
-		}
+	linear := getLinearControlList(parent, fn)
+	if len(linear) == 0 {
+		return nil
 	}
 
-	return nil
+	return linear[0]
 }
 
 // FindLastControl returns the first child for that fn returns true.
 // The function is used by TAB processing method if a user goes backwards
 // with TAB key - not supported now
 func FindLastControl(parent Control, fn func(Control) bool) Control {
-	var last Control
-	for _, child := range parent.Children() {
-		if fn(child) {
-			last = child
-		}
+	linear := getLinearControlList(parent, fn)
 
-		ch := FindLastControl(child, fn)
-		if ch != nil {
-			last = ch
-		}
+	if len(linear) == 0 {
+		return nil
 	}
 
-	return last
+	return linear[len(linear)-1]
 }
 
 // ActiveControl returns the active child of the parent or nil if no child is
@@ -190,43 +178,25 @@ func ActiveControl(parent Control) Control {
 	return FindFirstControl(parent, fnActive)
 }
 
-func _nextControl(parent Control, curr, prev Control, foundPrev, next bool) (bool, Control) {
-	found := foundPrev
-	if parent == curr {
-		if next {
-			found = true
-		} else {
-			return false, prev
+func getLinearControlList(parent Control, fn func(Control) bool) []Control {
+	result := []Control{}
+
+	for _, curr := range parent.Children() {
+		if fn(curr) {
+			result = append(result, curr)
+		}
+
+		if len(curr.Children()) == 0 {
+			continue
+		}
+
+		ch := getLinearControlList(curr, fn)
+		if len(ch) != 0 {
+			result = append(result, ch...)
 		}
 	}
 
-	p := prev
-	for _, ctrl := range parent.Children() {
-		if ctrl == curr {
-			if next {
-				found = true
-				continue
-			} else {
-				return found, p
-			}
-		}
-
-		if ctrl.Enabled() && ctrl.TabStop() && ctrl.Visible() {
-			if found {
-				return found, ctrl
-			} else if !next {
-				p = ctrl
-			}
-		}
-
-		fnd, nn := _nextControl(ctrl, curr, p, found, next)
-		if nn != nil {
-			return fnd, nn
-		}
-		found = fnd
-	}
-
-	return found, nil
+	return result
 }
 
 // NextControl returns the next or previous child (depends on next parameter)
@@ -236,26 +206,33 @@ func NextControl(parent Control, curr Control, next bool) Control {
 		return c.TabStop() && c.Visible()
 	}
 
-	var defControl Control
+	linear := getLinearControlList(parent, fnTab)
+
+	var pIndex, nIndex int
+
+	for i, ch := range linear {
+		if ch != curr {
+			continue
+		}
+
+		pIndex = i - 1
+		nIndex = i + 1
+		break
+	}
+
+	if nIndex > len(linear)-1 {
+		nIndex = 0
+	}
+
+	if pIndex < 0 {
+		pIndex = len(linear) - 1
+	}
+
 	if next {
-		defControl = FindFirstControl(parent, fnTab)
+		return linear[nIndex]
 	} else {
-		defControl = FindLastControl(parent, fnTab)
+		return linear[pIndex]
 	}
-
-	if defControl == nil {
-		return nil
-	}
-	if curr == nil {
-		return defControl
-	}
-
-	_, cNext := _nextControl(parent, curr, nil, false, next)
-	if cNext == nil {
-		cNext = defControl
-	}
-
-	return cNext
 }
 
 // SendEventToChild tries to find a child control that should recieve the evetn
