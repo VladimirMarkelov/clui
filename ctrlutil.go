@@ -203,7 +203,7 @@ func getLinearControlList(parent Control, fn func(Control) bool) []Control {
 // that has tab-stop feature on. Used by library when processing TAB key
 func NextControl(parent Control, curr Control, next bool) Control {
 	fnTab := func(c Control) bool {
-		return c.TabStop() && c.Visible()
+		return c.TabStop() && c.Visible() && c.Enabled()
 	}
 
 	linear := getLinearControlList(parent, fnTab)
