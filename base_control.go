@@ -172,7 +172,7 @@ func (c *BaseControl) SetVisible(visible bool) {
 	}
 
 	go func() {
-		if !c.inactive {
+		if FindFirstActiveControl(c) != nil && !c.inactive {
 			PutEvent(Event{Type: EventKey, Key: term.KeyTab})
 		}
 		PutEvent(Event{Type: EventLayout, Target: p})

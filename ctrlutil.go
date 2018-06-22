@@ -178,6 +178,16 @@ func ActiveControl(parent Control) Control {
 	return FindFirstControl(parent, fnActive)
 }
 
+// FindFirstActiveControl returns the first active control of a parent
+func FindFirstActiveControl(parent Control) Control {
+	for _, curr := range getLinearControlList(parent, nil) {
+		if curr.Active() {
+			return curr
+		}
+	}
+	return nil
+}
+
 func getLinearControlList(parent Control, fn func(Control) bool) []Control {
 	result := []Control{}
 
