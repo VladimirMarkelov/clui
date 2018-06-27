@@ -218,6 +218,10 @@ func NextControl(parent Control, curr Control, next bool) Control {
 
 	linear := getLinearControlList(parent, fnTab)
 
+	if len(linear) == 0 {
+		return nil
+	}
+
 	var pIndex, nIndex int
 
 	for i, ch := range linear {
