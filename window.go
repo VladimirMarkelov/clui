@@ -23,6 +23,7 @@ type Window struct {
 	onClose        func(Event) bool
 	onKeyDown      func(Event) bool
 	onScreenResize func(Event)
+	onVisible      func(Event)
 }
 
 func CreateWindow(x, y, w, h int, title string) *Window {
@@ -279,6 +280,10 @@ func (w *Window) OnScreenResize(fn func(Event)) {
 	w.onScreenResize = fn
 }
 
+func (w *Window) OnVisible(fn func(Event)) {
+	w.onVisible = fn
+}
+
 // SetMaximized opens the view to full screen or restores its
 // previous size
 func (w *Window) SetMaximized(maximize bool) {
@@ -325,6 +330,10 @@ func (w *Window) SetVisible(visible bool) {
 		} else {
 			WindowManager().activateWindow(w)
 		}
+	}
+
+	if visible && w.onVisible != nil {
+		w.onVisible(Event{Type: EventVisible})
 	}
 }
 
