@@ -7,6 +7,25 @@ import (
 	"strings"
 )
 
+var (
+	colorMap = map[string]term.Attribute{
+		"default":    term.ColorDefault,
+		"black":      term.ColorBlack,
+		"red":        term.ColorRed,
+		"green":      term.ColorGreen,
+		"yellow":     term.ColorYellow,
+		"blue":       term.ColorBlue,
+		"magenta":    term.ColorMagenta,
+		"cyan":       term.ColorCyan,
+		"white":      term.ColorWhite,
+		"bold":       term.AttrBold,
+		"bright":     term.AttrBold, // windows make color brighter when it is bold
+		"underline":  term.AttrUnderline,
+		"underlined": term.AttrUnderline,
+		"reverse":    term.AttrReverse,
+	}
+)
+
 // Ellipsize truncates text to maxWidth by replacing a
 // substring in the middle with ellipsis and keeping
 // the beginning and ending of the string untouched.
@@ -206,29 +225,12 @@ func StringToColor(str string) term.Attribute {
 		parts = append(parts, str)
 	}
 
-	var cmap = map[string]term.Attribute{
-		"default":    term.ColorDefault,
-		"black":      term.ColorBlack,
-		"red":        term.ColorRed,
-		"green":      term.ColorGreen,
-		"yellow":     term.ColorYellow,
-		"blue":       term.ColorBlue,
-		"magenta":    term.ColorMagenta,
-		"cyan":       term.ColorCyan,
-		"white":      term.ColorWhite,
-		"bold":       term.AttrBold,
-		"bright":     term.AttrBold, // windows make color brighter when it is bold
-		"underline":  term.AttrUnderline,
-		"underlined": term.AttrUnderline,
-		"reverse":    term.AttrReverse,
-	}
-
 	var clr term.Attribute
 	for _, item := range parts {
 		item = strings.Trim(item, " ")
 		item = strings.ToLower(item)
 
-		c, ok := cmap[item]
+		c, ok := colorMap[item]
 		if ok {
 			clr |= c
 		}
@@ -237,16 +239,28 @@ func StringToColor(str string) term.Attribute {
 	return clr
 }
 
+// GetColorMap returns the color map (id is the color name, value its code)
+func GetColorMap() map[string]term.Attribute {
+	return colorMap
+}
+
+// SetColorMap sets a custom color map (id is the color name, value its code)
+func SetColorMap(cmap map[string]term.Attribute) {
+	colorMap = cmap
+}
+
 // ColorToString returns string representation of the attribute
 func ColorToString(attr term.Attribute) string {
 	var out string
-	colors := []string{
-		"", "black", "red", "green", "yellow",
-		"blue", "magenta", "cyan", "white"}
 
 	rawClr := attr & 15
 	if rawClr < 8 {
-		out += colors[rawClr] + " "
+		for k, v := range colorMap {
+			if v == rawClr {
+				out += k + " "
+				break
+			}
+		}
 	}
 
 	if attr&term.AttrBold != 0 {
