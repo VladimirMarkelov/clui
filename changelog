@@ -1,16 +1,25 @@
+2018-07-17 - version 0.8.1
+[+] New API functions SetColorMap and GetColorMap to change the current color
+    palette
+[*] FindNextControl function improved
+[*] Fix selecting next control with TAB: disabled and invisible controls
+    are skipped
+[+] Next and previous control can be selected with Up and Down Arrow keys
+[+] New event OnActive - is emitted when a control gains or lost focus
+
 2018-04-07 - version 0.8.0
 [+] New dialog type: SelectDialogEdit - a dialog with an edit box
 [+] Added Control method destroy
 [*] EditField event OnKeyPress now receives two arguments: key code and rune
 
 2018-03-15 - version 0.8.0-RC3
-[*] If active control is about to hide then the next control is acctivated
+[*] If active control is about to hide then the next control is activated
 [*] Setting EditField content with SetTitle moves cursor to the end of line
 
 2018-03-14 - version 0.8.0-RC2
 [*] Fixed crash when the last Window is closed from a code call without user
     interaction (e.g, when a Dialog button is pressed the button click handler
-    closes the Dialog and the applicaton crashes if the Dialog is the last
+    closes the Dialog and the application crashes if the Dialog is the last
     Window in the screen)
 
 2018-03-13 - version 0.8.0-RC1
@@ -21,8 +30,8 @@
     argument - Control that should handle the event. On receiving the event
     the Control must recalculate and reposition all its children.
     At this moment only Windows handle this event. Other kinds of Control
-    never receieves the event
-[+] Add a new simple demo to play with Control visiblity: demos/visible
+    never receives the event
+[+] Add a new simple demo to play with Control visibility: demos/visible
 
 2018-01-26 - version 0.7.0
 [+] Added new event handler for Window: set a callback OnScreenResize if you
@@ -34,7 +43,7 @@
     manipulating Composer Windows if the code runs in separate thread. And
     call EndUpdate right after all changes are done. Do not lock for a long
     time because while lock is on the screen is not updated.
-    Another usage: create new Window inside varios handlers (e.g, OnSelectItem
+    Another usage: create new Window inside various handlers (e.g, OnSelectItem
     of ListBox)
 
 2018-01-23 - version 0.7.0
@@ -51,7 +60,7 @@
 
 2018-01-02 - version 0.6.3
 [+] Add a new boolean property for EditField - PasswordMode. If PasswordMode is
-    true then the editfield text is hidden with 'stars'.
+    true then the EditField text is hidden with 'stars'.
     Please see demo demos/editfield for details
 [+] Change a theme for object 'Edit' - added non-obligatory forth character
    that is used as replacement for any character inside EditField when Password
