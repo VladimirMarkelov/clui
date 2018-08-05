@@ -38,7 +38,7 @@ The current version is 0.9.0 RC1. Please see details in [changelog](./changelog)
 * BarChart (Horizontal bar chart without scroll)
 * SparkChart (Show tabular data as a bar graph)
 * GridView (Table to show structured data - only virtual and readonly mode with scroll support)
-* ![FilePicker](/docs/fselect.md)
+* [FilePicker](/docs/fselect.md)
 
 ## Screenshots
 The main demo (theme changing and radio group control)
