@@ -50,5 +50,5 @@ dlg.OnClose(func() {
 })
 ```
 
-Please, check the ![dialog demo](/demos/fileselect/fselect.go) for more details.
+Please, check the [dialog demo](/demos/fileselect/fselect.go) for more details.
 
