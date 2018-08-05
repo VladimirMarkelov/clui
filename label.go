@@ -14,8 +14,9 @@ is always left aligned
 */
 type Label struct {
 	BaseControl
-	direction Direction
-	multiline bool
+	direction   Direction
+	multiline   bool
+	textDisplay Align
 }
 
 /*
@@ -45,6 +46,7 @@ func CreateLabel(parent Control, w, h int, title string, scale int) *Label {
 	c.SetConstraints(w, h)
 	c.SetScale(scale)
 	c.tabSkip = true
+	c.textDisplay = AlignLeft
 
 	if parent != nil {
 		parent.AddChild(c)
@@ -121,9 +123,15 @@ func (l *Label) Draw() {
 	} else {
 		if l.direction == Horizontal {
 			shift, str := AlignColorizedText(l.title, l.width, l.align)
+			if str != l.title && l.align != l.textDisplay {
+				shift, str = AlignColorizedText(l.title, l.width, l.textDisplay)
+			}
 			DrawText(l.x+shift, l.y, str)
 		} else {
 			shift, str := AlignColorizedText(l.title, l.height, l.align)
+			if str != l.title && l.align != l.textDisplay {
+				shift, str = AlignColorizedText(l.title, l.width, l.textDisplay)
+			}
 			DrawTextVertical(l.x, l.y+shift, str)
 		}
 	}
@@ -140,4 +148,25 @@ func (l *Label) Multiline() bool {
 // or automatically display it in several lines
 func (l *Label) SetMultiline(multi bool) {
 	l.multiline = multi
+}
+
+// TextDisplay returns which part of the lable title is displayed in case of
+// title is longer than the label:
+// - AlignLeft - the head of the title is shown
+// - AlignRight - the tail of the title is shown
+// The property is used only by single line Label
+func (l *Label) TextDisplay() Align {
+	return l.textDisplay
+}
+
+// SetTextDisplay sets which part of the title is displayed in case of the title
+// is longer than the lable. Only AlignLeft and AlignRigth are valid values
+// for the property. Any other value does is skipped and does not affect
+// displaying the title
+func (l *Label) SetTextDisplay(align Align) {
+	if align != AlignLeft && align != AlignRight {
+		return
+	}
+
+	l.textDisplay = align
 }

@@ -134,22 +134,36 @@ func (l *ListBox) Draw() {
 }
 
 func (l *ListBox) home() {
+	if l.currSelection == 0 {
+		return
+	}
+
 	if len(l.items) > 0 {
 		l.currSelection = 0
 	}
 	l.topLine = 0
+
+	if l.onSelectItem != nil {
+		ev := Event{Y: l.currSelection, Msg: l.SelectedItemText()}
+		l.onSelectItem(ev)
+	}
 }
 
 func (l *ListBox) end() {
 	length := len(l.items)
 
-	if length == 0 {
+	if length == 0 || l.currSelection == length-1 {
 		return
 	}
 
 	l.currSelection = length - 1
 	if length > l.height {
 		l.topLine = length - l.height
+	}
+
+	if l.onSelectItem != nil {
+		ev := Event{Y: l.currSelection, Msg: l.SelectedItemText()}
+		l.onSelectItem(ev)
 	}
 }
 
@@ -352,7 +366,7 @@ func (l *ListBox) AddItem(item string) bool {
 	return true
 }
 
-// SelectItem slects item which number in the list equals
+// SelectItem selects item which number in the list equals
 // id. If the item exists the ListBox scrolls the list to
 // make the item visible.
 // Returns true if the item is selected successfully
@@ -366,6 +380,16 @@ func (l *ListBox) SelectItem(id int) bool {
 	return true
 }
 
+// Item returns item text by its index.
+// If index is out of range an empty string and false are returned
+func (l *ListBox) Item(id int) (string, bool) {
+	if len(l.items) <= id || id < 0 {
+		return "", false
+	}
+
+	return l.items[id], true
+}
+
 // FindItem looks for an item in list which text equals
 // to text, by default the search is casesensitive.
 // Returns item number in item list or -1 if nothing is found.
@@ -373,6 +397,30 @@ func (l *ListBox) FindItem(text string, caseSensitive bool) int {
 	for idx, itm := range l.items {
 		if itm == text || (caseSensitive && strings.EqualFold(itm, text)) {
 			return idx
+		}
+	}
+
+	return -1
+}
+
+// PartialFindItem looks for an item in list which text starts from
+// the given substring, by default the search is casesensitive.
+// Returns item number in item list or -1 if nothing is found.
+func (l *ListBox) PartialFindItem(text string, caseSensitive bool) int {
+	if !caseSensitive {
+		text = strings.ToLower(text)
+	}
+
+	for idx, itm := range l.items {
+		if caseSensitive {
+			if strings.HasPrefix(itm, text) {
+				return idx
+			}
+		} else {
+			low := strings.ToLower(itm)
+			if strings.HasPrefix(low, text) {
+				return idx
+			}
 		}
 	}
 

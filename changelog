@@ -1,3 +1,22 @@
+2018-08-04 - version 0.9.0 RC1
+[+] New control: File Picker (a dialog for file save/load operations)
+[+] New property for Label: TextDisplay. It defines which part of Label title
+   is shown when the title is longer than the Label length:
+   - AlignLeft - the head of the Title is displayed
+   - AlignRight - the tail of the Title is displayed
+[+] New ListBox functions:
+   - Item(index int) (title string, ok book) - returns a text of ListBox item
+   by its index. If the item does not exist then ok is set to false. The
+   function works similar Go 's, ok := map[key]'
+   - PartialFind(text string, caseSensitive bool) int - return the index of
+   the first item of ListBox that starts with the 'text'. If no item starts
+   with the 'text' then '-1' is returned
+[*] Fix bug in EditField: when new Title was set the current display offset was
+   not reset. It might result in an application crash when new Title was
+   shorter than the old one
+[*] Fix bug with ListBox 'select item' event: the event was not emitted after
+   pressing End, Home, PageUp, and PageDown
+
 2018-07-17 - version 0.8.1
 [+] New API functions SetColorMap and GetColorMap to change the current color
     palette
@@ -108,7 +127,7 @@
 [+] Added constants for dragging events - new type DragType
 [+] Added new type of Event MouseClick: it is generated if a user does mouse
     button down and mouse release at the same coordinates. In this case a
-    control recieves 3 events: mouse down, mouse release, and mouse click
+    control receives 3 events: mouse down, mouse release, and mouse click
 [+] Main loop moved to separate source file
 [+] Added test for color parsing functions
 

@@ -7,7 +7,7 @@ Command Line User Interface (Console UI inspired by TurboVision) with built-in t
 
 
 ## Current version
-The current version is 0.8.0. Please see details in [changelog](./changelog).
+The current version is 0.9.0 RC1. Please see details in [changelog](./changelog).
 
 ## Applications that uses the library
 * Terminal FB2 reader(termfb2): https://github.com/VladimirMarkelov/termfb2
@@ -38,6 +38,7 @@ The current version is 0.8.0. Please see details in [changelog](./changelog).
 * BarChart (Horizontal bar chart without scroll)
 * SparkChart (Show tabular data as a bar graph)
 * GridView (Table to show structured data - only virtual and readonly mode with scroll support)
+* ![FilePicker](/docs/fselect.md)
 
 ## Screenshots
 The main demo (theme changing and radio group control)

@@ -22,6 +22,7 @@ func (e *EditField) OnKeyPress(fn func(term.Key, rune) bool) {
 // SetTitle changes the EditField content and emits OnChage eventif the new value does not equal to old one
 func (e *EditField) SetTitle(title string) {
 	e.setTitleInternal(title)
+	e.offset = 0
 	e.end()
 }
 
