@@ -133,7 +133,7 @@ func (wnd *Window) Draw() {
 	PushAttributes()
 	defer PopAttributes()
 
-	fg, bg := RealColor(wnd.fg, ColorViewText), RealColor(wnd.bg, ColorViewBack)
+	fg, bg := RealColor(wnd.fg, wnd.Style(), ColorViewText), RealColor(wnd.bg, wnd.Style(), ColorViewBack)
 	SetBackColor(bg)
 
 	FillRect(wnd.x, wnd.y, wnd.width, wnd.height, ' ')

@@ -177,9 +177,9 @@ func (l *TextView) Draw() {
 	x, y := l.Pos()
 	w, h := l.Size()
 
-	bg, fg := RealColor(l.bg, ColorEditBack), RealColor(l.fg, ColorEditText)
+	bg, fg := RealColor(l.bg, l.Style(), ColorEditBack), RealColor(l.fg, l.Style(), ColorEditText)
 	if l.Active() {
-		bg, fg = RealColor(l.bg, ColorEditActiveBack), RealColor(l.fg, ColorEditActiveText)
+		bg, fg = RealColor(l.bg, l.Style(), ColorEditActiveBack), RealColor(l.fg, l.Style(), ColorEditActiveText)
 	}
 
 	SetTextColor(fg)

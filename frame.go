@@ -67,15 +67,20 @@ func (f *Frame) Draw() {
 	PushAttributes()
 	defer PopAttributes()
 
-	if f.border == BorderNone {
-		f.DrawChildren()
-		return
-	}
-
 	x, y := f.Pos()
 	w, h := f.Size()
 
-	fg, bg := RealColor(f.fg, ColorViewText), RealColor(f.bg, ColorViewBack)
+	fg, bg := RealColor(f.fg, f.Style(), ColorViewText), RealColor(f.bg, f.Style(), ColorViewBack)
+
+	if f.border == BorderNone {
+		if bg != ColorDefault {
+			SetBackColor(bg)
+			FillRect(x, y, w, h, ' ')
+		}
+
+		f.DrawChildren()
+		return
+	}
 
 	SetTextColor(fg)
 	SetBackColor(bg)

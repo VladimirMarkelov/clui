@@ -73,9 +73,9 @@ func (l *Label) Draw() {
 	PushAttributes()
 	defer PopAttributes()
 
-	fg, bg := RealColor(l.fg, ColorText), RealColor(l.bg, ColorBack)
+	fg, bg := RealColor(l.fg, l.Style(), ColorText), RealColor(l.bg, l.Style(), ColorBack)
 	if !l.Enabled() {
-		fg = RealColor(l.fg, ColorDisabledText)
+		fg = RealColor(l.fg, l.Style(), ColorDisabledText)
 	}
 
 	SetTextColor(fg)

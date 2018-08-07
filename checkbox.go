@@ -66,11 +66,11 @@ func (c *CheckBox) Draw() {
 	x, y := c.Pos()
 	w, h := c.Size()
 
-	fg, bg := RealColor(c.fg, ColorControlText), RealColor(c.bg, ColorControlBack)
+	fg, bg := RealColor(c.fg, c.Style(), ColorControlText), RealColor(c.bg, c.Style(), ColorControlBack)
 	if !c.Enabled() {
-		fg, bg = RealColor(c.fg, ColorControlDisabledText), RealColor(c.bg, ColorControlDisabledBack)
+		fg, bg = RealColor(c.fg, c.Style(), ColorControlDisabledText), RealColor(c.bg, c.Style(), ColorControlDisabledBack)
 	} else if c.Active() {
-		fg, bg = RealColor(c.fg, ColorControlActiveText), RealColor(c.bg, ColorControlActiveBack)
+		fg, bg = RealColor(c.fg, c.Style(), ColorControlActiveText), RealColor(c.bg, c.Style(), ColorControlActiveBack)
 	}
 
 	parts := []rune(SysObject(ObjCheckBox))

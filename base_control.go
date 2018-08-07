@@ -32,6 +32,7 @@ type BaseControl struct {
 	children      []Control
 	mtx           sync.RWMutex
 	onActive      func(active bool)
+	style         string
 }
 
 var (
@@ -44,6 +45,14 @@ func nextRefId() int64 {
 
 func NewBaseControl() BaseControl {
 	return BaseControl{refID: nextRefId()}
+}
+
+func (c *BaseControl) SetStyle(style string) {
+	c.style = style
+}
+
+func (c *BaseControl) Style() string {
+	return c.style
 }
 
 func (c *BaseControl) RefID() int64 {

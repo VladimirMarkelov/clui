@@ -85,8 +85,8 @@ func (b *ProgressBar) Draw() {
 	PushAttributes()
 	defer PopAttributes()
 
-	fgOff, fgOn := RealColor(b.fg, ColorProgressText), RealColor(b.fgActive, ColorProgressActiveText)
-	bgOff, bgOn := RealColor(b.bg, ColorProgressBack), RealColor(b.bgActive, ColorProgressActiveBack)
+	fgOff, fgOn := RealColor(b.fg, b.Style(), ColorProgressText), RealColor(b.fgActive, b.Style(), ColorProgressActiveText)
+	bgOff, bgOn := RealColor(b.bg, b.Style(), ColorProgressBack), RealColor(b.bgActive, b.Style(), ColorProgressActiveBack)
 
 	parts := []rune(SysObject(ObjProgressBar))
 	cFilled, cEmpty := parts[0], parts[1]
@@ -126,7 +126,7 @@ func (b *ProgressBar) Draw() {
 
 		if title != "" {
 			shift, str := AlignText(title, w, b.align)
-			titleClr := RealColor(b.titleFg, ColorProgressTitleText)
+			titleClr := RealColor(b.titleFg, b.Style(), ColorProgressTitleText)
 			var sOn, sOff string
 			if filled == 0 || shift >= filled {
 				sOff = str

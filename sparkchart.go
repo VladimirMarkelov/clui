@@ -83,7 +83,7 @@ func (b *SparkChart) Draw() {
 	PushAttributes()
 	defer PopAttributes()
 
-	fg, bg := RealColor(b.fg, ColorSparkChartText), RealColor(b.bg, ColorSparkChartBack)
+	fg, bg := RealColor(b.fg, b.Style(), ColorSparkChartText), RealColor(b.bg, b.Style(), ColorSparkChartBack)
 	SetTextColor(fg)
 	SetBackColor(bg)
 	FillRect(b.x, b.y, b.width, b.height, ' ')
@@ -117,8 +117,8 @@ func (b *SparkChart) drawBars() {
 	h := b.height
 	pos := b.x + start
 
-	mxFg, mxBg := RealColor(b.maxFg, ColorSparkChartMaxText), RealColor(b.maxBg, ColorSparkChartMaxBack)
-	brFg, brBg := RealColor(b.fg, ColorSparkChartBarText), RealColor(b.bg, ColorSparkChartBarBack)
+	mxFg, mxBg := RealColor(b.maxFg, b.Style(), ColorSparkChartMaxText), RealColor(b.maxBg, b.Style(), ColorSparkChartMaxBack)
+	brFg, brBg := RealColor(b.fg, b.Style(), ColorSparkChartBarText), RealColor(b.bg, b.Style(), ColorSparkChartBarBack)
 	parts := []rune(SysObject(ObjSparkChart))
 
 	var dt []float64
