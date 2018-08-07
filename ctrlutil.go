@@ -192,7 +192,7 @@ func getLinearControlList(parent Control, fn func(Control) bool) []Control {
 	result := []Control{}
 
 	for _, curr := range parent.Children() {
-		if fn(curr) {
+		if fn != nil && fn(curr) {
 			result = append(result, curr)
 		}
 
