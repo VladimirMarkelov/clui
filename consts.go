@@ -291,6 +291,9 @@ const (
 	EventCloseWindow
 	// Make a control (Target field of Event structure) to recalculate and reposition all its children
 	EventLayout
+	// A scroll-able control's child has been activated, then notify its parent to handle
+	// the scrolling
+	EventActivateChild
 )
 
 // ConfirmationDialog and SelectDialog exit codes

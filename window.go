@@ -239,6 +239,24 @@ func (c *Window) ProcessEvent(ev Event) bool {
 
 			aC := ActiveControl(c)
 			nC := NextControl(c, aC, ev.Key != term.KeyArrowUp)
+
+			var clipped Control
+
+			if aC != nil && aC.Clipped() {
+				clipped = aC
+			} else {
+				clipped = ClippedParent(nC)
+			}
+
+			if clipped != nil {
+				dir := 1
+				if ev.Key != term.KeyArrowUp {
+					dir = -1
+				}
+
+				clipped.ProcessEvent(Event{Type: EventActivateChild, Target: nC, X: dir})
+			}
+
 			if nC != aC {
 				if aC != nil {
 					aC.SetActive(false)

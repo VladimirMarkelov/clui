@@ -165,4 +165,12 @@ type Control interface {
 	SetStyle(style string)
 	// Style returns the custom style grouper/modifier
 	Style() string
+	// SetClipped marks a control as clip-able, meaning the children components will not
+	// affect the control's size - i.e will not make it expand
+	SetClipped(clipped bool)
+	// Clipped returns the current control's clipped flag
+	Clipped() bool
+	// Clipper if the component is clipped then return the clipper geometry, however
+	// the size and pos is returned
+	Clipper() (int, int, int, int)
 }
