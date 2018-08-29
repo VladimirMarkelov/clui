@@ -21,8 +21,14 @@ type Window struct {
 	fixedSize  bool
 
 	onClose        func(Event) bool
-	onKeyDown      func(Event) bool
 	onScreenResize func(Event)
+
+	onKeyDown *keyDownCb
+}
+
+type keyDownCb struct {
+	data interface{}
+	fn   func(evt Event, data interface{}) bool
 }
 
 func CreateWindow(x, y, w, h int, title string) *Window {
@@ -249,7 +255,7 @@ func (c *Window) ProcessEvent(ev Event) bool {
 				return true
 			}
 			if c.onKeyDown != nil {
-				return c.onKeyDown(ev)
+				return c.onKeyDown.fn(ev, c.onKeyDown.data)
 			}
 			return false
 		}
@@ -270,8 +276,12 @@ func (w *Window) OnClose(fn func(Event) bool) {
 
 // OnKeyDown sets the callback that is called when a user presses a key
 // while the Window is active
-func (w *Window) OnKeyDown(fn func(Event) bool) {
-	w.onKeyDown = fn
+func (w *Window) OnKeyDown(fn func(Event, interface{}) bool, data interface{}) {
+	if fn == nil {
+		w.onKeyDown = nil
+	} else {
+		w.onKeyDown = &keyDownCb{data: data, fn: fn}
+	}
 }
 
 // OnScreenResize sets the callback that is called when size of terminal changes
