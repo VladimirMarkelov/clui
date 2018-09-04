@@ -78,6 +78,13 @@ func RefreshScreen() {
 		v := wnd.(*Window)
 		if v.Visible() {
 			wnd.Draw()
+
+			WindowManager().BeginUpdate()
+			PushAttributes()
+			term.Flush()
+			PopAttributes()
+			WindowManager().EndUpdate()
+
 		}
 	}
 
@@ -98,6 +105,7 @@ func AddWindow(posX, posY, width, height int, title string) *Window {
 	comp.windows = append(comp.windows, window)
 	comp.EndUpdate()
 	window.Draw()
+	term.Flush()
 
 	comp.activateWindow(window)
 
