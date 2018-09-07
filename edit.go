@@ -99,11 +99,11 @@ func (e *EditField) Draw() {
 		}
 	}
 
-	fg, bg := RealColor(e.fg, ColorEditText), RealColor(e.bg, ColorEditBack)
+	fg, bg := RealColor(e.fg, e.Style(), ColorEditText), RealColor(e.bg, e.Style(), ColorEditBack)
 	if !e.Enabled() {
-		fg, bg = RealColor(e.fg, ColorDisabledText), RealColor(e.fg, ColorDisabledBack)
+		fg, bg = RealColor(e.fg, e.Style(), ColorDisabledText), RealColor(e.fg, e.Style(), ColorDisabledBack)
 	} else if e.Active() {
-		fg, bg = RealColor(e.fg, ColorEditActiveText), RealColor(e.bg, ColorEditActiveBack)
+		fg, bg = RealColor(e.fg, e.Style(), ColorEditActiveText), RealColor(e.bg, e.Style(), ColorEditActiveBack)
 	}
 
 	SetTextColor(fg)

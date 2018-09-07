@@ -117,7 +117,7 @@ func (b *BarChart) Draw() {
 	PushAttributes()
 	defer PopAttributes()
 
-	fg, bg := RealColor(b.fg, ColorBarChartText), RealColor(b.bg, ColorBarChartBack)
+	fg, bg := RealColor(b.fg, b.Style(), ColorBarChartText), RealColor(b.bg, b.Style(), ColorBarChartBack)
 	SetTextColor(fg)
 	SetBackColor(bg)
 
@@ -235,7 +235,7 @@ func (b *BarChart) drawLegend() {
 
 	PushAttributes()
 	defer PopAttributes()
-	fg, bg := RealColor(b.fg, ColorBarChartText), RealColor(b.bg, ColorBarChartBack)
+	fg, bg := RealColor(b.fg, b.Style(), ColorBarChartText), RealColor(b.bg, b.Style(), ColorBarChartBack)
 
 	parts := []rune(SysObject(ObjBarChart))
 	defRune := parts[0]

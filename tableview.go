@@ -164,8 +164,8 @@ func (l *TableView) drawHeader() {
 	PushAttributes()
 	defer PopAttributes()
 
-	fg, bg := RealColor(l.fg, ColorTableHeaderText), RealColor(l.bg, ColorTableHeaderBack)
-	fgLine := RealColor(l.fg, ColorTableLineText)
+	fg, bg := RealColor(l.fg, l.Style(), ColorTableHeaderText), RealColor(l.bg, l.Style(), ColorTableHeaderBack)
+	fgLine := RealColor(l.fg, l.Style(), ColorTableLineText)
 	x, y := l.Pos()
 	w, _ := l.Size()
 	SetTextColor(fg)
@@ -269,10 +269,10 @@ func (l *TableView) drawCells() {
 	dy := 2
 	maxDy := l.height - 2
 
-	fg, bg := RealColor(l.fg, ColorTableText), RealColor(l.bg, ColorTableBack)
-	fgRow, bgRow := RealColor(l.fg, ColorTableSelectedText), RealColor(l.bg, ColorTableSelectedBack)
-	fgCell, bgCell := RealColor(l.fg, ColorTableActiveCellText), RealColor(l.bg, ColorTableActiveCellBack)
-	fgLine := RealColor(l.fg, ColorTableLineText)
+	fg, bg := RealColor(l.fg, l.Style(), ColorTableText), RealColor(l.bg, l.Style(), ColorTableBack)
+	fgRow, bgRow := RealColor(l.fg, l.Style(), ColorTableSelectedText), RealColor(l.bg, l.Style(), ColorTableSelectedBack)
+	fgCell, bgCell := RealColor(l.fg, l.Style(), ColorTableActiveCellText), RealColor(l.bg, l.Style(), ColorTableActiveCellBack)
+	fgLine := RealColor(l.fg, l.Style(), ColorTableLineText)
 	parts := []rune(SysObject(ObjTableView))
 
 	start := 0
@@ -361,7 +361,7 @@ func (l *TableView) Draw() {
 	x, y := l.Pos()
 	w, h := l.Size()
 
-	bg := RealColor(l.bg, ColorTableBack)
+	bg := RealColor(l.bg, l.Style(), ColorTableBack)
 	SetBackColor(bg)
 	FillRect(x, y+2, w, h-2, ' ')
 	l.drawHeader()

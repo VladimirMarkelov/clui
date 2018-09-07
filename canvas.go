@@ -276,12 +276,12 @@ func DrawText(x, y int, text string) {
 			SetBackColor(elem.Bg)
 			drawn := PutChar(x, y, elem.Ch)
 
-			if unicode.Is(unicode.Scripts["Han"], elem.Ch){
+			if unicode.Is(unicode.Scripts["Han"], elem.Ch) {
 				x += 2
 			} else {
 				x += 1
 			}
-			
+
 			if firstdrawn && !drawn {
 				break
 			}
@@ -432,9 +432,9 @@ func DrawScrollBar(x, y, w, h, pos int) {
 	PushAttributes()
 	defer PopAttributes()
 
-	fg, bg := RealColor(ColorDefault, ColorScrollText), RealColor(ColorDefault, ColorScrollBack)
+	fg, bg := RealColor(ColorDefault, "", ColorScrollText), RealColor(ColorDefault, "", ColorScrollBack)
 	// TODO: add thumb styling
-	// fgThumb, bgThumb := RealColor(ColorDefault, ColorThumbText), RealColor(ColorDefault, ColorThumbBack)
+	// fgThumb, bgThumb := RealColor(ColorDefault, "", ColorThumbText), RealColor(ColorDefault, "", ColorThumbBack)
 	SetTextColor(fg)
 	SetBackColor(bg)
 

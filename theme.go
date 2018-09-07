@@ -508,15 +508,36 @@ func ThemeInfo(name string) ThemeDesc {
 // Attribute selection work this way: if color is not ColorDefault,
 // it is returned as is, otherwise the function tries to load
 // color from the theme.
+//
+// With the style argument themes may be grouped by control, i.e
+// an application may have multiple list controls where they all share
+// the same theme attributes however the same application may have
+// one specific list control with some different theme attributes,
+// in that case the user may call control.SetStyle("custom") and define
+// a set of custom.* attributes, i.e:
+//
+//   custom.EditBox  = white
+//   custom.EditText = black bold
+//   ...
+//
 // clr - current object color
+// style - the theme prefix style set
 // id - color ID in theme
-func RealColor(clr term.Attribute, id string) term.Attribute {
+func RealColor(clr term.Attribute, style string, id string) term.Attribute {
+	var prefix string
+
+	if style != "" {
+		prefix = fmt.Sprintf("%s.", style)
+	}
+
+	ccolor := fmt.Sprintf("%s%s", prefix, id)
+
 	if clr == ColorDefault {
-		clr = SysColor(id)
+		clr = SysColor(ccolor)
 	}
 
 	if clr == ColorDefault {
-		panic("Failed to load color value for " + id)
+		panic("Failed to load color value for " + ccolor)
 	}
 
 	return clr

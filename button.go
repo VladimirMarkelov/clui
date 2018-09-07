@@ -77,13 +77,13 @@ func (b *Button) Draw() {
 	w, h := b.Size()
 
 	fg, bg := b.fg, b.bg
-	shadow := RealColor(b.shadowColor, ColorButtonShadow)
+	shadow := RealColor(b.shadowColor, b.Style(), ColorButtonShadow)
 	if b.disabled {
-		fg, bg = RealColor(fg, ColorButtonDisabledText), RealColor(bg, ColorButtonDisabledBack)
+		fg, bg = RealColor(fg, b.Style(), ColorButtonDisabledText), RealColor(bg, b.Style(), ColorButtonDisabledBack)
 	} else if b.Active() {
-		fg, bg = RealColor(b.fgActive, ColorButtonActiveText), RealColor(b.bgActive, ColorButtonActiveBack)
+		fg, bg = RealColor(b.fgActive, b.Style(), ColorButtonActiveText), RealColor(b.bgActive, b.Style(), ColorButtonActiveBack)
 	} else {
-		fg, bg = RealColor(fg, ColorButtonText), RealColor(bg, ColorButtonBack)
+		fg, bg = RealColor(fg, b.Style(), ColorButtonText), RealColor(bg, b.Style(), ColorButtonBack)
 	}
 
 	dy := int((h - 1) / 2)

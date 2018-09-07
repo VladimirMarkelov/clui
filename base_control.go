@@ -32,6 +32,9 @@ type BaseControl struct {
 	children      []Control
 	mtx           sync.RWMutex
 	onActive      func(active bool)
+	style         string
+	clipped       bool
+	clipper       *rect
 }
 
 var (
@@ -44,6 +47,22 @@ func nextRefId() int64 {
 
 func NewBaseControl() BaseControl {
 	return BaseControl{refID: nextRefId()}
+}
+
+func (c *BaseControl) SetClipped(clipped bool) {
+	c.clipped = clipped
+}
+
+func (c *BaseControl) Clipped() bool {
+	return c.clipped
+}
+
+func (c *BaseControl) SetStyle(style string) {
+	c.style = style
+}
+
+func (c *BaseControl) Style() string {
+	return c.style
 }
 
 func (c *BaseControl) RefID() int64 {
@@ -81,8 +100,22 @@ func (c *BaseControl) Pos() (x int, y int) {
 }
 
 func (c *BaseControl) SetPos(x, y int) {
-	c.x = x
-	c.y = y
+	if c.clipped && c.clipper != nil {
+		cx, cy, _, _ := c.Clipper()
+		px, py := c.Paddings()
+
+		distX := cx - c.x
+		distY := cy - c.y
+
+		c.clipper.x = x + px
+		c.clipper.y = y + py
+
+		c.x = (x - distX) + px
+		c.y = (y - distY) + py
+	} else {
+		c.x = x
+		c.y = y
+	}
 }
 
 func (c *BaseControl) applyConstraints() {
@@ -390,6 +423,10 @@ func (c *BaseControl) AddChild(control Control) {
 		mainCtrl.ResizeChildren()
 		mainCtrl.PlaceChildren()
 	}
+
+	if c.clipped && c.clipper == nil {
+		c.setClipper()
+	}
 }
 
 func (c *BaseControl) Children() []Control {
@@ -443,6 +480,10 @@ func (c *BaseControl) MinimalSize() (w int, h int) {
 	}
 
 	for _, ctrl := range c.children {
+		if ctrl.Clipped() {
+			continue
+		}
+
 		if !ctrl.Visible() {
 			continue
 		}
@@ -482,11 +523,35 @@ func (c *BaseControl) DrawChildren() {
 	PushClip()
 	defer PopClip()
 
-	SetClipRect(c.x+c.padX, c.y+c.padY, c.width-2*c.padX, c.height-2*c.padY)
+	cp := ClippedParent(c)
+	var cTarget Control
+
+	cTarget = c
+	if cp != nil {
+		cTarget = cp
+	}
+
+	x, y, w, h := cTarget.Clipper()
+	SetClipRect(x, y, w, h)
 
 	for _, child := range c.children {
 		child.Draw()
 	}
+}
+
+func (c *BaseControl) Clipper() (int, int, int, int) {
+	clipped := ClippedParent(c)
+
+	if clipped == nil || (c.clipped && c.clipper != nil) {
+		return c.clipper.x, c.clipper.y, c.clipper.w, c.clipper.h
+	}
+
+	return CalcClipper(clipped)
+}
+
+func (c *BaseControl) setClipper() {
+	x, y, w, h := CalcClipper(c)
+	c.clipper = &rect{x: x, y: y, w: w, h: h}
 }
 
 func (c *BaseControl) HitTest(x, y int) HitResult {
@@ -572,4 +637,5 @@ func (c *BaseControl) removeChild(control Control) {
 // Destroy removes an object from its parental chain
 func (c *BaseControl) Destroy() {
 	c.parent.removeChild(c)
+	c.parent.SetConstraints(0, 0)
 }

@@ -2,6 +2,7 @@ package clui
 
 import (
 	xs "github.com/huandu/xstrings"
+	"math"
 )
 
 /*
@@ -12,9 +13,11 @@ is required
 */
 type Frame struct {
 	BaseControl
-	border   BorderStyle
-	children []Control
-	pack     PackType
+	border         BorderStyle
+	children       []Control
+	pack           PackType
+	scrollable     bool
+	lastScrollProp int
 }
 
 /*
@@ -58,6 +61,30 @@ func CreateFrame(parent Control, width, height int, bs BorderStyle, scale int) *
 	return f
 }
 
+func (f *Frame) SetScrollable(scrollable bool) {
+	f.scrollable = scrollable
+
+	if scrollable {
+		px, py := f.Paddings()
+
+		if f.Pack() == Vertical {
+			px += 1
+		}
+
+		if f.Pack() == Horizontal {
+			py += 1
+		}
+
+		f.SetPaddings(px, py)
+	}
+
+	f.SetClipped(scrollable)
+}
+
+func (f *Frame) Scrollable() bool {
+	return f.scrollable
+}
+
 // Repaint draws the control on its View surface
 func (f *Frame) Draw() {
 	if f.hidden {
@@ -67,15 +94,51 @@ func (f *Frame) Draw() {
 	PushAttributes()
 	defer PopAttributes()
 
+	x, y, w, h := f.Clipper()
+
+	if f.scrollable {
+
+		_, fy := f.Pos()
+		_, fh := f.Size()
+		_, fpy := f.Paddings()
+
+		var dist float64
+		prop := 0
+		ctrl := ActiveControl(f)
+
+		if ctrl != nil {
+			var frameProp float64
+
+			_, ty := ctrl.Pos()
+
+			dist = (float64(fy) + float64(fpy)) - float64(ty)
+			dist = math.Sqrt(dist * dist)
+
+			if dist > 0 {
+				frameProp = (dist * 100) / float64(fh)
+			}
+
+			if frameProp > 0 {
+				prop = int(math.Round((float64(h-2) / (100 / frameProp))))
+			}
+
+			f.lastScrollProp = prop
+		}
+
+		DrawScrollBar(x+w, y, 1, h, f.lastScrollProp)
+	}
+
+	fg, bg := RealColor(f.fg, f.Style(), ColorViewText), RealColor(f.bg, f.Style(), ColorViewBack)
+
 	if f.border == BorderNone {
+		if bg != ColorDefault {
+			SetBackColor(bg)
+			FillRect(x, y, w, h, ' ')
+		}
+
 		f.DrawChildren()
 		return
 	}
-
-	x, y := f.Pos()
-	w, h := f.Size()
-
-	fg, bg := RealColor(f.fg, ColorViewText), RealColor(f.bg, ColorViewBack)
 
 	SetTextColor(fg)
 	SetBackColor(bg)
@@ -91,4 +154,49 @@ func (f *Frame) Draw() {
 	}
 
 	f.DrawChildren()
+}
+
+func (f *Frame) ProcessEvent(ev Event) bool {
+	if ev.Type != EventActivateChild || (!f.scrollable || ev.Target == nil) {
+		return false
+	}
+
+	x, y := f.Pos()
+	px, py := f.Paddings()
+
+	cx, cy, cw, ch := f.Clipper()
+
+	tw, th := ev.Target.Size()
+	tx, ty := ev.Target.Pos()
+
+	if ControlInRect(ev.Target, cx, cy, cw, ch) {
+		return false
+	}
+
+	xx := x
+	yy := y
+
+	if (ty+th)-(py/2) > cy+ch {
+		delta := (ty + th) - (cy + ch)
+		yy = y - delta
+	} else if ty < cy {
+		delta := cy - ty
+		yy = y + delta
+	}
+
+	if (tx+tw)-(px/2) > cx+cw {
+		delta := (tx + tw) - (cx + cw)
+		xx = (x - delta)
+	} else if tx < cx {
+		delta := cx - tx
+		xx = x + delta
+	}
+
+	f.x = xx
+	f.y = yy
+
+	f.ResizeChildren()
+	f.PlaceChildren()
+
+	return false
 }

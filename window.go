@@ -21,8 +21,14 @@ type Window struct {
 	fixedSize  bool
 
 	onClose        func(Event) bool
-	onKeyDown      func(Event) bool
 	onScreenResize func(Event)
+
+	onKeyDown *keyDownCb
+}
+
+type keyDownCb struct {
+	data interface{}
+	fn   func(evt Event, data interface{}) bool
 }
 
 func CreateWindow(x, y, w, h int, title string) *Window {
@@ -133,7 +139,7 @@ func (wnd *Window) Draw() {
 	PushAttributes()
 	defer PopAttributes()
 
-	fg, bg := RealColor(wnd.fg, ColorViewText), RealColor(wnd.bg, ColorViewBack)
+	fg, bg := RealColor(wnd.fg, wnd.Style(), ColorViewText), RealColor(wnd.bg, wnd.Style(), ColorViewBack)
 	SetBackColor(bg)
 
 	FillRect(wnd.x, wnd.y, wnd.width, wnd.height, ' ')
@@ -233,6 +239,24 @@ func (c *Window) ProcessEvent(ev Event) bool {
 
 			aC := ActiveControl(c)
 			nC := NextControl(c, aC, ev.Key != term.KeyArrowUp)
+
+			var clipped Control
+
+			if aC != nil && aC.Clipped() {
+				clipped = aC
+			} else {
+				clipped = ClippedParent(nC)
+			}
+
+			if clipped != nil {
+				dir := 1
+				if ev.Key != term.KeyArrowUp {
+					dir = -1
+				}
+
+				clipped.ProcessEvent(Event{Type: EventActivateChild, Target: nC, X: dir})
+			}
+
 			if nC != aC {
 				if aC != nil {
 					aC.SetActive(false)
@@ -249,7 +273,7 @@ func (c *Window) ProcessEvent(ev Event) bool {
 				return true
 			}
 			if c.onKeyDown != nil {
-				return c.onKeyDown(ev)
+				return c.onKeyDown.fn(ev, c.onKeyDown.data)
 			}
 			return false
 		}
@@ -270,8 +294,12 @@ func (w *Window) OnClose(fn func(Event) bool) {
 
 // OnKeyDown sets the callback that is called when a user presses a key
 // while the Window is active
-func (w *Window) OnKeyDown(fn func(Event) bool) {
-	w.onKeyDown = fn
+func (w *Window) OnKeyDown(fn func(Event, interface{}) bool, data interface{}) {
+	if fn == nil {
+		w.onKeyDown = nil
+	} else {
+		w.onKeyDown = &keyDownCb{data: data, fn: fn}
+	}
 }
 
 // OnScreenResize sets the callback that is called when size of terminal changes

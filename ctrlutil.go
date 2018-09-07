@@ -192,7 +192,7 @@ func getLinearControlList(parent Control, fn func(Control) bool) []Control {
 	result := []Control{}
 
 	for _, curr := range parent.Children() {
-		if fn(curr) {
+		if fn != nil && fn(curr) {
 			result = append(result, curr)
 		}
 
@@ -266,8 +266,58 @@ func SendEventToChild(parent Control, ev Event) bool {
 	}
 
 	if child != nil && child != parent {
-		return child.ProcessEvent(ev)
+		ev.Target = child
+		res := child.ProcessEvent(ev)
+
+		if cparent := ClippedParent(child); cparent != nil && cparent != child {
+			cparent.ProcessEvent(ev)
+		}
+
+		return res
 	}
 
 	return false
+}
+
+// CalcClipper calculates the clipper size based on the control's size, position
+// and paddings
+func CalcClipper(c Control) (int, int, int, int) {
+	w, h := c.Size()
+	x, y := c.Pos()
+	px, py := c.Paddings()
+
+	x = x + px
+	y = y + py
+	w = w - 2*px
+	h = h - 2*py
+
+	return x, y, w, h
+}
+
+// ClippedParent finds the first c parent with clipped flag
+func ClippedParent(c Control) Control {
+	var clipped Control
+
+	ctrl := c.Parent()
+	clipped = c
+
+	for ctrl != nil {
+		if ctrl.Clipped() {
+			clipped = ctrl
+			break
+		}
+
+		ctrl = ctrl.Parent()
+	}
+
+	return clipped
+}
+
+// ControlInRect returns true if c is within a given rect
+func ControlInRect(c Control, x int, y int, w int, h int) bool {
+	xx, yy := c.Pos()
+	ww, hh := c.Size()
+
+	return xx >= x && ww <= x+w && yy <= y+h &&
+		yy+hh <= y+h && yy >= y && yy+h >= y
 }

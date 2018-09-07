@@ -87,11 +87,11 @@ func (l *ListBox) drawItems() {
 	maxDy := l.height - 1
 	maxWidth := l.width - 1
 
-	fg, bg := RealColor(l.fg, ColorEditText), RealColor(l.bg, ColorEditBack)
+	fg, bg := RealColor(l.fg, l.Style(), ColorEditText), RealColor(l.bg, l.Style(), ColorEditBack)
 	if l.Active() {
-		fg, bg = RealColor(l.fg, ColorEditActiveText), RealColor(l.bg, ColorEditActiveBack)
+		fg, bg = RealColor(l.fg, l.Style(), ColorEditActiveText), RealColor(l.bg, l.Style(), ColorEditActiveBack)
 	}
-	fgSel, bgSel := RealColor(l.fgActive, ColorSelectionText), RealColor(l.bgActive, ColorSelectionBack)
+	fgSel, bgSel := RealColor(l.fgActive, l.Style(), ColorSelectionText), RealColor(l.bgActive, l.Style(), ColorSelectionBack)
 
 	for curr <= maxCurr && dy <= maxDy {
 		f, b := fg, bg
@@ -122,9 +122,9 @@ func (l *ListBox) Draw() {
 	x, y := l.Pos()
 	w, h := l.Size()
 
-	fg, bg := RealColor(l.fg, ColorEditText), RealColor(l.bg, ColorEditBack)
+	fg, bg := RealColor(l.fg, l.Style(), ColorEditText), RealColor(l.bg, l.Style(), ColorEditBack)
 	if l.Active() {
-		fg, bg = RealColor(l.fg, ColorEditActiveText), RealColor(l.bg, ColorEditActiveBack)
+		fg, bg = RealColor(l.fg, l.Style(), ColorEditActiveText), RealColor(l.bg, l.Style(), ColorEditActiveBack)
 	}
 	SetTextColor(fg)
 	SetBackColor(bg)

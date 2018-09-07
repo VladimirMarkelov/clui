@@ -157,4 +157,20 @@ type Control interface {
 	// it implies this control will stop receiving events and will not be drawn nor
 	// will impact on other objects position and size calculation
 	Destroy()
+	// SetStyle sets a control's custom style grouper/modifier, with a style set
+	// the control will prefix the control theme with style, i.e if a button is modified
+	// and set style to "MyCustom" then the theme will engine will first attempt to apply
+	// MyCustomButtonBack and MyCustomButtonText if not present then apply the default
+	// and standard ButtonBack and ButtonText
+	SetStyle(style string)
+	// Style returns the custom style grouper/modifier
+	Style() string
+	// SetClipped marks a control as clip-able, meaning the children components will not
+	// affect the control's size - i.e will not make it expand
+	SetClipped(clipped bool)
+	// Clipped returns the current control's clipped flag
+	Clipped() bool
+	// Clipper if the component is clipped then return the clipper geometry, however
+	// the size and pos is returned
+	Clipper() (int, int, int, int)
 }
