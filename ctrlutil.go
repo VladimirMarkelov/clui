@@ -71,6 +71,10 @@ func ChildAt(parent Control, x, y int) Control {
 	var ctrl Control
 	ctrl = parent
 	for _, child := range parent.Children() {
+		if !child.Visible() {
+			continue
+		}
+
 		check := ChildAt(child, x, y)
 		if check != nil {
 			ctrl = check
