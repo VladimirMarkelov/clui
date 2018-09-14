@@ -156,6 +156,20 @@ func (f *Frame) Draw() {
 	f.DrawChildren()
 }
 
+// ScrollTo in case of a scrollable frame this api will scroll the content
+// without adjusting the clipper
+func (f *Frame) ScrollTo(x int, y int) {
+	if !f.scrollable {
+		return
+	}
+
+	f.x = x
+	f.y = y
+
+	f.ResizeChildren()
+	f.PlaceChildren()
+}
+
 func (f *Frame) ProcessEvent(ev Event) bool {
 	if ev.Type != EventActivateChild || (!f.scrollable || ev.Target == nil) {
 		return false
