@@ -546,7 +546,7 @@ func (c *BaseControl) Clipper() (int, int, int, int) {
 		return c.clipper.x, c.clipper.y, c.clipper.w, c.clipper.h
 	}
 
-	return CalcClipper(clipped)
+	return CalcClipper(c)
 }
 
 func (c *BaseControl) setClipper() {
