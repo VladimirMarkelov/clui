@@ -19,6 +19,7 @@ type Window struct {
 	hidden     bool
 	immovable  bool
 	fixedSize  bool
+	border     BorderStyle
 
 	onClose        func(Event) bool
 	onScreenResize func(Event)
@@ -51,6 +52,7 @@ func CreateWindow(x, y, w, h int, title string) *Window {
 	wnd.SetPaddings(1, 1)
 	wnd.SetGaps(1, 0)
 	wnd.SetScale(1)
+	wnd.SetBorder(BorderAuto)
 
 	return wnd
 }
@@ -75,10 +77,15 @@ func (wnd *Window) drawFrame() {
 	defer PopAttributes()
 
 	var bs BorderStyle
-	if wnd.inactive {
-		bs = BorderThin
+	if wnd.border == BorderAuto {
+		if wnd.inactive {
+			bs = BorderThin
+		} else {
+			bs = BorderThick
+		}
+	} else if wnd.border == BorderNone {
 	} else {
-		bs = BorderThick
+		bs = wnd.border
 	}
 
 	DrawFrame(wnd.x, wnd.y, wnd.width, wnd.height, bs)
@@ -305,6 +312,16 @@ func (w *Window) OnKeyDown(fn func(Event, interface{}) bool, data interface{}) {
 // OnScreenResize sets the callback that is called when size of terminal changes
 func (w *Window) OnScreenResize(fn func(Event)) {
 	w.onScreenResize = fn
+}
+
+// Border returns the default window border
+func (w *Window) Border() BorderStyle {
+	return w.border
+}
+
+// SetBorder changes the default window border
+func (w *Window) SetBorder(border BorderStyle) {
+	w.border = border
 }
 
 // SetMaximized opens the view to full screen or restores its

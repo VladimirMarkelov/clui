@@ -21,7 +21,7 @@ const (
 
 // Predefined types
 type (
-	// BorderStyle is a kind of frame: none, single, and double
+	// BorderStyle is a kind of frame: auto, none, thin, and thick
 	BorderStyle int
 	// ViewButton is a set of buttons displayed in a view title
 	ViewButton int
@@ -90,7 +90,8 @@ type Event struct {
 
 // BorderStyle constants
 const (
-	BorderNone BorderStyle = iota
+	BorderAuto BorderStyle = iota - 1
+	BorderNone
 	BorderThin
 	BorderThick
 )
