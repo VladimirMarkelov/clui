@@ -10,8 +10,9 @@ import (
 // one object of this type
 type Composer struct {
 	// list of visible Views
-	windows  []Control
-	consumer Control
+	windows      []Control
+	windowBorder BorderStyle
+	consumer     Control
 	// last pressed key - to make repeatable actions simpler, e.g, at first
 	// one presses Ctrl+S and then just repeatedly presses arrow lest to
 	// resize Window
@@ -34,6 +35,7 @@ var (
 func initComposer() {
 	comp = new(Composer)
 	comp.windows = make([]Control, 0)
+	comp.windowBorder = BorderAuto
 	comp.consumer = nil
 	comp.lastKey = term.KeyEsc
 }
@@ -100,6 +102,7 @@ func RefreshScreen() {
 // title is a Window title
 func AddWindow(posX, posY, width, height int, title string) *Window {
 	window := CreateWindow(posX, posY, width, height, title)
+	window.SetBorder(comp.windowBorder)
 
 	comp.BeginUpdate()
 	comp.windows = append(comp.windows, window)
@@ -112,6 +115,16 @@ func AddWindow(posX, posY, width, height int, title string) *Window {
 	RefreshScreen()
 
 	return window
+}
+
+// Border returns the default window border
+func (c *Composer) BorderStyle() BorderStyle {
+	return c.windowBorder
+}
+
+// SetBorder changes the default window border
+func (c *Composer) SetBorder(border BorderStyle) {
+	c.windowBorder = border
 }
 
 // BeginUpdate locks any screen update until EndUpdate is called.

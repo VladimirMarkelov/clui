@@ -381,8 +381,12 @@ func DrawFrame(x, y, w, h int, border BorderStyle) {
 	var chars string
 	if border == BorderThick {
 		chars = SysObject(ObjDoubleBorder)
-	} else {
+	} else if border == BorderThin {
 		chars = SysObject(ObjSingleBorder)
+	} else if border == BorderNone {
+		chars = "      "
+	} else {
+		chars = "      "
 	}
 
 	parts := []rune(chars)

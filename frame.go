@@ -40,6 +40,10 @@ func CreateFrame(parent Control, width, height int, bs BorderStyle, scale int) *
 		height = 3
 	}
 
+	if bs == BorderAuto {
+		bs = BorderNone
+	}
+
 	f.SetSize(width, height)
 	f.SetConstraints(width, height)
 	f.border = bs
