@@ -13,6 +13,8 @@ type Radio struct {
 	BaseControl
 	group    *RadioGroup
 	selected bool
+
+	onChange func(bool)
 }
 
 /*
@@ -39,6 +41,8 @@ func CreateRadio(parent Control, width int, title string, scale int) *Radio {
 	c.SetTitle(title)
 	c.SetTabStop(true)
 	c.SetScale(scale)
+
+	c.onChange = nil
 
 	if parent != nil {
 		parent.AddChild(c)
@@ -104,7 +108,7 @@ func (c *Radio) ProcessEvent(event Event) bool {
 		return false
 	}
 
-	if (event.Type == EventKey && event.Key == term.KeySpace) || event.Type == EventMouse {
+	if (event.Type == EventKey && event.Key == term.KeySpace) || event.Type == EventClick {
 		if c.group == nil {
 			c.SetSelected(true)
 		} else {
@@ -120,6 +124,10 @@ func (c *Radio) ProcessEvent(event Event) bool {
 // the method directly, it is for RadioGroup control
 func (c *Radio) SetSelected(val bool) {
 	c.selected = val
+
+	if c.onChange != nil {
+		go c.onChange(val)
+	}
 }
 
 // Selected returns if the radio is selected
@@ -130,4 +138,13 @@ func (c *Radio) Selected() bool {
 // SetGroup sets the radio group to which the radio belongs
 func (c *Radio) SetGroup(group *RadioGroup) {
 	c.group = group
+}
+
+// OnChange sets the callback that is called whenever the state
+// of the Radio is changed. Argument of callback is the current
+func (c *Radio) OnChange(fn func(bool)) {
+	c.mtx.Lock()
+	defer c.mtx.Unlock()
+
+	c.onChange = fn
 }
