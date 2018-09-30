@@ -797,8 +797,7 @@ func (l *TableView) ProcessEvent(event Event) bool {
 		case term.KeyPgup:
 			l.moveUp(l.height - 3)
 			return true
-		case term.KeyCtrlM:
-		case term.KeyF2:
+		case term.KeyCtrlM, term.KeyF2:
 			if l.selectedRow != -1 && l.selectedCol != -1 && l.onAction != nil {
 				ev := TableEvent{Action: TableActionEdit, Col: l.selectedCol, Row: l.selectedRow}
 				l.onAction(ev)

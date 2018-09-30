@@ -1,3 +1,11 @@
+2018-09-30 - version 0.9.0 RC4
+[+] New feature: borderless windows (thanks to Mark D Horn)
+[+] ScrollTo API for scrollable frame
+[*] Clipper fix
+[*] ChildAt should skip hidden controls and skip a control if its parent
+    is invisble
+[*] Enter key did not work in TableView control
+
 2018-09-06 - version 0.9.0 RC3 (Thanks to Leandro Dorileo)
 [+] New big feature: scrollable Frame
 [+] Custom theme support: overriding theme colors with custom ones
