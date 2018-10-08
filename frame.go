@@ -101,7 +101,6 @@ func (f *Frame) Draw() {
 	x, y, w, h := f.Clipper()
 
 	if f.scrollable {
-
 		_, fy := f.Pos()
 		_, fh := f.Size()
 		_, fpy := f.Paddings()
@@ -146,7 +145,9 @@ func (f *Frame) Draw() {
 
 	SetTextColor(fg)
 	SetBackColor(bg)
-	DrawFrame(x, y, w, h, f.border)
+	fx, fy := f.Pos()
+	fw, fh := f.Size()
+	DrawFrame(fx, fy, fw, fh, f.border)
 
 	if f.title != "" {
 		str := f.title
