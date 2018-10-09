@@ -99,10 +99,10 @@ func (f *Frame) Draw() {
 	defer PopAttributes()
 
 	x, y, w, h := f.Clipper()
+	fx, fy := f.Pos()
+	fw, fh := f.Size()
 
 	if f.scrollable {
-		_, fy := f.Pos()
-		_, fh := f.Size()
 		_, fpy := f.Paddings()
 
 		var dist float64
@@ -145,17 +145,15 @@ func (f *Frame) Draw() {
 
 	SetTextColor(fg)
 	SetBackColor(bg)
-	fx, fy := f.Pos()
-	fw, fh := f.Size()
 	DrawFrame(fx, fy, fw, fh, f.border)
 
 	if f.title != "" {
 		str := f.title
 		raw := UnColorizeText(str)
-		if xs.Len(raw) > w-2 {
-			str = SliceColorized(str, 0, w-2-3) + "..."
+		if xs.Len(raw) > fw-2 {
+			str = SliceColorized(str, 0, fw-2-3) + "..."
 		}
-		DrawText(x+1, y, str)
+		DrawText(fx+1, fy, str)
 	}
 
 	f.DrawChildren()
