@@ -1,3 +1,16 @@
+2018-11-09 - version 1.0.0 RC6
+[*] If no error is found in the next few weeks, this release will become 1.0.
+    It is high time to release 1.0. Everything looks working.
+[+] TableView new method VisibleArea - returns first visible column and row,
+    and the number of visible columns and rows. It can be useful to prepare
+    data beforehand to draw the data faster
+[+] Table new event OnBeforeDraw(firstCol, firstRow, colCount, rowCount int).
+    The event is fired right before TableView is going to draw itself. So the
+    application can prepare all data in one step and then fetch them quickly
+    from the cache. The arguments of a callback are the same as returns values
+    of VisibleArea method
+[+] Added new demo tableview-preload to show how to use new event
+
 2018-10-08 - version 0.9.0 RC5
 [*] Fix Frame border drawing
 
@@ -6,7 +19,7 @@
 [+] ScrollTo API for scrollable frame
 [*] Clipper fix
 [*] ChildAt should skip hidden controls and skip a control if its parent
-    is invisble
+    is invisible
 [*] Enter key did not work in TableView control
 
 2018-09-06 - version 0.9.0 RC3 (Thanks to Leandro Dorileo)

@@ -35,14 +35,19 @@ Events:
   OnKeyPress - called every time a user presses a key. Callback should
         return true if TableView must skip internal key processing.
         E.g, a user can disable emitting TableActionDelete event by
-        adding callback OnKeyPress and retun true in case of Delete
+        adding callback OnKeyPress and return true in case of Delete
         key is pressed
   OnSelectCell - called in case of the currently selected row or
         column is changed
+  OnBeforeDraw - called right before the TableView is going to repaint
+        itself. It can be used to prepare all the data beforehand and
+        then quickly use cached data inside OnDrawCell. Callback
+        receives 4 arguments: first visible column, first visible row,
+        number of visible columns, number of visible rows.
 */
 type TableView struct {
 	BaseControl
-	// own listbox members
+	// own TableView members
 	topRow        int
 	topCol        int
 	selectedRow   int
@@ -57,6 +62,7 @@ type TableView struct {
 	onAction     func(TableEvent)
 	onKeyPress   func(term.Key) bool
 	onSelectCell func(int, int)
+	onBeforeDraw func(int, int, int, int)
 
 	// internal variable to avoid sending onSelectCell twice or more
 	// in case of current cell is unchanged
@@ -81,7 +87,7 @@ type Column struct {
 // will be empty. In addition to it, the callback can
 // change Bg, Fg, and Alignment to display customizes
 // info. All other non-mentioned fields are for a user
-// convinience and used to describe the cell more detailed,
+// convenience and used to describe the cell more detailed,
 // changing that fields affects nothing
 type ColumnDrawInfo struct {
 	// row number
@@ -121,7 +127,7 @@ type TableEvent struct {
 NewTableView creates a new frame.
 view - is a View that manages the control
 parent - is container that keeps the control. The same View can be a view and a parent at the same time.
-width and heigth - are minimal size of the control.
+width and height - are minimal size of the control.
 scale - the way of scaling the control when the parent is resized. Use DoNotScale constant if the
 control should keep its original size.
 */
@@ -361,6 +367,11 @@ func (l *TableView) Draw() {
 	x, y := l.Pos()
 	w, h := l.Size()
 
+	if l.onBeforeDraw != nil {
+		firstCol, firstRow, colCount, rowCount := l.VisibleArea()
+		l.onBeforeDraw(firstCol, firstRow, colCount, rowCount)
+	}
+
 	bg := RealColor(l.bg, l.Style(), ColorTableBack)
 	SetBackColor(bg)
 	FillRect(x, y+2, w, h-2, ' ')
@@ -524,7 +535,7 @@ func (l *TableView) isColVisible(idx int) bool {
 }
 
 // EnsureColVisible scrolls the table horizontally
-// to make the curently selected column fully visible
+// to make the currently selected column fully visible
 func (l *TableView) EnsureColVisible() {
 	if l.isColVisible(l.selectedCol) {
 		return
@@ -567,7 +578,7 @@ func (l *TableView) EnsureColVisible() {
 }
 
 // EnsureRowVisible scrolls the table vertically
-// to make the curently selected row visible
+// to make the currently selected row visible
 func (l *TableView) EnsureRowVisible() {
 	length := l.rowCount
 
@@ -935,9 +946,8 @@ func (l *TableView) OnKeyPress(fn func(term.Key) bool) {
 // a cell
 func (l *TableView) OnDrawCell(fn func(*ColumnDrawInfo)) {
 	l.mtx.Lock()
-	defer l.mtx.Unlock()
-
 	l.onDrawCell = fn
+	l.mtx.Unlock()
 }
 
 // OnAction is called when the table wants a user application to
@@ -992,4 +1002,54 @@ func (l *TableView) SetSelectedCol(col int) {
 		l.EnsureColVisible()
 		l.emitSelectionChange()
 	}
+}
+
+// OnBeforeDraw is called when TableView is going to draw its cells.
+// Can be used to precache the data, and make OnDrawCell faster.
+// Callback receives 4 arguments: first visible column, first visible row,
+// the number of visible columns, the number of visible rows
+func (l *TableView) OnBeforeDraw(fn func(int, int, int, int)) {
+	l.mtx.Lock()
+	l.onBeforeDraw = fn
+	l.mtx.Unlock()
+}
+
+// VisibleArea returns which rows and columns are currently visible. It can be
+// used instead of OnBeforeDraw event to prepare the data for drawing without
+// waiting until TableView starts drawing itself.
+// It can be useful in case of you update your database, so at the same moment
+// you can request the visible area and update database cache - it can improve
+// performance.
+// Returns:
+// * firstCol - first visible column
+// * firstRow - first visible row
+// * colCount - the number of visible columns
+// * rowCount - the number of visible rows
+func (l *TableView) VisibleArea() (firstCol, firstRow, colCount, rowCount int) {
+	firstRow = l.topRow
+	maxDy := l.height - 3
+	if firstRow+maxDy < l.rowCount {
+		rowCount = maxDy
+	} else {
+		rowCount = l.rowCount - l.topRow
+	}
+
+	total := l.width - 1
+	if l.showRowNo {
+		total -= l.counterWidth()
+		if l.showVLines {
+			total--
+		}
+	}
+
+	colNo := l.topCol
+	colCount = 0
+	for colNo < len(l.columns) && total > 0 {
+		w := l.columns[colNo].Width
+		total -= w
+		colNo++
+		colCount++
+	}
+
+	return l.topCol, l.topRow, colCount, rowCount
 }

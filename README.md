@@ -7,7 +7,7 @@ Command Line User Interface (Console UI inspired by TurboVision) with built-in t
 
 
 ## Current version
-The current version is 0.9.0 RC5. Please see details in [changelog](./changelog).
+The current version is 1.0.0 RC6. Please see details in [changelog](./changelog).
 
 ## Applications that uses the library
 * Terminal FB2 reader(termfb2): https://github.com/VladimirMarkelov/termfb2
