@@ -7,7 +7,7 @@ Command Line User Interface (Console UI inspired by TurboVision) with built-in t
 
 
 ## Current version
-The current version is 1.0.0 RC6. Please see details in [changelog](./changelog).
+The current version is 1.0.0. Please see details in [changelog](./changelog).
 
 ## Applications that uses the library
 * Terminal FB2 reader(termfb2): https://github.com/VladimirMarkelov/termfb2
@@ -29,6 +29,7 @@ The current version is 1.0.0 RC6. Please see details in [changelog](./changelog)
 * TextView (ListBox-alike control with vertical and horizontal scroll, and wordwrap mode)
 * ProgressBar (Vertical and horizontal. The latter one supports custom text over control)
 * Frame (A decorative control that can be a container for other controls as well)
+* Scrollable frame
 * CheckBox (Simple check box)
 * Radio (Simple radio button. Useless alone - should be used along with RadioGroup)
 * RadioGroup (Non-visual control to manage a group of a few RadioButtons)
@@ -40,7 +41,6 @@ The current version is 1.0.0 RC6. Please see details in [changelog](./changelog)
 * GridView (Table to show structured data - only virtual and readonly mode with scroll support)
 * [FilePicker](/docs/fselect.md)
 * LoginDialog - a simple authorization dialog with two fields: Username and Password
-* Scrollable frame
 
 ## Screenshots
 The main demo (theme changing and radio group control)
