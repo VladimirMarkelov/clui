@@ -5,7 +5,7 @@ import (
 	term "github.com/nsf/termbox-go"
 )
 
-type TextReader struct {
+type TextDisplay struct {
 	BaseControl
 	colorized bool
 	topLine   int
@@ -15,8 +15,16 @@ type TextReader struct {
 	onPositionChanged func(int, int)
 }
 
-func CreateTextReader(parent Control, width, height int, scale int) *TextReader {
-	l := new(TextReader)
+// TextReader is deprecated due to its confusing name. Use TextDisplay instead.
+// In next major library version TextReader will be removed
+type TextReader = TextDisplay
+
+func CreateTextReader(parent Control, width, height int, scale int) *TextDisplay {
+	return CreateTextDisplay(parent, width, height, scale)
+}
+
+func CreateTextDisplay(parent Control, width, height int, scale int) *TextDisplay {
+	l := new(TextDisplay)
 	l.BaseControl = NewBaseControl()
 
 	if height == AutoSize {
@@ -42,7 +50,7 @@ func CreateTextReader(parent Control, width, height int, scale int) *TextReader 
 	return l
 }
 
-func (l *TextReader) drawText() {
+func (l *TextDisplay) drawText() {
 	if l.onDrawLine == nil {
 		return
 	}
@@ -80,7 +88,7 @@ func (l *TextReader) drawText() {
 }
 
 // Repaint draws the control on its View surface
-func (l *TextReader) Draw() {
+func (l *TextDisplay) Draw() {
 	if l.hidden {
 		return
 	}
@@ -102,7 +110,7 @@ func (l *TextReader) Draw() {
 	l.drawText()
 }
 
-func (l *TextReader) home() {
+func (l *TextDisplay) home() {
 	if l.topLine != 0 {
 		l.topLine = 0
 
@@ -112,7 +120,7 @@ func (l *TextReader) home() {
 	}
 }
 
-func (l *TextReader) end() {
+func (l *TextDisplay) end() {
 	if l.lineCount > 0 && l.topLine != l.lineCount-1 {
 		l.topLine = l.lineCount - 1
 
@@ -122,7 +130,7 @@ func (l *TextReader) end() {
 	}
 }
 
-func (l *TextReader) moveUp(count int) {
+func (l *TextDisplay) moveUp(count int) {
 	if l.topLine != 0 {
 		l.topLine -= count
 		if l.topLine < 0 {
@@ -135,7 +143,7 @@ func (l *TextReader) moveUp(count int) {
 	}
 }
 
-func (l *TextReader) moveDown(count int) {
+func (l *TextDisplay) moveDown(count int) {
 	if l.lineCount > 0 && l.topLine != l.lineCount-1 {
 		l.topLine += count
 		if l.topLine > l.lineCount-1 {
@@ -148,7 +156,7 @@ func (l *TextReader) moveDown(count int) {
 	}
 }
 
-func (l *TextReader) processMouseClick(ev Event) bool {
+func (l *TextDisplay) processMouseClick(ev Event) bool {
 	if ev.Key != term.MouseLeft {
 		return false
 	}
@@ -171,7 +179,7 @@ processes an event it should return true. If the method returns false it means
 that the control do not want or cannot process the event and the caller sends
 the event to the control parent
 */
-func (l *TextReader) ProcessEvent(event Event) bool {
+func (l *TextDisplay) ProcessEvent(event Event) bool {
 	if !l.Active() || !l.Enabled() {
 		return false
 	}
@@ -224,7 +232,7 @@ func (l *TextReader) ProcessEvent(event Event) bool {
 
 // OnDrawLine is called every time the reader is going to display a line
 // the argument of the function is the line number to display
-func (l *TextReader) OnDrawLine(fn func(int) string) {
+func (l *TextDisplay) OnDrawLine(fn func(int) string) {
 	l.onDrawLine = fn
 }
 
@@ -232,15 +240,15 @@ func (l *TextReader) OnDrawLine(fn func(int) string) {
 // the total number of lines is changed
 // Callback gets two numbers: the current top line, and the total number of
 // lines. Top line number starts from 0.
-func (l *TextReader) OnPositionChanged(fn func(int, int)) {
+func (l *TextDisplay) OnPositionChanged(fn func(int, int)) {
 	l.onPositionChanged = fn
 }
 
-func (l *TextReader) LineCount() int {
+func (l *TextDisplay) LineCount() int {
 	return l.lineCount
 }
 
-func (l *TextReader) SetLineCount(lineNo int) {
+func (l *TextDisplay) SetLineCount(lineNo int) {
 	if l.topLine == lineNo {
 		return
 	}
@@ -255,11 +263,11 @@ func (l *TextReader) SetLineCount(lineNo int) {
 	}
 }
 
-func (l *TextReader) TopLine() int {
+func (l *TextDisplay) TopLine() int {
 	return l.topLine
 }
 
-func (l *TextReader) SetTopLine(top int) {
+func (l *TextDisplay) SetTopLine(top int) {
 	if top < l.lineCount {
 		l.topLine = top
 

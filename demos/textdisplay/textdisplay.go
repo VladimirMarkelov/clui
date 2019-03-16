@@ -5,10 +5,10 @@ import (
 	ui "github.com/VladimirMarkelov/clui"
 )
 
-func createView() *ui.TextReader {
+func createView() *ui.TextDisplay {
 
-	view := ui.AddWindow(0, 0, 10, 7, "TableView Demo")
-	bch := ui.CreateTextReader(view, 45, 24, 1)
+	view := ui.AddWindow(0, 0, 10, 7, "TextDisplay Demo")
+	bch := ui.CreateTextDisplay(view, 45, 24, 1)
 	ui.ActivateControl(view, bch)
 
 	return bch
@@ -21,8 +21,8 @@ func mainLoop() {
 	defer ui.DeinitLibrary()
 
 	b := createView()
-    _ = b
-    b.SetLineCount(50)
+	_ = b
+	b.SetLineCount(50)
 	b.OnDrawLine(func(ind int) string {
 		return fmt.Sprintf("%03d line line line", ind+1)
 	})
