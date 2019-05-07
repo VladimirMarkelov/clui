@@ -1,16 +1,16 @@
-# goTV original idea ![](https://travis-ci.org/VladimirMarkelov/clui.svg)
+# goTV
 Command Line User Interface (Console UI inspired by TurboVision) with built-in theme support. Please see screenshots of working examples at the end of the README.
 
 ## Installation
 
-    go get -u github.com/VladimirMarkelov/clui
+    go get -u github.com/propspero78/goTV
 
 
 ## Current version
 The current version is 1.1.0. Please see details in [changelog](./changelog).
 
 ## Applications that uses the library
-* Terminal FB2 reader(termfb2): https://github.com/VladimirMarkelov/termfb2
+* Terminal FB2 reader(termfb2): https://github.com/VladimirMarkelov/termfb2 (original idea)
 
 ## Documentation
 * [Introduction](/docs/intro.md)
