@@ -4,6 +4,7 @@ import (
 	term "github.com/nsf/termbox-go"
 	"sync"
 	мКнст "./пакКонстанты"
+	мИнт "./пакИнтерфейсы"
 )
 
 // Composer is a service object that manages Views and console, processes
@@ -11,9 +12,9 @@ import (
 // one object of this type
 type Composer struct {
 	// list of visible Views
-	windows      []Control
+	windows      []мИнт.ИВиджет
 	windowBorder мКнст.BorderStyle
-	consumer     Control
+	consumer     мИнт.ИВиджет
 	// last pressed key - to make repeatable actions simpler, e.g, at first
 	// one presses Ctrl+S and then just repeatedly presses arrow lest to
 	// resize Window
@@ -53,7 +54,7 @@ func WindowManager() *Composer {
 // this function the control will recieve all mouse and keyboard events even
 // if it is not active or mouse is outside it. Useful to implement dragging
 // or alike stuff
-func GrabEvents(c Control) {
+func GrabEvents(c мИнт.ИВиджет) {
 	comp.consumer = c
 }
 
@@ -63,7 +64,7 @@ func ReleaseEvents() {
 	comp.consumer = nil
 }
 
-func termboxEventToLocal(ev term.Event) мКнст.Event {
+func termboxEventToLocal(ev term.Event) мИнт.ИСобытие {
 	e := мКнст.Event{Type: мКнст.EventType(ev.Type), Ch: ev.Ch,
 		Key: ev.Key, Err: ev.Err, X: ev.MouseX, Y: ev.MouseY,
 		Mod: ev.Mod, Width: ev.Width, Height: ev.Height}
@@ -146,16 +147,16 @@ func (c *Composer) EndUpdate() {
 	c.mtx.Unlock()
 }
 
-func (c *Composer) getWindowList() []Control {
+func (c *Composer) getWindowList() []мИнт.ИВиджет {
 	c.mtx.RLock()
 	defer c.mtx.RUnlock()
 
-	arr_copy := make([]Control, len(c.windows))
+	arr_copy := make([]мИнт.ИВиджет, len(c.windows))
 	copy(arr_copy, c.windows)
 	return arr_copy
 }
 
-func (c *Composer) checkWindowUnderMouse(screenX, screenY int) (Control, мКнст.HitResult) {
+func (c *Composer) checkWindowUnderMouse(screenX, screenY int) (мИнт.ИВиджет, мИнт.HitResult) {
 	windows := c.getWindowList()
 	if len(windows) == 0 {
 		return nil, мКнст.HitOutside
@@ -172,7 +173,7 @@ func (c *Composer) checkWindowUnderMouse(screenX, screenY int) (Control, мКн�
 	return nil, мКнст.HitOutside
 }
 
-func (c *Composer) activateWindow(window Control) bool {
+func (c *Composer) activateWindow(window мИнт.ИВиджет) bool {
 	windows := c.getWindowList()
 	if c.topWindow() == window {
 		for _, v := range windows {
@@ -256,7 +257,7 @@ func (c *Composer) moveActiveWindowToBottom() bool {
 	return true
 }
 
-func (c *Composer) sendEventToActiveWindow(ev мКнст.Event) bool {
+func (c *Composer) sendEventToActiveWindow(ev мИнт.ИВиджет) bool {
 	view := c.topWindow()
 	if view != nil {
 		return view.ProcessEvent(ev)
@@ -265,7 +266,7 @@ func (c *Composer) sendEventToActiveWindow(ev мКнст.Event) bool {
 	return false
 }
 
-func (c *Composer) topWindow() Control {
+func (c *Composer) topWindow() мИнт.ИВиджет {
 	windows := c.getWindowList()
 
 	if len(windows) == 0 {
@@ -275,7 +276,7 @@ func (c *Composer) topWindow() Control {
 	return windows[len(windows)-1]
 }
 
-func (c *Composer) resizeTopWindow(ev мКнст.Event) bool {
+func (c *Composer) resizeTopWindow(ev мИнт.ИСобытие) bool {
 	view := c.topWindow()
 	if view == nil {
 		return false
@@ -309,7 +310,7 @@ func (c *Composer) resizeTopWindow(ev мКнст.Event) bool {
 	return true
 }
 
-func (c *Composer) moveTopWindow(ev мКнст.Event) bool {
+func (c *Composer) moveTopWindow(ev мИнт.ИСобытие) bool {
 	view := c.topWindow()
 	if view != nil {
 		topwindow, ok := view.(*Window)
@@ -362,7 +363,7 @@ func (c *Composer) closeTopWindow() {
 	}
 }
 
-func (c *Composer) processWindowDrag(ev мКнст.Event) {
+func (c *Composer) processWindowDrag(ev мИнт.ИСобытие) {
 	if ev.Mod != term.ModMotion || c.dragType == мКнст.DragNone {
 		return
 	}
@@ -491,7 +492,7 @@ func (c *Composer) processWindowDrag(ev мКнст.Event) {
 	}
 }
 
-func (c *Composer) processMouse(ev мКнст.Event) {
+func (c *Composer) processMouse(ev мИнт.ИСобытие) {
 	if c.consumer != nil {
 		tmp := c.consumer
 		tmp.ProcessEvent(ev)
@@ -587,12 +588,12 @@ func Stop() {
 }
 
 // DestroyWindow removes the Window from the list of managed Windows
-func (c *Composer) DestroyWindow(view Control) {
+func (c *Composer) DestroyWindow(view мИнт.ИВиджет) {
 	ev := мКнст.Event{Type: мКнст.EventClose}
 	c.sendEventToActiveWindow(ev)
 
 	windows := c.getWindowList()
-	var newOrder []Control
+	var newOrder []мИнт.ИВиджет
 	for i := 0; i < len(windows); i++ {
 		if windows[i] != view {
 			newOrder = append(newOrder, windows[i])
@@ -622,7 +623,7 @@ func IsDeadKey(key term.Key) bool {
 	return false
 }
 
-func (c *Composer) processKey(ev мКнст.Event) {
+func (c *Composer) processKey(ev мИнт.ИСобытие) {
 	if ev.Key == term.KeyEsc {
 		if IsDeadKey(c.lastKey) {
 			c.lastKey = term.KeyEsc
@@ -698,7 +699,7 @@ func (c *Composer) processKey(ev мКнст.Event) {
 	}
 }
 //ProcessEvent --
-func ProcessEvent(ev мКнст.Event) {
+func ProcessEvent(ev мИнт.ИСобытие) {
 	switch ev.Type {
 	case мКнст.EventCloseWindow:
 		comp.closeTopWindow()

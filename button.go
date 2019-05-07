@@ -6,6 +6,7 @@ import (
 	"sync/atomic"
 	"time"
 	мКнст "./пакКонстанты"
+	мИнт "./пакИнтерфейсы"
 )
 
 /*
@@ -14,11 +15,11 @@ emits OnClick event. Event has only one valid field Sender.
 Button can be clicked with mouse or using space on keyboard while the Button is active.
 */
 type Button struct {
-	BaseControl
+	*BaseControl
 	shadowColor term.Attribute
 	bgActive    term.Attribute
 	pressed     int32
-	onClick     func(мКнст.Event)
+	onClick     func(мИнт.ИСобытие)
 }
 
 /*
@@ -30,7 +31,7 @@ title - button title.
 scale - the way of scaling the control when the parent is resized. Use DoNotScale constant if the
 control should keep its original size.
 */
-func CreateButton(parent Control, width, height int, title string, scale int) *Button {
+func CreateButton(parent мИнт.ИВиджет, width, height int, title string, scale int) *Button {
 	b := new(Button)
 	b.BaseControl = NewBaseControl()
 
@@ -117,7 +118,7 @@ processes an event it should return true. If the method returns false it means
 that the control do not want or cannot process the event and the caller sends
 the event to the control parent
 */
-func (b *Button) ProcessEvent(event мКнст.Event) bool {
+func (b *Button) ProcessEvent(event мИнт.ИСобытие) bool {
 	if !b.Enabled() {
 		return false
 	}
@@ -165,6 +166,6 @@ func (b *Button) ProcessEvent(event мКнст.Event) bool {
 
 // OnClick sets the callback that is called when one clicks button
 // with mouse or pressing space on keyboard while the button is active
-func (b *Button) OnClick(fn func(мКнст.Event)) {
+func (b *Button) OnClick(fn func(мИнт.ИСобытие)) {
 	b.onClick = fn
 }

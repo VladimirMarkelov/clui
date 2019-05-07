@@ -5,6 +5,7 @@ import (
 	term "github.com/nsf/termbox-go"
 	"sync"
 	"sync/atomic"
+	мИнт "./пакИнтерфейсы"
 )
 
 // BaseControl is a base for all visible controls.
@@ -23,14 +24,14 @@ type BaseControl struct {
 	tabSkip       bool
 	disabled      bool
 	hidden        bool
-	align         мКнст.Align
-	parent        Control
+	align         мИнт.Align
+	parent        мИнт.ИВиджет
 	inactive      bool
 	modal         bool
 	padX, padY    int
 	gapX, gapY    int
-	pack          мКнст.PackType
-	children      []Control
+	pack          мИнт.PackType
+	children      []мИнт.ИВиджет
 	mtx           sync.RWMutex
 	onActive      func(active bool)
 	style         string
@@ -47,8 +48,8 @@ func nextRefId() int64 {
 }
 
 //NewBaseControl --
-func NewBaseControl() BaseControl {
-	return BaseControl{refID: nextRefId()}
+func NewBaseControl() *BaseControl {
+	return &BaseControl{refID: nextRefId()}
 }
 
 //SetClipped --
@@ -238,12 +239,12 @@ func (c *BaseControl) SetVisible(visible bool) {
 }
 
 //Parent --
-func (c *BaseControl) Parent() Control {
+func (c *BaseControl) Parent() мИнт.ИВиджет {
 	return c.parent
 }
 
 //SetParent --
-func (c *BaseControl) SetParent(parent Control) {
+func (c *BaseControl) SetParent(parent мИнт.ИВиджет) {
 	if c.parent == nil {
 		c.parent = parent
 	}
@@ -290,12 +291,12 @@ func (c *BaseControl) SetGaps(dx, dy int) {
 }
 
 //Pack --
-func (c *BaseControl) Pack() мКнст.PackType {
+func (c *BaseControl) Pack() мИнт.PackType {
 	return c.pack
 }
 
 //SetPack --
-func (c *BaseControl) SetPack(pack мКнст.PackType) {
+func (c *BaseControl) SetPack(pack мИнт.PackType) {
 	c.pack = pack
 }
 
@@ -312,12 +313,12 @@ func (c *BaseControl) SetScale(scale int) {
 }
 
 //Align --
-func (c *BaseControl) Align() мКнст.Align {
+func (c *BaseControl) Align() мИнт.Align {
 	return c.align
 }
 
 //SetAlign --
-func (c *BaseControl) SetAlign(align мКнст.Align) {
+func (c *BaseControl) SetAlign(align мИнт.Align) {
 	c.align = align
 }
 
@@ -431,9 +432,9 @@ func (c *BaseControl) ResizeChildren() {
 }
 
 //AddChild --
-func (c *BaseControl) AddChild(control Control) {
+func (c *BaseControl) AddChild(control мИнт.ИВиджет) {
 	if c.children == nil {
-		c.children = make([]Control, 1)
+		c.children = make([]мИнт.ИВиджет, 1)
 		c.children[0] = control
 	} else {
 		if c.ChildExists(control) {
@@ -443,8 +444,8 @@ func (c *BaseControl) AddChild(control Control) {
 		c.children = append(c.children, control)
 	}
 
-	var ctrl Control
-	var mainCtrl Control
+	var ctrl мИнт.ИВиджет
+	var mainCtrl мИнт.ИВиджет
 	ctrl = c
 	for ctrl != nil {
 		ww, hh := ctrl.MinimalSize()
@@ -476,14 +477,14 @@ func (c *BaseControl) AddChild(control Control) {
 }
 
 //Children --
-func (c *BaseControl) Children() []Control {
-	child := make([]Control, len(c.children))
+func (c *BaseControl) Children() []мИнт.ИВиджет {
+	child := make([]мИнт.ИВиджет, len(c.children))
 	copy(child, c.children)
 	return child
 }
 
 //ChildExists --
-func (c *BaseControl) ChildExists(control Control) bool {
+func (c *BaseControl) ChildExists(control мИнт.ИВиджет) bool {
 	if len(c.children) == 0 {
 		return false
 	}
@@ -576,7 +577,7 @@ func (c *BaseControl) DrawChildren() {
 	defer PopClip()
 
 	cp := ClippedParent(c)
-	var cTarget Control
+	var cTarget мВид.ИВиджет
 
 	cTarget = c
 	if cp != nil {
@@ -607,7 +608,7 @@ func (c *BaseControl) setClipper() {
 	c.clipper = &rect{x: x, y: y, w: w, h: h}
 }
 //HitTest --
-func (c *BaseControl) HitTest(x, y int) мКнст.HitResult {
+func (c *BaseControl) HitTest(x, y int) мИнт.HitResult {
 	if x > c.x && x < c.x+c.width-1 &&
 		y > c.y && y < c.y+c.height-1 {
 		return мКнст.HitInside
@@ -627,7 +628,7 @@ func (c *BaseControl) HitTest(x, y int) мКнст.HitResult {
 }
 
 //ProcessEvent --
-func (c *BaseControl) ProcessEvent(ev мКнст.Event) bool {
+func (c *BaseControl) ProcessEvent(ev мИнт.ИСобытие) bool {
 	return SendEventToChild(c, ev)
 }
 
@@ -671,9 +672,9 @@ func (c *BaseControl) SetActiveTextColor(clr term.Attribute) {
 func (c *BaseControl) SetActiveBackColor(clr term.Attribute) {
 	c.bgActive = clr
 }
-
-func (c *BaseControl) removeChild(control Control) {
-	children := []Control{}
+//RemoveChild --
+func (c *BaseControl) RemoveChild(control мИнт.ИВиджет) {
+	children := []мИнт.ИВиджет{}
 
 	for _, child := range c.children {
 		if child.RefID() == control.RefID() {
@@ -691,6 +692,6 @@ func (c *BaseControl) removeChild(control Control) {
 
 // Destroy removes an object from its parental chain
 func (c *BaseControl) Destroy() {
-	c.parent.removeChild(c)
+	c.parent.RemoveChild(c)
 	c.parent.SetConstraints(0, 0)
 }

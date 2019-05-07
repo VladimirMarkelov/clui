@@ -5,10 +5,11 @@ import (
 	term "github.com/nsf/termbox-go"
 	"strings"
 	мКнст "./пакКонстанты"
+	мИнт "./пакИнтерфейсы"
 )
 
 // OnChange sets the callback that is called when EditField content is changed
-func (e *EditField) OnChange(fn func(мКнст.Event)) {
+func (e *EditField) OnChange(fn func(мИнт.ИСобытие)) {
 	e.onChange = fn
 }
 

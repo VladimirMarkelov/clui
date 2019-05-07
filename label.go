@@ -3,6 +3,7 @@ package clui
 import (
 	xs "github.com/huandu/xstrings"
 	мКнст "./пакКонстанты"
+	мИнт "./пакИнтерфейсы"
 )
 
 /*
@@ -17,7 +18,7 @@ type Label struct {
 	BaseControl
 	direction   мКнст.Direction
 	multiline   bool
-	textDisplay мКнст.Align
+	textDisplay мИнт.Align
 }
 
 /*
@@ -29,7 +30,7 @@ title - is Label title.
 scale - the way of scaling the control when the parent is resized. Use DoNotScale constant if the
 control should keep its original size.
 */
-func CreateLabel(parent Control, w, h int, title string, scale int) *Label {
+func CreateLabel(parent мИнт.ИВиджет, w, h int, title string, scale int) *Label {
 	c := new(Label)
 	c.BaseControl = NewBaseControl()
 
@@ -156,7 +157,7 @@ func (l *Label) SetMultiline(multi bool) {
 // - AlignLeft - the head of the title is shown
 // - AlignRight - the tail of the title is shown
 // The property is used only by single line Label
-func (l *Label) TextDisplay() мКнст.Align {
+func (l *Label) TextDisplay() мИнт.Align {
 	return l.textDisplay
 }
 
@@ -164,7 +165,7 @@ func (l *Label) TextDisplay() мКнст.Align {
 // is longer than the lable. Only AlignLeft and AlignRigth are valid values
 // for the property. Any other value does is skipped and does not affect
 // displaying the title
-func (l *Label) SetTextDisplay(align мКнст.Align) {
+func (l *Label) SetTextDisplay(align мИнт.Align) {
 	if align != мКнст.AlignLeft && align != мКнст.AlignRight {
 		return
 	}

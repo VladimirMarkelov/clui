@@ -4,6 +4,7 @@ import (
 	term "github.com/nsf/termbox-go"
 	"strings"
 	мКнст "./пакКонстанты"
+	мИнт "./пакИнтерфейсы"
 )
 
 /*
@@ -25,7 +26,7 @@ type ListBox struct {
 	topLine       int
 	buttonPos     int
 
-	onSelectItem func(мКнст.Event)
+	onSelectItem func(мИнт.ИСобытие)
 	onKeyPress   func(term.Key) bool
 }
 
@@ -37,7 +38,7 @@ width and heigth - are minimal size of the control.
 scale - the way of scaling the control when the parent is resized. Use DoNotScale constant if the
 control should keep its original size.
 */
-func CreateListBox(parent Control, width, height int, scale int) *ListBox {
+func CreateListBox(parent мИнт.ИВиджет, width, height int, scale int) *ListBox {
 	l := new(ListBox)
 	l.BaseControl = NewBaseControl()
 
@@ -247,7 +248,7 @@ func (l *ListBox) Clear() {
 	l.topLine = 0
 }
 
-func (l *ListBox) processMouseClick(ev мКнст.Event) bool {
+func (l *ListBox) processMouseClick(ev мИнт.ИСобытие) bool {
 	if ev.Key != term.MouseLeft {
 		return false
 	}
@@ -310,7 +311,7 @@ processes an event it should return true. If the method returns false it means
 that the control do not want or cannot process the event and the caller sends
 the event to the control parent
 */
-func (l *ListBox) ProcessEvent(event мКнст.Event) bool {
+func (l *ListBox) ProcessEvent(event мИнт.ИСобытие) bool {
 	if !l.Active() || !l.Enabled() {
 		return false
 	}
@@ -456,7 +457,7 @@ func (l *ListBox) RemoveItem(id int) bool {
 
 // OnSelectItem sets a callback that is called every time
 // the selected item is changed
-func (l *ListBox) OnSelectItem(fn func(мКнст.Event)) {
+func (l *ListBox) OnSelectItem(fn func(мИнт.ИСобытие)) {
 	l.onSelectItem = fn
 }
 

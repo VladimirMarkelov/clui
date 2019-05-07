@@ -3,6 +3,7 @@ package clui
 import (
 	term "github.com/nsf/termbox-go"
 	мКнст "./пакКонстанты"
+	мИнт "./пакИнтерфейсы"
 )
 
 // Composer is a service object that manages Views and console, processes
@@ -10,7 +11,7 @@ import (
 // one object of this type
 type mainLoop struct {
 	// a channel to communicate with View(e.g, Views send redraw event to this channel)
-	channel chan мКнст.Event
+	channel chan мИнт.ИСобытие
 }
 
 var (
@@ -19,7 +20,7 @@ var (
 
 func initMainLoop() {
 	loop = new(mainLoop)
-	loop.channel = make(chan мКнст.Event)
+	loop.channel = make(chan мИнт.ИСобытие)
 }
 
 // MainLoop starts the main application event loop
@@ -53,12 +54,12 @@ func MainLoop() {
 	}
 }
 
-func _putEvent(ev мКнст.Event) {
+func _putEvent(ev мИнт.ИСобытие) {
 	loop.channel <- ev
 }
 
 // PutEvent send event to a Composer directly.
 // Used by Views to ask for repainting or for quitting the application
-func PutEvent(ev мКнст.Event) {
+func PutEvent(ev мИнт.ИСобытие) {
 	go _putEvent(ev)
 }

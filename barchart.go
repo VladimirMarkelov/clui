@@ -6,6 +6,7 @@ import (
 	term "github.com/nsf/termbox-go"
 	"sync/atomic"
 	мКнст "./пакКонстанты"
+	мИнт "./пакИнтерфейсы"
 )
 
 // BarData is info about one bar in the chart. Every
@@ -58,7 +59,7 @@ If LegendWidth is greater than half of the chart it is not
 displayed. The same is applied to ValueWidth
 */
 type BarChart struct {
-	BaseControl
+	*BaseControl
 	data        []BarData
 	autosize    bool
 	gap         int32
@@ -77,7 +78,7 @@ w and h - are minimal size of the control.
 scale - the way of scaling the control when the parent is resized. Use DoNotScale constant if the
 control should keep its original size.
 */
-func CreateBarChart(parent Control, w, h int, scale int) *BarChart {
+func CreateBarChart(parent мИнт.ИВиджет, w, h int, scale int) *BarChart {
 	c := new(BarChart)
 	c.BaseControl = NewBaseControl()
 

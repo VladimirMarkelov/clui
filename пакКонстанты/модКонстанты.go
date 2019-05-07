@@ -2,7 +2,7 @@ package пакКонстанты
 
 import (
 	term "github.com/nsf/termbox-go"
-	мВид "../пакВиджеты"
+	мИнт "../пакИнтерфейсы"
 )
 
 const (
@@ -27,19 +27,14 @@ type (
 	// ViewButton is a set of buttons displayed in a view title
 	ViewButton int
 	// HitResult is a type of a view area that is under mouse cursor.
-	// Used in mouse click events
-	HitResult int
-	// Align is text align: left, right and center
-	Align int
+
 	// EventType is a type of event fired by an object
 	EventType int
 	// Direction indicates the direction in which a control must draw its
 	// content. At that moment it can be applied to Label (text output
 	// direction and to ProgressBar (direction of bar filling)
 	Direction int
-	// PackType sets how to pack controls inside its parent. Can be Vertical or
-	// Horizontal
-	PackType int
+
 	// SelectDialogType sets the way of choosing an item from a list for
 	// SelectionDialog control: a list-based selections, or radio group one
 	SelectDialogType uint
@@ -72,33 +67,6 @@ const (
 	DragResizeTopRight
 )
 
-// Event is structure used by Views and controls to communicate with Composer
-// and vice versa
-type Event struct {
-	// Event type - the first events are mapped to termbox Event and then a few
-	// own events added to the end
-	Type EventType
-	// Mod - is a key modifier. Only Alt modifier is supported
-	Mod term.Modifier
-	// Msg is a text part of the event. Used by few events: e.g, ListBox click
-	// sends a value of clicked item
-	Msg string
-	// X and Y are multi-purpose fields: mouse coordinated for click event,
-	// X is used to indicate on/off for events like Activate
-	// Y is used for vertical-based events like ListBox item selection - id of the item
-	X, Y int
-	// Err is error got from termbox library
-	Err error
-	// Key is a pressed key
-	Key term.Key
-	// Ch is a printable representation of pressed key combinaton
-	Ch rune
-	// For resize event - new terminal size
-	Width  int
-	Height int
-	Target мВид.ИВиджет
-}
-
 // BorderStyle constants
 const (
 	BorderAuto BorderStyle = iota - 1
@@ -130,7 +98,7 @@ const (
 
 // HitResult constants
 const (
-	HitOutside HitResult = iota
+	HitOutside мИнт.HitResult = iota
 	HitInside
 	HitBorder
 	HitTop
@@ -160,7 +128,7 @@ const (
 
 // Alignment constants
 const (
-	AlignLeft Align = iota
+	AlignLeft мИнт.Align = iota
 	AlignRight
 	AlignCenter
 )

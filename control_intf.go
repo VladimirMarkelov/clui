@@ -2,11 +2,11 @@ package clui
 
 import (
 	term "github.com/nsf/termbox-go"
-	мКнст "./пакКонстанты"
+	мИнт "./пакИнтерфейсы."
 )
 
-// Control is an interface that every visible control should implement
-type Control interface {
+// TControl is an interface that every visible control should implement
+type TControl interface {
 	// Title returns the current title or text of the control
 	Title() string
 	// SetTitle changes control text or title
@@ -44,10 +44,10 @@ type Control interface {
 	SetVisible(enabled bool)
 	// Parent return control's container or nil if there is no parent container
 	// that is true for Windows
-	Parent() Control
+	Parent() мИнт.ИВиджет
 	// The function should not be called manually. It is for internal use by
 	// library
-	SetParent(parent Control)
+	SetParent(parent мИнт.ИВиджет)
 	// Modal returns if a control is always on top and does not allow to
 	// change the current control. Used only by Windows, for other kind of
 	// controls it does nothing
@@ -66,9 +66,9 @@ type Control interface {
 	SetGaps(dx, dy int)
 	// Pack returns direction in which a container packs
 	// its children: horizontal or vertical
-	Pack() мКнст.PackType
+	Pack() мИнт.PackType
 	// SetPack changes the direction of children packing
-	SetPack(pack мКнст.PackType)
+	SetPack(pack мИнт.PackType)
 	// Scale return scale coefficient that is used to calculate
 	// new control size after its parent resizes.
 	// Fixed means the controls never changes its size.
@@ -85,8 +85,8 @@ type Control interface {
 	// See Scale method for details
 	SetScale(scale int)
 	// Align returns alignment of title in control
-	Align() мКнст.Align
-	SetAlign(align мКнст.Align)
+	Align() мИнт.Align
+	SetAlign(align мИнт.Align)
 
 	TextColor() term.Attribute
 	// SetTextColor changes text color of the control.
@@ -110,12 +110,12 @@ type Control interface {
 	// AddChild adds a new child to a container
 	// The method should not be called manually. It is automatically called
 	// if parent is not nil in Create* function
-	AddChild(control Control)
+	AddChild(control мИнт.ИВиджет)
 	// Children returns the copy of the list of container child controls
-	Children() []Control
+	Children() []мИнт.ИВиджет
 	// ChildExists returns true if a control has argument as one of its
 	// children or child of one of the children
-	ChildExists(control Control) bool
+	ChildExists(control мИнт.ИВиджет) bool
 	// MinimalSize returns the minimal size required by a control to show
 	// it and all its children.
 	MinimalSize() (w int, h int)
@@ -142,18 +142,18 @@ type Control interface {
 	// HitTest returns the area that corresponds to the clicked
 	// position X, Y (absolute position in console window): title,
 	// internal view area, title button, border or outside the control
-	HitTest(x, y int) мКнст.HitResult
+	HitTest(x, y int) мИнт.HitResult
 	// ProcessEvent processes all events come from the control parent. If a control
 	// processes an event it should return true. If the method returns false it means
 	// that the control do not want or cannot process the event and the caller sends
 	// the event to the control parent
-	ProcessEvent(ev мКнст.Event) bool
+	ProcessEvent(ev мИнт.ИСобытие) bool
 	// RefID returns the controls internal reference id
 	RefID() int64
 	// removeChild removes a child from a container
 	// It's used to "destroy" controls whenever a control is no longer used
 	// by the user
-	removeChild(control Control)
+	removeChild(control мИнт.ИВиджет)
 	// Destroy is the public interface to remove an object from its parental chain
 	// it implies this control will stop receiving events and will not be drawn nor
 	// will impact on other objects position and size calculation

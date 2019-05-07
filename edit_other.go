@@ -7,6 +7,7 @@ import (
 	xs "github.com/huandu/xstrings"
 	term "github.com/nsf/termbox-go"
 	мКнст "./пакКонстанты"
+	мИнт "./пакИнтерфейсы"
 )
 
 /*
@@ -28,7 +29,7 @@ type EditField struct {
 	maxWidth  int
 	showStars bool
 
-	onChange   func(мКнст.Event)
+	onChange   func(мИнт.ИСобытие)
 	onKeyPress func(term.Key, rune) bool
 }
 
@@ -39,7 +40,7 @@ type EditField struct {
 // text - text to edit.
 // scale - the way of scaling the control when the parent is resized. Use DoNotScale constant if the
 //  control should keep its original size.
-func CreateEditField(parent Control, width int, text string, scale int) *EditField {
+func CreateEditField(parent мИнт.ИВиджет, width int, text string, scale int) *EditField {
 	e := new(EditField)
 	e.BaseControl = NewBaseControl()
 	e.onChange = nil
@@ -74,7 +75,7 @@ processes an event it should return true. If the method returns false it means
 that the control do not want or cannot process the event and the caller sends
 the event to the control parent
 */
-func (e *EditField) ProcessEvent(event мКнст.Event) bool {
+func (e *EditField) ProcessEvent(event мИнт.ИСобытие) bool {
 	if !e.Active() || !e.Enabled() {
 		return false
 	}

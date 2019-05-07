@@ -4,6 +4,7 @@ import (
 	xs "github.com/huandu/xstrings"
 	term "github.com/nsf/termbox-go"
 	мКнст "./пакКонстанты"
+	мИнт "./пакИнтерфейсы"
 )
 
 /*
@@ -11,7 +12,7 @@ CheckBox control. It can be two-state one(on and off) - it is default mode - or 
 State values are 0=off, 1=on, 2=third state
 */
 type CheckBox struct {
-	BaseControl
+	*BaseControl
 	state       int
 	allow3state bool
 
@@ -27,7 +28,7 @@ scale - the way of scaling the control when the parent is resized. Use DoNotScal
 control should keep its original size.
 CheckBox state can be changed using mouse or pressing space on keyboard while the control is active
 */
-func CreateCheckBox(parent Control, width int, title string, scale int) *CheckBox {
+func CreateCheckBox(parent мИнт.ИВиджет, width int, title string, scale int) *CheckBox {
 	c := new(CheckBox)
 	c.BaseControl = NewBaseControl()
 	c.parent = parent
@@ -102,7 +103,7 @@ func (c *CheckBox) Draw() {
 //   processes an event it should return true. If the method returns false it means
 //   that the control do not want or cannot process the event and the caller sends
 //   the event to the control parent
-func (c *CheckBox) ProcessEvent(event мКнст.Event) bool {
+func (c *CheckBox) ProcessEvent(event мИнт.ИСобытие) bool {
 	if (!c.Active() && event.Type == мКнст.EventKey) || !c.Enabled() {
 		return false
 	}

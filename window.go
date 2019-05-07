@@ -4,6 +4,7 @@ import (
 	мКнст "./пакКонстанты"
 	xs "github.com/huandu/xstrings"
 	term "github.com/nsf/termbox-go"
+	мИнт "./пакИнтерфейсы"
 )
 
 // Window is an implemetation of View managed by Composer.
@@ -22,15 +23,15 @@ type Window struct {
 	fixedSize  bool
 	border     мКнст.BorderStyle
 
-	onClose        func(мКнст.Event) bool
-	onScreenResize func(мКнст.Event)
+	onClose        func(мИнт.ИСобытие) bool
+	onScreenResize func(мИнт.ИСобытие)
 
 	onKeyDown *keyDownCb
 }
 
 type keyDownCb struct {
 	data interface{}
-	fn   func(evt мКнст.Event, data interface{}) bool
+	fn   func(evt мИнт.ИСобытие, data interface{}) bool
 }
 
 //CreateWindow --

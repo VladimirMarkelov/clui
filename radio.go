@@ -4,6 +4,7 @@ import (
 	xs "github.com/huandu/xstrings"
 	term "github.com/nsf/termbox-go"
 	мКнст "./пакКонстанты"
+	мИнт "./пакИнтерфейсы"
 )
 
 /*
@@ -104,7 +105,7 @@ that the control do not want or cannot process the event and the caller sends
 the event to the control parent.
 The control processes only space button and mouse clicks to make control selected. Deselecting control is not possible: one has to click another radio of the radio group to deselect this button
 */
-func (c *Radio) ProcessEvent(event мКнст.Event) bool {
+func (c *Radio) ProcessEvent(event мИнт.ИСобытие) bool {
 	if (!c.Active() && event.Type == мКнст.EventKey) || !c.Enabled() {
 		return false
 	}

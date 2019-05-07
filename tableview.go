@@ -4,6 +4,7 @@ import (
 	"fmt"
 	term "github.com/nsf/termbox-go"
 	мКнст "./пакКонстанты"
+	мИнт "./пакИнтерфейсы"
 )
 
 /*
@@ -78,7 +79,7 @@ type TableView struct {
 type Column struct {
 	Title     string
 	Width     int
-	Alignment мКнст.Align
+	Alignment мИнт.Align
 	Fg, Bg    term.Attribute
 	Sort      мКнст.SortOrder
 }
