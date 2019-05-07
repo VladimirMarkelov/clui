@@ -1,8 +1,7 @@
-package пакКонстанты
+package пакИнтерфейсы
 
 import (
 	term "github.com/nsf/termbox-go"
-	мИнт "../пакИнтерфейсы"
 )
 
 const (
@@ -97,7 +96,7 @@ const (
 
 // HitResult constants
 const (
-	HitOutside мИнт.HitResult = iota
+	HitOutside HitResult = iota
 	HitInside
 	HitBorder
 	HitTop
@@ -127,7 +126,7 @@ const (
 
 // Alignment constants
 const (
-	AlignLeft мИнт.Align = iota
+	AlignLeft Align = iota
 	AlignRight
 	AlignCenter
 )
