@@ -28,7 +28,7 @@ title - radio title.
 scale - the way of scaling the control when the parent is resized. Use DoNotScale constant if the
 control should keep its original size.
 */
-func CreateRadio(parent Control, width int, title string, scale int) *Radio {
+func CreateRadio(parent мИнт.ИВиджет, width int, title string, scale int) *Radio {
 	c := new(Radio)
 	c.BaseControl = NewBaseControl()
 

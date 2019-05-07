@@ -3,6 +3,8 @@ package clui
 import (
 	term "github.com/nsf/termbox-go"
 	мКнст "./пакКонстанты"
+	//мСоб "./пакСобытия"
+	мИнт "./пакИнтерфейсы"
 )
 
 // ConfirmationDialog is a simple dialog to get a user
@@ -81,7 +83,7 @@ func CreateConfirmationDialog(title, question string, buttons []string, defaultB
 
 	bText := buttons[0]
 	btn1 := CreateButton(frm1, мКнст.AutoSize, мКнст.AutoSize, bText, мКнст.Fixed)
-	btn1.OnClick(func(ev мКнст.Event) {
+	btn1.OnClick(func(ev мИнт.ИСобытие) {
 		dlg.result = мКнст.DialogButton1
 
 		WindowManager().DestroyWindow(dlg.View)
@@ -97,7 +99,7 @@ func CreateConfirmationDialog(title, question string, buttons []string, defaultB
 	if len(buttons) > 1 {
 		CreateFrame(frm1, 1, 1, мКнст.BorderNone, 1)
 		btn2 = CreateButton(frm1, мКнст.AutoSize, мКнст.AutoSize, buttons[1], мКнст.Fixed)
-		btn2.OnClick(func(ev мКнст.Event) {
+		btn2.OnClick(func(ev мИнт.ИСобытие) {
 			dlg.result = мКнст.DialogButton2
 			WindowManager().DestroyWindow(dlg.View)
 			if dlg.onClose != nil {
@@ -108,7 +110,7 @@ func CreateConfirmationDialog(title, question string, buttons []string, defaultB
 	if len(buttons) > 2 {
 		CreateFrame(frm1, 1, 1, мКнст.BorderNone, 1)
 		btn3 = CreateButton(frm1, мКнст.AutoSize, мКнст.AutoSize, buttons[2], мКнст.Fixed)
-		btn3.OnClick(func(ev мКнст.Event) {
+		btn3.OnClick(func(ev мИнт.ИСобытие) {
 			dlg.result = мКнст.DialogButton3
 			WindowManager().DestroyWindow(dlg.View)
 			if dlg.onClose != nil {
@@ -127,10 +129,10 @@ func CreateConfirmationDialog(title, question string, buttons []string, defaultB
 		ActivateControl(dlg.View, btn1)
 	}
 
-	dlg.View.OnClose(func(ev мКнст.Event) bool {
+	dlg.View.OnClose(func(ev мИнт.ИСобытие) bool {
 		if dlg.result == мКнст.DialogAlive {
 			dlg.result = мКнст.DialogClosed
-			if ev.X != 1 {
+			if ev.X() != 1 {
 				WindowManager().DestroyWindow(dlg.View)
 			}
 			if dlg.onClose != nil {
@@ -245,7 +247,7 @@ func CreateSelectDialog(title string, items []string, selectedItem int, typ мК
 	frm1 := CreateFrame(dlg.View, 16, 4, мКнст.BorderNone, мКнст.Fixed)
 	CreateFrame(frm1, 1, 1, мКнст.BorderNone, 1)
 	btn1 := CreateButton(frm1, мКнст.AutoSize, мКнст.AutoSize, "OK", мКнст.Fixed)
-	btn1.OnClick(func(ev мКнст.Event) {
+	btn1.OnClick(func(ev мИнт.ИСобытие) {
 		dlg.result = мКнст.DialogButton1
 		if dlg.typ == мКнст.SelectDialogList {
 			dlg.value = dlg.list.SelectedItem()
@@ -263,7 +265,7 @@ func CreateSelectDialog(title string, items []string, selectedItem int, typ мК
 
 	CreateFrame(frm1, 1, 1, мКнст.BorderNone, 1)
 	btn2 := CreateButton(frm1, мКнст.AutoSize, мКнст.AutoSize, "Cancel", мКнст.Fixed)
-	btn2.OnClick(func(ev мКнст.Event) {
+	btn2.OnClick(func(ev мИнт.ИСобытие) {
 		dlg.result = мКнст.DialogButton2
 		dlg.edtResult = ""
 		dlg.value = -1
@@ -280,10 +282,10 @@ func CreateSelectDialog(title string, items []string, selectedItem int, typ мК
 	}
 	CreateFrame(frm1, 1, 1, мКнст.BorderNone, 1)
 
-	dlg.View.OnClose(func(ev мКнст.Event) bool {
+	dlg.View.OnClose(func(ev мИнт.ИСобытие) bool {
 		if dlg.result == мКнст.DialogAlive {
 			dlg.result = мКнст.DialogClosed
-			if ev.X != 1 {
+			if ev.X() != 1 {
 				WindowManager().DestroyWindow(dlg.View)
 			}
 			if dlg.onClose != nil {

@@ -6,6 +6,7 @@ import (
 	"strings"
 	мКнст "./пакКонстанты"
 	мИнт "./пакИнтерфейсы"
+	мСоб "./пакСобытия"
 )
 
 // OnChange sets the callback that is called when EditField content is changed
@@ -33,7 +34,8 @@ func (e *EditField) setTitleInternal(title string) {
 		e.title = title
 
 		if e.onChange != nil {
-			ev := мКнст.Event{Msg: title}
+			ev := &мСоб.Event{}
+			ev.MsgSet(title)
 			e.onChange(ev)
 		}
 	}

@@ -7,6 +7,7 @@ import (
 	"time"
 	мКнст "./пакКонстанты"
 	мИнт "./пакИнтерфейсы"
+	мСоб "./пакСобытия"
 )
 
 /*
@@ -123,10 +124,11 @@ func (b *Button) ProcessEvent(event мИнт.ИСобытие) bool {
 		return false
 	}
 
-	if event.Type == мКнст.EventKey {
-		if event.Key == term.KeySpace && b.isPressed() == 0 {
+	if event.Type() == мИнт.EventKey {
+		if event.Key() == term.KeySpace && b.isPressed() == 0 {
 			b.setPressed(1)
-			ev := мКнст.Event{Type: мКнст.EventRedraw}
+			ev := &мСоб.Event{}
+			ev.TypeSet(мИнт.EventRedraw)
 
 			go func() {
 				PutEvent(ev)
@@ -139,19 +141,19 @@ func (b *Button) ProcessEvent(event мИнт.ИСобытие) bool {
 				b.onClick(event)
 			}
 			return true
-		} else if event.Key == term.KeyEsc && b.isPressed() != 0 {
+		} else if event.Key() == term.KeyEsc && b.isPressed() != 0 {
 			b.setPressed(0)
 			ReleaseEvents()
 			return true
 		}
-	} else if event.Type == мКнст.EventMouse {
-		if event.Key == term.MouseLeft {
+	} else if event.Type() == мИнт.EventMouse {
+		if event.Key() == term.MouseLeft {
 			b.setPressed(1)
 			GrabEvents(b)
 			return true
-		} else if event.Key == term.MouseRelease && b.isPressed() != 0 {
+		} else if event.Key() == term.MouseRelease && b.isPressed() != 0 {
 			ReleaseEvents()
-			if event.X >= b.x && event.Y >= b.y && event.X < b.x+b.width && event.Y < b.y+b.height {
+			if event.X() >= b.x && event.Y() >= b.y && event.X() < b.x+b.width && event.Y() < b.y+b.height {
 				if b.onClick != nil {
 					b.onClick(event)
 				}

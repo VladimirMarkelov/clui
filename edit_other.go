@@ -20,7 +20,7 @@ maximun then the text is automatically truncated.
 EditField calls onChage in case of its text is changed. Event field Msg contains the new text
 */
 type EditField struct {
-	BaseControl
+	*BaseControl
 	// cursor position in edit text
 	cursorPos int
 	// the number of the first displayed text character - it is used in case of text is longer than edit width
@@ -80,19 +80,19 @@ func (e *EditField) ProcessEvent(event мИнт.ИСобытие) bool {
 		return false
 	}
 
-	if event.Type == мКнст.EventActivate && event.X == 0 {
+	if event.Type() == мИнт.EventActivate && event.X() == 0 {
 		term.HideCursor()
 	}
 
-	if event.Type == мКнст.EventKey && event.Key != term.KeyTab {
+	if event.Type() == мИнт.EventKey && event.Key() != term.KeyTab {
 		if e.onKeyPress != nil {
-			res := e.onKeyPress(event.Key, event.Ch)
+			res := e.onKeyPress(event.Key(), event.Ch())
 			if res {
 				return true
 			}
 		}
 
-		switch event.Key {
+		switch event.Key() {
 		case term.KeyEnter:
 			return false
 		case term.KeySpace:
@@ -134,8 +134,8 @@ func (e *EditField) ProcessEvent(event мИнт.ИСобытие) bool {
 			}
 			return true
 		default:
-			if event.Ch != 0 {
-				e.insertRune(event.Ch)
+			if event.Ch() != 0 {
+				e.insertRune(event.Ch())
 				return true
 			}
 		}

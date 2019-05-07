@@ -1,10 +1,11 @@
 package clui
 
 import (
+	мИнт "./пакИнтерфейсы"
 	мКнст "./пакКонстанты"
+	мСоб "./пакСобытия"
 	xs "github.com/huandu/xstrings"
 	term "github.com/nsf/termbox-go"
-	мИнт "./пакИнтерфейсы"
 )
 
 // Window is an implemetation of View managed by Composer.
@@ -166,7 +167,7 @@ func (wnd *Window) Draw() {
 }
 
 //HitTest --
-func (wnd *Window) HitTest(x, y int) мКнст.HitResult {
+func (wnd *Window) HitTest(x, y int) мИнт.HitResult {
 	if x > wnd.x && x < wnd.x+wnd.width-1 &&
 		y > wnd.y && y < wnd.y+wnd.height-1 {
 		return мКнст.HitInside
@@ -230,7 +231,7 @@ func (wnd *Window) HitTest(x, y int) мКнст.HitResult {
 }
 
 //ProcessEvent --
-func (wnd *Window) ProcessEvent(ev мКнст.Event) bool {
+func (wnd *Window) ProcessEvent(ev мИнт.ИСобытие) bool {
 	switch ev.Type {
 	case мКнст.EventMove:
 		wnd.PlaceChildren()
@@ -301,13 +302,13 @@ func (wnd *Window) ProcessEvent(ev мКнст.Event) bool {
 }
 
 // OnClose sets the callback that is called when the Window is about to destroy
-func (wnd *Window) OnClose(fn func(мКнст.Event) bool) {
+func (wnd *Window) OnClose(fn func(мИнт.ИСобытие) bool) {
 	wnd.onClose = fn
 }
 
 // OnKeyDown sets the callback that is called when a user presses a key
 // while the Window is active
-func (wnd *Window) OnKeyDown(fn func(мКнст.Event, interface{}) bool, data interface{}) {
+func (wnd *Window) OnKeyDown(fn func(мИнт.ИСобытие, interface{}) bool, data interface{}) {
 	if fn == nil {
 		wnd.onKeyDown = nil
 	} else {
@@ -316,7 +317,7 @@ func (wnd *Window) OnKeyDown(fn func(мКнст.Event, interface{}) bool, data i
 }
 
 // OnScreenResize sets the callback that is called when size of terminal changes
-func (wnd *Window) OnScreenResize(fn func(мКнст.Event)) {
+func (wnd *Window) OnScreenResize(fn func(мИнт.ИСобытие)) {
 	wnd.onScreenResize = fn
 }
 

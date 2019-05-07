@@ -1,9 +1,9 @@
 package clui
 
 import (
-	мКнст "./пакКонстанты"
 	term "github.com/nsf/termbox-go"
 	мИнт "./пакИнтерфейсы"
+	мСоб "./пакСобытия"
 )
 
 // ThumbPosition returns a scrollbar thumb position depending
@@ -92,7 +92,9 @@ func DeactivateControls(parent мИнт.ИВиджет) {
 	for _, ctrl := range parent.Children() {
 		if ctrl.Active() {
 			ctrl.SetActive(false)
-			ctrl.ProcessEvent(мКнст.Event{Type: мКнст.EventActivate, X: 0})
+			соб:=&мСоб.Event{}
+			соб.TypeSet(мИнт.EventActivate)
+			ctrl.ProcessEvent(соб)
 		}
 
 		DeactivateControls(ctrl)
@@ -108,7 +110,10 @@ func ActivateControl(parent, control мИнт.ИВиджет) bool {
 	if ctrl != nil {
 		res = true
 		if !ctrl.Active() {
-			ctrl.ProcessEvent(мКнст.Event{Type: мКнст.EventActivate, X: 1})
+			соб:=&мСоб.Event{}
+			соб.TypeSet(мИнт.EventActivate)
+			соб.SetX(1)
+			ctrl.ProcessEvent(соб)
 			ctrl.SetActive(true)
 		}
 	}
@@ -141,10 +146,10 @@ func FindChild(parent, control мИнт.ИВиджет) мИнт.ИВиджет 
 
 // IsMouseClickEvent returns if a user action can be treated as mouse click.
 func IsMouseClickEvent(ev мИнт.ИСобытие) bool {
-	if ev.Type == мКнст.EventClick {
+	if ev.Type() == мИнт.EventClick {
 		return true
 	}
-	if ev.Type == мКнст.EventMouse && ev.Key == term.MouseLeft {
+	if ev.Type() == мИнт.EventMouse && ev.Key() == term.MouseLeft {
 		return true
 	}
 
@@ -178,7 +183,7 @@ func FindLastControl(parent мИнт.ИВиджет, fn func(мИнт.ИВидж
 // ActiveControl returns the active child of the parent or nil if no child is
 // active
 func ActiveControl(parent мИнт.ИВиджет) мИнт.ИВиджет {
-	fnActive := func(c Control) bool {
+	fnActive := func(c мИнт.ИВиджет) bool {
 		return c.Active()
 	}
 	return FindFirstControl(parent, fnActive)
@@ -277,7 +282,7 @@ func NextControl(parent мИнт.ИВиджет, curr мИнт.ИВиджет, n
 func SendEventToChild(parent мИнт.ИВиджет, ev мИнт.ИСобытие) bool {
 	var child мИнт.ИВиджет
 	if IsMouseClickEvent(ev) {
-		child = ChildAt(parent, ev.X, ev.Y)
+		child = ChildAt(parent, ev.X(), ev.Y())
 		if child != nil && !child.Active() {
 			ActivateControl(parent, child)
 		}
@@ -286,7 +291,7 @@ func SendEventToChild(parent мИнт.ИВиджет, ev мИнт.ИСобыти
 	}
 
 	if child != nil && child != parent {
-		ev.Target = child
+		ev.TargetSet(child)
 		res := child.ProcessEvent(ev)
 
 		if cparent := ClippedParent(child); cparent != nil && cparent != child {

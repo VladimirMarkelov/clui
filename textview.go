@@ -7,6 +7,8 @@ import (
 	"os"
 	"strings"
 	мКнст "./пакКонстанты"
+	мИнт "./пакИнтерфейсы"
+	мСоб "./пакСобытия"
 )
 
 /*
@@ -45,7 +47,7 @@ width and heigth - are minimal size of the control.
 scale - the way of scaling the control when the parent is resized. Use DoNotScale constant if the
 control should keep its original size.
 */
-func CreateTextView(parent Control, width, height int, scale int) *TextView {
+func CreateTextView(parent мИнт.ИВиджет, width, height int, scale int) *TextView {
 	l := new(TextView)
 	l.BaseControl = NewBaseControl()
 
@@ -254,7 +256,7 @@ func (l *TextView) moveRight() {
 	l.leftShift++
 }
 
-func (l *TextView) processMouseClick(ev мКнст.Event) bool {
+func (l *TextView) processMouseClick(ev мСоб.Event) bool {
 	if ev.Key != term.MouseLeft {
 		return false
 	}
@@ -313,7 +315,7 @@ processes an event it should return true. If the method returns false it means
 that the control do not want or cannot process the event and the caller sends
 the event to the control parent
 */
-func (l *TextView) ProcessEvent(event мКнст.Event) bool {
+func (l *TextView) ProcessEvent(event мСоб.Event) bool {
 	if !l.Active() || !l.Enabled() {
 		return false
 	}

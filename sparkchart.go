@@ -5,6 +5,7 @@ import (
 	// xs "github.com/huandu/xstrings"
 	term "github.com/nsf/termbox-go"
 	мКнст "./пакКонстанты"
+	мИнт "./пакИнтерфейсы"
 )
 
 /*
@@ -44,7 +45,7 @@ w and h - are minimal size of the control.
 scale - the way of scaling the control when the parent is resized. Use DoNotScale constant if the
 control should keep its original size.
 */
-func CreateSparkChart(parent Control, w, h int, scale int) *SparkChart {
+func CreateSparkChart(parent мИнт.ИВиджет, w, h int, scale int) *SparkChart {
 	c := new(SparkChart)
 	c.BaseControl = NewBaseControl()
 

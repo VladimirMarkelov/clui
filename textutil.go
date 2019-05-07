@@ -6,6 +6,7 @@ import (
 	"regexp"
 	"strings"
 	мКнст "./пакКонстанты"
+	мИнт "./пакИнтерфейсы"
 )
 
 var (
@@ -66,7 +67,7 @@ func CutText(str string, maxWidth int) string {
 // to draw a label aligned but with transparent beginning
 // and ending. If you do not need transparency you can
 // add spaces manually using the returned shift value
-func AlignText(str string, width int, align мКнст.Align) (shift int, out string) {
+func AlignText(str string, width int, align мИнт.Align) (shift int, out string) {
 	length := xs.Len(str)
 
 	if length >= width {
@@ -87,7 +88,7 @@ func AlignText(str string, width int, align мКнст.Align) (shift int, out st
 // color tags to the line beginning.
 // Note: function is ineffective and a bit slow - do not use
 // it everywhere
-func AlignColorizedText(str string, width int, align мКнст.Align) (int, string) {
+func AlignColorizedText(str string, width int, align мИнт.Align) (int, string) {
 	rawText := UnColorizeText(str)
 	length := xs.Len(rawText)
 

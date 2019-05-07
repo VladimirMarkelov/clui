@@ -101,7 +101,7 @@ type ColumnDrawInfo struct {
 	// cell displayed text
 	Text string
 	// text alignment
-	Alignment мКнст.Align
+	Alignment мИнт.Align
 	// is the row that contains the cell selected(active)
 	RowSelected bool
 	// is the column that contains the cell selected(active)
@@ -133,7 +133,7 @@ width and height - are minimal size of the control.
 scale - the way of scaling the control when the parent is resized. Use DoNotScale constant if the
 control should keep its original size.
 */
-func CreateTableView(parent Control, width, height int, scale int) *TableView {
+func CreateTableView(parent мИнт.ИВиджет, width, height int, scale int) *TableView {
 	l := new(TableView)
 	l.BaseControl = NewBaseControl()
 
@@ -672,7 +672,7 @@ func (l *TableView) verticalScrollClick(dy int) {
 	}
 }
 
-func (l *TableView) processMouseClick(ev мКнст.Event) bool {
+func (l *TableView) processMouseClick(ev мИнт.ИСобытие) bool {
 	if ev.Key != term.MouseLeft {
 		return false
 	}
@@ -759,7 +759,7 @@ processes an event it should return true. If the method returns false it means
 that the control do not want or cannot process the event and the caller sends
 the event to the control parent
 */
-func (l *TableView) ProcessEvent(event мКнст.Event) bool {
+func (l *TableView) ProcessEvent(event мИнт.ИСобытие) bool {
 	if !l.Active() || !l.Enabled() {
 		return false
 	}

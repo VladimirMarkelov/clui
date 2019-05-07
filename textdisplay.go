@@ -4,6 +4,7 @@ import (
 	xs "github.com/huandu/xstrings"
 	term "github.com/nsf/termbox-go"
 	мКнст "./пакКонстанты"
+	мИнт "./пакИнтерфейсы"
 )
 //TextDisplay --
 type TextDisplay struct {
@@ -21,11 +22,11 @@ type TextDisplay struct {
 type TextReader = TextDisplay
 
 //CreateTextReader --
-func CreateTextReader(parent Control, width, height int, scale int) *TextDisplay {
+func CreateTextReader(parent мИнт.ИВиджет, width, height int, scale int) *TextDisplay {
 	return CreateTextDisplay(parent, width, height, scale)
 }
 //CreateTextDisplay --
-func CreateTextDisplay(parent Control, width, height int, scale int) *TextDisplay {
+func CreateTextDisplay(parent мИнт.ИВиджет, width, height int, scale int) *TextDisplay {
 	l := new(TextDisplay)
 	l.BaseControl = NewBaseControl()
 
@@ -158,7 +159,7 @@ func (l *TextDisplay) moveDown(count int) {
 	}
 }
 
-func (l *TextDisplay) processMouseClick(ev мКнст.Event) bool {
+func (l *TextDisplay) processMouseClick(ev мИнт.ИСобытие) bool {
 	if ev.Key != term.MouseLeft {
 		return false
 	}
@@ -181,7 +182,7 @@ processes an event it should return true. If the method returns false it means
 that the control do not want or cannot process the event and the caller sends
 the event to the control parent
 */
-func (l *TextDisplay) ProcessEvent(event мКнст.Event) bool {
+func (l *TextDisplay) ProcessEvent(event мИнт.ИСобытие) bool {
 	if !l.Active() || !l.Enabled() {
 		return false
 	}

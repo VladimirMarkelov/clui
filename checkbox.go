@@ -104,11 +104,11 @@ func (c *CheckBox) Draw() {
 //   that the control do not want or cannot process the event and the caller sends
 //   the event to the control parent
 func (c *CheckBox) ProcessEvent(event мИнт.ИСобытие) bool {
-	if (!c.Active() && event.Type == мКнст.EventKey) || !c.Enabled() {
+	if (!c.Active() && event.Type() == мИнт.EventKey) || !c.Enabled() {
 		return false
 	}
 
-	if (event.Type == мКнст.EventKey && event.Key == term.KeySpace) || (event.Type == мКнст.EventClick) {
+	if (event.Type() == мИнт.EventKey && event.Key() == term.KeySpace) || (event.Type() == мИнт.EventClick) {
 		if c.state == 0 {
 			c.SetState(1)
 		} else if c.state == 2 {
