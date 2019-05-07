@@ -1,4 +1,4 @@
-# CLUI ![](https://travis-ci.org/VladimirMarkelov/clui.svg)
+# goTV original idea ![](https://travis-ci.org/VladimirMarkelov/clui.svg)
 Command Line User Interface (Console UI inspired by TurboVision) with built-in theme support. Please see screenshots of working examples at the end of the README.
 
 ## Installation
