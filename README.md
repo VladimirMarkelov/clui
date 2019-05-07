@@ -52,14 +52,14 @@
 
 ## Скриншоты
 
-The main demo (theme changing and radio group control)
+Главное демо (изменена тема для группы радокнопок)
 
-<img src="./demos/clui_demo_main.gif" alt="Main Demo">
+<img src="./_демо/clui_demo_main.gif" alt="Главное демо">
 
-The screencast of demo:
+Расположение нескольких окон:
 
-<img src="./demos/demo.gif" alt="Library Demo">
+<img src="./_демо/demo.gif" alt="Несколько окон">
 
 The library is in the very beginning but it can be used to create working utilities: below is the example of my Dilbert comix downloader:
 
-<img src="./demos/dilbert_demo.gif" alt="Dilbert Downloader">
+<img src="./_демо/dilbert_demo.gif" alt="Скачка комиксов">

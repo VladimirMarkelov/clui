@@ -9,9 +9,9 @@ func main() {
 	ui.InitLibrary()
 	defer ui.DeinitLibrary()
 
-	view := ui.AddWindow(0, 0, 10, 7, "Hello World!")
+	view := ui.AddWindow(0, 0, 10, 7, "Привет, мир!")
 
-	btnQuit := ui.CreateButton(view, 15, 4, "Hi", 1)
+	btnQuit := ui.CreateButton(view, 15, 4, "Привет", 1)
 	btnQuit.OnClick(func(ev мИнт.ИСобытие) {
 		go ui.Stop()
 	})
