@@ -1,7 +1,8 @@
-package clui
+package пакКонстанты
 
 import (
 	term "github.com/nsf/termbox-go"
+	мВид "../пакВиджеты"
 )
 
 const (
@@ -11,7 +12,7 @@ const (
 	// should either calculate the size of an object, e.g. for Label it is its text
 	// length, or use default intial values
 	AutoSize int = -1
-	// KeepSize is used as a placeholder when you want to change only one
+	//KeepValue -- is used as a placeholder when you want to change only one
 	// value and keep other ones untouched. Used in SetSize and SetConstraints
 	// methods only
 	// Example: control.SetConstraint(10, KeepValue) changes only minimal width
@@ -46,18 +47,28 @@ type (
 	TableAction int
 	// SortOrder is a way of sorting rows in TableView
 	SortOrder int
+	//DragType --
 	DragType  int
 )
 
 const (
+	//DragNone --
 	DragNone DragType = iota
+	//DragMove --
 	DragMove
+	//DragResizeLeft --
 	DragResizeLeft
+	//DragResizeRight --
 	DragResizeRight
+	//DragResizeBottom --
 	DragResizeBottom
+	//DragResizeBottomLeft --
 	DragResizeBottomLeft
+	//DragResizeBottomRight --
 	DragResizeBottomRight
+	//DragResizeTopLeft --
 	DragResizeTopLeft
+	//DragResizeTopRight --
 	DragResizeTopRight
 )
 
@@ -85,7 +96,7 @@ type Event struct {
 	// For resize event - new terminal size
 	Width  int
 	Height int
-	Target Control
+	Target мВид.ИВиджет
 }
 
 // BorderStyle constants
