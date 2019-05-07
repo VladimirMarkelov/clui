@@ -1,7 +1,7 @@
 package main
 
 import (
-	ui "github.com/VladimirMarkelov/clui"
+	ui "../.."
 )
 
 func main() {
