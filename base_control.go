@@ -1,6 +1,7 @@
 package clui
 
 import (
+	мКнст "./пакКонстанты"
 	term "github.com/nsf/termbox-go"
 	"sync"
 	"sync/atomic"
@@ -22,13 +23,13 @@ type BaseControl struct {
 	tabSkip       bool
 	disabled      bool
 	hidden        bool
-	align         Align
+	align         мКнст.Align
 	parent        Control
 	inactive      bool
 	modal         bool
 	padX, padY    int
 	gapX, gapY    int
-	pack          PackType
+	pack          мКнст.PackType
 	children      []Control
 	mtx           sync.RWMutex
 	onActive      func(active bool)
@@ -45,42 +46,52 @@ func nextRefId() int64 {
 	return atomic.AddInt64(&globalRefId, 1)
 }
 
+//NewBaseControl --
 func NewBaseControl() BaseControl {
 	return BaseControl{refID: nextRefId()}
 }
 
+//SetClipped --
 func (c *BaseControl) SetClipped(clipped bool) {
 	c.clipped = clipped
 }
 
+//Clipped --
 func (c *BaseControl) Clipped() bool {
 	return c.clipped
 }
 
+//SetStyle --
 func (c *BaseControl) SetStyle(style string) {
 	c.style = style
 }
 
+//Style --
 func (c *BaseControl) Style() string {
 	return c.style
 }
 
+//RefID --
 func (c *BaseControl) RefID() int64 {
 	return c.refID
 }
 
+//Title --
 func (c *BaseControl) Title() string {
 	return c.title
 }
 
+//SetTitle --
 func (c *BaseControl) SetTitle(title string) {
 	c.title = title
 }
 
+//Size --
 func (c *BaseControl) Size() (widht int, height int) {
 	return c.width, c.height
 }
 
+//SetSize --
 func (c *BaseControl) SetSize(width, height int) {
 	if width < c.minW {
 		width = c.minW
@@ -95,10 +106,12 @@ func (c *BaseControl) SetSize(width, height int) {
 	}
 }
 
+//Pos --
 func (c *BaseControl) Pos() (x int, y int) {
 	return c.x, c.y
 }
 
+//SetPos --
 func (c *BaseControl) SetPos(x, y int) {
 	if c.clipped && c.clipper != nil {
 		cx, cy, _, _ := c.Clipper()
@@ -118,6 +131,7 @@ func (c *BaseControl) SetPos(x, y int) {
 	}
 }
 
+//applyConstraints --
 func (c *BaseControl) applyConstraints() {
 	ww, hh := c.width, c.height
 	if ww < c.minW {
@@ -131,20 +145,24 @@ func (c *BaseControl) applyConstraints() {
 	}
 }
 
+//Constraints --
 func (c *BaseControl) Constraints() (minw int, minh int) {
 	return c.minW, c.minH
 }
 
+//SetConstraints --
 func (c *BaseControl) SetConstraints(minw, minh int) {
 	c.minW = minw
 	c.minH = minh
 	c.applyConstraints()
 }
 
+//Active --
 func (c *BaseControl) Active() bool {
 	return !c.inactive
 }
 
+//SetActive --
 func (c *BaseControl) SetActive(active bool) {
 	c.inactive = !active
 
@@ -153,18 +171,22 @@ func (c *BaseControl) SetActive(active bool) {
 	}
 }
 
+//OnActive --
 func (c *BaseControl) OnActive(fn func(active bool)) {
 	c.onActive = fn
 }
 
+//TabStop --
 func (c *BaseControl) TabStop() bool {
 	return !c.tabSkip
 }
 
+//SetTabStop --
 func (c *BaseControl) SetTabStop(tabstop bool) {
 	c.tabSkip = !tabstop
 }
 
+//Enabled --
 func (c *BaseControl) Enabled() bool {
 	c.mtx.RLock()
 	defer c.mtx.RUnlock()
@@ -172,6 +194,7 @@ func (c *BaseControl) Enabled() bool {
 	return !c.disabled
 }
 
+//SetEnabled --
 func (c *BaseControl) SetEnabled(enabled bool) {
 	c.mtx.Lock()
 	defer c.mtx.Unlock()
@@ -179,6 +202,7 @@ func (c *BaseControl) SetEnabled(enabled bool) {
 	c.disabled = !enabled
 }
 
+//Visible --
 func (c *BaseControl) Visible() bool {
 	c.mtx.RLock()
 	defer c.mtx.RUnlock()
@@ -186,6 +210,7 @@ func (c *BaseControl) Visible() bool {
 	return !c.hidden
 }
 
+//SetVisible --
 func (c *BaseControl) SetVisible(visible bool) {
 	c.mtx.Lock()
 	defer c.mtx.Unlock()
@@ -212,28 +237,34 @@ func (c *BaseControl) SetVisible(visible bool) {
 	}()
 }
 
+//Parent --
 func (c *BaseControl) Parent() Control {
 	return c.parent
 }
 
+//SetParent --
 func (c *BaseControl) SetParent(parent Control) {
 	if c.parent == nil {
 		c.parent = parent
 	}
 }
 
+//Modal --
 func (c *BaseControl) Modal() bool {
 	return c.modal
 }
 
+//SetModal --
 func (c *BaseControl) SetModal(modal bool) {
 	c.modal = modal
 }
 
+//Paddings --
 func (c *BaseControl) Paddings() (px int, py int) {
 	return c.padX, c.padY
 }
 
+//SetPaddings __
 func (c *BaseControl) SetPaddings(px, py int) {
 	if px >= 0 {
 		c.padX = px
@@ -243,10 +274,12 @@ func (c *BaseControl) SetPaddings(px, py int) {
 	}
 }
 
+//Gaps --
 func (c *BaseControl) Gaps() (dx int, dy int) {
 	return c.gapX, c.gapY
 }
 
+//SetGaps --
 func (c *BaseControl) SetGaps(dx, dy int) {
 	if dx >= 0 {
 		c.gapX = dx
@@ -256,48 +289,59 @@ func (c *BaseControl) SetGaps(dx, dy int) {
 	}
 }
 
-func (c *BaseControl) Pack() PackType {
+//Pack --
+func (c *BaseControl) Pack() мКнст.PackType {
 	return c.pack
 }
 
-func (c *BaseControl) SetPack(pack PackType) {
+//SetPack --
+func (c *BaseControl) SetPack(pack мКнст.PackType) {
 	c.pack = pack
 }
 
+//Scale --
 func (c *BaseControl) Scale() int {
 	return c.scale
 }
 
+//SetScale --
 func (c *BaseControl) SetScale(scale int) {
 	if scale >= 0 {
 		c.scale = scale
 	}
 }
 
-func (c *BaseControl) Align() Align {
+//Align --
+func (c *BaseControl) Align() мКнст.Align {
 	return c.align
 }
 
-func (c *BaseControl) SetAlign(align Align) {
+//SetAlign --
+func (c *BaseControl) SetAlign(align мКнст.Align) {
 	c.align = align
 }
 
+//TextColor --
 func (c *BaseControl) TextColor() term.Attribute {
 	return c.fg
 }
 
+//SetTextColor --
 func (c *BaseControl) SetTextColor(clr term.Attribute) {
 	c.fg = clr
 }
 
+//BackColor --
 func (c *BaseControl) BackColor() term.Attribute {
 	return c.bg
 }
 
+//SetBackColor --
 func (c *BaseControl) SetBackColor(clr term.Attribute) {
 	c.bg = clr
 }
 
+//childCount --
 func (c *BaseControl) childCount() int {
 	cnt := 0
 	for _, child := range c.children {
@@ -309,6 +353,7 @@ func (c *BaseControl) childCount() int {
 	return cnt
 }
 
+//ResizeChildren --
 func (c *BaseControl) ResizeChildren() {
 	children := c.childCount()
 	if children == 0 {
@@ -385,6 +430,7 @@ func (c *BaseControl) ResizeChildren() {
 	}
 }
 
+//AddChild --
 func (c *BaseControl) AddChild(control Control) {
 	if c.children == nil {
 		c.children = make([]Control, 1)
@@ -429,12 +475,14 @@ func (c *BaseControl) AddChild(control Control) {
 	}
 }
 
+//Children --
 func (c *BaseControl) Children() []Control {
 	child := make([]Control, len(c.children))
 	copy(child, c.children)
 	return child
 }
 
+//ChildExists --
 func (c *BaseControl) ChildExists(control Control) bool {
 	if len(c.children) == 0 {
 		return false
@@ -449,6 +497,7 @@ func (c *BaseControl) ChildExists(control Control) bool {
 	return false
 }
 
+//ChildrenScale --
 func (c *BaseControl) ChildrenScale() int {
 	if c.childCount() == 0 {
 		return c.scale
@@ -464,6 +513,7 @@ func (c *BaseControl) ChildrenScale() int {
 	return total
 }
 
+//MinimalSize --
 func (c *BaseControl) MinimalSize() (w int, h int) {
 	children := c.childCount()
 	if children == 0 {
@@ -511,10 +561,12 @@ func (c *BaseControl) MinimalSize() (w int, h int) {
 	return totalX, totalY
 }
 
+//Draw --
 func (c *BaseControl) Draw() {
 	panic("BaseControl Draw Called")
 }
 
+//DrawChildren --
 func (c *BaseControl) DrawChildren() {
 	if c.hidden {
 		return
@@ -539,6 +591,7 @@ func (c *BaseControl) DrawChildren() {
 	}
 }
 
+//Clipper --
 func (c *BaseControl) Clipper() (int, int, int, int) {
 	clipped := ClippedParent(c)
 
@@ -573,10 +626,12 @@ func (c *BaseControl) HitTest(x, y int) HitResult {
 	return HitOutside
 }
 
-func (c *BaseControl) ProcessEvent(ev Event) bool {
+//ProcessEvent --
+func (c *BaseControl) ProcessEvent(ev мКнст.Event) bool {
 	return SendEventToChild(c, ev)
 }
 
+//PlaceChildren --
 func (c *BaseControl) PlaceChildren() {
 	children := c.childCount()
 	if c.children == nil || children == 0 {
