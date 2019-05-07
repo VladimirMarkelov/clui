@@ -2,12 +2,12 @@ package main
 
 import (
 	"fmt"
-	ui "github.com/VladimirMarkelov/clui"
+	ui "../.."
 )
 
 func createView() *ui.TextDisplay {
 
-	view := ui.AddWindow(0, 0, 10, 7, "TextDisplay Demo")
+	view := ui.AddWindow(0, 0, 10, 7, "Отображение текста")
 	bch := ui.CreateTextDisplay(view, 45, 24, 1)
 	ui.ActivateControl(view, bch)
 
@@ -24,7 +24,7 @@ func mainLoop() {
 	_ = b
 	b.SetLineCount(50)
 	b.OnDrawLine(func(ind int) string {
-		return fmt.Sprintf("%03d line line line", ind+1)
+		return fmt.Sprintf("%03d строка СТРОКА _строка_", ind+1)
 	})
 
 	// start event processing loop - the main core of the library

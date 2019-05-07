@@ -1,13 +1,15 @@
+package main
+
 /*
  * Demo includes:
  *  - How to use OnBeforeDraw event
  *  - a simple example of "DBCache" for faster drawing
  */
-package main
 
 import (
 	"fmt"
-	ui "github.com/VladimirMarkelov/clui"
+	ui "../.."
+	мИнт "../../пакИнтерфейсы"
 )
 
 // number of columns in a table
@@ -40,10 +42,10 @@ func (d *dbCache) preload(firstRow, rowCount int) {
 	}
 
 	// slow path: refill cache
-	fNames := []string{"Jack", "Alisa", "Richard", "Paul", "Nicole", "Steven", "Jane"}
-	lNames := []string{"Smith", "Catcher", "Stone", "White", "Black"}
-	posts := []string{"Engineer", "Manager", "Janitor", "Driver"}
-	deps := []string{"IT", "Financial", "Support"}
+	fNames := []string{"Джек", "Алиса", "Ричард", "Паша", "Николь", "Стивен", "Жан"}
+	lNames := []string{"Смит", "Качер", "Стоун", "Белов", "Васин"}
+	posts := []string{"Инженер", "Менеджер", "Охранник", "Водитель"}
+	deps := []string{"ИТ", "Финансы", "Обеспечение"}
 	salary := []int{40000, 38000, 41000, 32000}
 
 	d.data = make([][]string, rowCount, rowCount)
@@ -55,7 +57,7 @@ func (d *dbCache) preload(firstRow, rowCount int) {
 		d.data[i][2] = fmt.Sprintf("%08d", 100+absIndex)
 		d.data[i][3] = posts[absIndex%len(posts)]
 		d.data[i][4] = deps[absIndex%len(deps)]
-		d.data[i][5] = fmt.Sprintf("%d k/year", salary[absIndex%len(salary)]/1000)
+		d.data[i][5] = fmt.Sprintf("%d руб/год", salary[absIndex%len(salary)]/1000)
 	}
 
 	// do not forget to save the last values
@@ -85,7 +87,7 @@ var (
 )
 
 func createView() *ui.TableView {
-	view = ui.AddWindow(0, 0, 10, 7, "TableView Preload Demo")
+	view = ui.AddWindow(0, 0, 10, 7, "Загруженные данные таблицы")
 	bch := ui.CreateTableView(view, 35, 12, 1)
 	ui.ActivateControl(view, bch)
 
@@ -104,18 +106,18 @@ func mainLoop() {
 	b.SetShowRowNumber(true)
 	b.SetRowCount(25)
 	cols := []ui.Column{
-		ui.Column{Title: "First Name", Width: 10, Alignment: ui.AlignLeft},
-		ui.Column{Title: "Last Name", Width: 12, Alignment: ui.AlignLeft},
-		ui.Column{Title: "ID", Width: 12, Alignment: ui.AlignRight},
-		ui.Column{Title: "Post", Width: 12, Alignment: ui.AlignLeft},
-		ui.Column{Title: "Department", Width: 15, Alignment: ui.AlignLeft},
-		ui.Column{Title: "Salary", Width: 12, Alignment: ui.AlignRight},
+		ui.Column{Title: "Имя", Width: 10, Alignment: мИнт.AlignLeft},
+		ui.Column{Title: "Фамилия", Width: 12, Alignment: мИнт.AlignLeft},
+		ui.Column{Title: "Номер", Width: 12, Alignment: мИнт.AlignRight},
+		ui.Column{Title: "Адрес", Width: 12, Alignment: мИнт.AlignLeft},
+		ui.Column{Title: "Отдел", Width: 15, Alignment: мИнт.AlignLeft},
+		ui.Column{Title: "Доход", Width: 12, Alignment: мИнт.AlignRight},
 	}
 	b.SetColumns(cols)
 	b.OnBeforeDraw(func(col, row, colCnt, rowCnt int) {
 		cache.preload(row, rowCnt)
 		l, t, w, h := b.VisibleArea()
-		view.SetTitle(fmt.Sprintf("Caching: %d:%d - %dx%d", l, t, w, h))
+		view.SetTitle(fmt.Sprintf("Выборка: %d:%d - %dx%d", l, t, w, h))
 	})
 	b.OnDrawCell(func(info *ui.ColumnDrawInfo) {
 		info.Text = cache.value(info.Row, info.Col)

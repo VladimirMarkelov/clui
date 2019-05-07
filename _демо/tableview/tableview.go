@@ -2,12 +2,13 @@ package main
 
 import (
 	"fmt"
-	ui "github.com/VladimirMarkelov/clui"
+	ui "../.."
+	мИнт "../../пакИнтерфейсы"
 )
 
 func createView() *ui.TableView {
 
-	view := ui.AddWindow(0, 0, 10, 7, "TableView Demo")
+	view := ui.AddWindow(0, 0, 10, 7, "Пример таблицы")
 	bch := ui.CreateTableView(view, 25, 12, 1)
 	ui.ActivateControl(view, bch)
 
@@ -25,11 +26,11 @@ func mainLoop() {
 	b.SetShowRowNumber(true)
 	b.SetRowCount(15)
 	cols := []ui.Column{
-		ui.Column{Title: "Text", Width: 5, Alignment: ui.AlignLeft},
-		ui.Column{Title: "Number", Width: 10, Alignment: ui.AlignRight},
-		ui.Column{Title: "Misc", Width: 12, Alignment: ui.AlignCenter},
-		ui.Column{Title: "Long", Width: 50, Alignment: ui.AlignLeft},
-		ui.Column{Title: "Last", Width: 8, Alignment: ui.AlignLeft},
+		ui.Column{Title: "Текст", Width: 5, Alignment: мИнт.AlignLeft},
+		ui.Column{Title: "Число", Width: 10, Alignment: мИнт.AlignRight},
+		ui.Column{Title: "Разное", Width: 12, Alignment: мИнт.AlignCenter},
+		ui.Column{Title: "Длина", Width: 50, Alignment: мИнт.AlignLeft},
+		ui.Column{Title: "Последний", Width: 8, Alignment: мИнт.AlignLeft},
 	}
 	b.SetColumns(cols)
 	b.OnDrawCell(func(info *ui.ColumnDrawInfo) {
@@ -37,16 +38,16 @@ func mainLoop() {
 	})
 
 	b.OnAction(func(ev ui.TableEvent) {
-		btns := []string{"Close", "Dismiss"}
+		btns := []string{"Закрыть", "Отмена"}
 		var action string
 		switch ev.Action {
-		case ui.TableActionSort:
+		case мИнт.TableActionSort:
 			action = "Sort table"
-		case ui.TableActionEdit:
+		case мИнт.TableActionEdit:
 			action = "Edit row/cell"
-		case ui.TableActionNew:
+		case мИнт.TableActionNew:
 			action = "Add new row"
-		case ui.TableActionDelete:
+		case мИнт.TableActionDelete:
 			action = "Delete row"
 		default:
 			action = "Unknown action"
@@ -54,8 +55,8 @@ func mainLoop() {
 
 		dlg := ui.CreateConfirmationDialog(
 			"<c:blue>"+action,
-            "Click any button or press <c:yellow>SPACE<c:> to close the dialog",
-			btns, ui.DialogButton1)
+            "Кликните мышкой или нажмите <c:yellow>SPACE<c:> для закрытия диалога",
+			btns, мИнт.DialogButton1)
         dlg.OnClose(func() {})
 	})
 
