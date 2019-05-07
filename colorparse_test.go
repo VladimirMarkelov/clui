@@ -2,10 +2,11 @@ package clui
 
 import (
 	"testing"
+	мКнст "./пакКонстанты"
 )
 
 func TestParserEmpty(t *testing.T) {
-	prs := NewColorParser("", ColorBlack, ColorWhite)
+	prs := NewColorParser("", мКнст.ColorBlack, мКнст.ColorWhite)
 
 	elem := prs.NextElement()
 
@@ -17,20 +18,20 @@ func TestParserEmpty(t *testing.T) {
 
 func TestParserColors(t *testing.T) {
 	prs := NewColorParser("a<b:green>c<t:red>d<b:>e<t:>fg\nf",
-		ColorBlack, ColorWhite)
+		мКнст.ColorBlack, мКнст.ColorWhite)
 	elems := []TextElement{
-		{ElemPrintable, 'a', ColorBlack, ColorWhite},
-		{ElemBackColor, ' ', ColorBlack, ColorGreen},
-		{ElemPrintable, 'c', ColorBlack, ColorGreen},
-		{ElemTextColor, 'c', ColorRed, ColorGreen},
-		{ElemPrintable, 'd', ColorRed, ColorGreen},
-		{ElemBackColor, 'd', ColorRed, ColorWhite},
-		{ElemPrintable, 'e', ColorRed, ColorWhite},
-		{ElemTextColor, 'e', ColorBlack, ColorWhite},
-		{ElemPrintable, 'f', ColorBlack, ColorWhite},
-		{ElemPrintable, 'g', ColorBlack, ColorWhite},
-		{ElemLineBreak, 'g', ColorBlack, ColorWhite},
-		{ElemPrintable, 'f', ColorBlack, ColorWhite},
+		{ElemPrintable, 'a', мКнст.ColorBlack, мКнст.ColorWhite},
+		{ElemBackColor, ' ', мКнст.ColorBlack, мКнст.ColorGreen},
+		{ElemPrintable, 'c', мКнст.ColorBlack, мКнст.ColorGreen},
+		{ElemTextColor, 'c', мКнст.ColorRed, мКнст.ColorGreen},
+		{ElemPrintable, 'd', мКнст.ColorRed, мКнст.ColorGreen},
+		{ElemBackColor, 'd', мКнст.ColorRed, мКнст.ColorWhite},
+		{ElemPrintable, 'e', мКнст.ColorRed, мКнст.ColorWhite},
+		{ElemTextColor, 'e', мКнст.ColorBlack, мКнст.ColorWhite},
+		{ElemPrintable, 'f', мКнст.ColorBlack, мКнст.ColorWhite},
+		{ElemPrintable, 'g', мКнст.ColorBlack, мКнст.ColorWhite},
+		{ElemLineBreak, 'g', мКнст.ColorBlack, мКнст.ColorWhite},
+		{ElemPrintable, 'f', мКнст.ColorBlack, мКнст.ColorWhite},
 	}
 
 	idx := 0
@@ -53,6 +54,6 @@ func TestParserColors(t *testing.T) {
 		}
 
 		el = prs.NextElement()
-		idx += 1
+		idx++
 	}
 }

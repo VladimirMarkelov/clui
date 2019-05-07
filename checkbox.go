@@ -52,7 +52,7 @@ func CreateCheckBox(parent Control, width int, title string, scale int) *CheckBo
 	return c
 }
 
-// Repaint draws the control on its View surface
+//Draw Repaint draws the control on its View surface
 func (c *CheckBox) Draw() {
 	if c.hidden {
 		return

@@ -70,7 +70,7 @@ func termboxEventToLocal(ev term.Event) мКнст.Event {
 	return e
 }
 
-// Repaints everything on the screen
+//RefreshScreen Repaints everything on the screen
 func RefreshScreen() {
 	comp.BeginUpdate()
 	term.Clear(мКнст.ColorWhite, мКнст.ColorBlack)
@@ -118,7 +118,7 @@ func AddWindow(posX, posY, width, height int, title string) *Window {
 	return window
 }
 
-// Border returns the default window border
+//BorderStyle returns the default window border
 func (c *Composer) BorderStyle() мКнст.BorderStyle {
 	return c.windowBorder
 }
@@ -697,7 +697,7 @@ func (c *Composer) processKey(ev мКнст.Event) {
 		c.lastKey = term.KeyEsc
 	}
 }
-
+//ProcessEvent --
 func ProcessEvent(ev мКнст.Event) {
 	switch ev.Type {
 	case мКнст.EventCloseWindow:

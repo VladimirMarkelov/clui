@@ -137,7 +137,7 @@ func Flush() {
 	term.Flush()
 }
 
-// SetSize sets the new Canvas size. If new size does not
+// SetScreenSize sets the new Canvas size. If new size does not
 // equal old size then Canvas is recreated and cleared
 // with default colors. Both Canvas width and height must
 // be greater than 2
@@ -153,7 +153,7 @@ func SetScreenSize(width int, height int) {
 	SetClipRect(0, 0, width, height)
 }
 
-// Size returns current Canvas size
+// ScreenSize returns current Canvas size
 func ScreenSize() (width int, height int) {
 	return canvas.width, canvas.height
 }
@@ -197,11 +197,11 @@ func SetTextColor(clr term.Attribute) {
 func SetBackColor(clr term.Attribute) {
 	canvas.backColor = clr
 }
-
+//TextColor --
 func TextColor() term.Attribute {
 	return canvas.textColor
 }
-
+//BackColor --
 func BackColor() term.Attribute {
 	return canvas.backColor
 }
@@ -280,7 +280,7 @@ func DrawText(x, y int, text string) {
 			if unicode.Is(unicode.Scripts["Han"], elem.Ch) {
 				x += 2
 			} else {
-				x += 1
+				x++
 			}
 
 			if firstdrawn && !drawn {
@@ -338,7 +338,7 @@ func DrawTextVertical(x, y int, text string) {
 			SetTextColor(elem.Fg)
 			SetBackColor(elem.Bg)
 			drawn := PutChar(x, y, elem.Ch)
-			y += 1
+			y++
 			if firstdrawn && !drawn {
 				break
 			}

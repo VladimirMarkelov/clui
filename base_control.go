@@ -606,7 +606,7 @@ func (c *BaseControl) setClipper() {
 	x, y, w, h := CalcClipper(c)
 	c.clipper = &rect{x: x, y: y, w: w, h: h}
 }
-
+//HitTest --
 func (c *BaseControl) HitTest(x, y int) мКнст.HitResult {
 	if x > c.x && x < c.x+c.width-1 &&
 		y > c.y && y < c.y+c.height-1 {

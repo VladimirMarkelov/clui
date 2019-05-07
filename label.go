@@ -21,7 +21,7 @@ type Label struct {
 }
 
 /*
-NewLabel creates a new label.
+CreateLabel creates a new label.
 view - is a View that manages the control
 parent - is container that keeps the control. The same View can be a view and a parent at the same time.
 w and h - are minimal size of the control.

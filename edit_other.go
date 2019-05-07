@@ -32,7 +32,7 @@ type EditField struct {
 	onKeyPress func(term.Key, rune) bool
 }
 
-// NewEditField creates a new EditField control
+// CreateEditField creates a new EditField control
 // view - is a View that manages the control
 // parent - is container that keeps the control. The same View can be a view and a parent at the same time.
 // width - is minimal width of the control.

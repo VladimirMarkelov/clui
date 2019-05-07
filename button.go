@@ -22,7 +22,7 @@ type Button struct {
 }
 
 /*
-NewButton creates a new Button.
+CreateButton creates a new Button.
 view - is a View that manages the control
 parent - is container that keeps the control. The same View can be a view and a parent at the same time.
 width and heigth - are minimal size of the control.
@@ -63,7 +63,7 @@ func CreateButton(parent Control, width, height int, title string, scale int) *B
 	return b
 }
 
-// Repaint draws the control on its View surface
+//Draw Repaint draws the control on its View surface
 func (b *Button) Draw() {
 	if b.hidden {
 		return

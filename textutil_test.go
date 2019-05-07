@@ -2,6 +2,7 @@ package clui
 
 import (
 	"testing"
+	мКнст "./пакКонстанты"
 )
 
 func TestEllipsize(t *testing.T) {
@@ -46,16 +47,16 @@ func TestCutText(t *testing.T) {
 func TestAlignText(t *testing.T) {
 	cases := []struct {
 		in, want   string
-		align      Align
+		align      мКнст.Align
 		max, shift int
 	}{
-		{"abcdefgh", "abcde", AlignLeft, 5, 0},
-		{"abcdefgh", "defgh", AlignRight, 5, 0},
-		{"abcdefgh", "bcdef", AlignCenter, 5, 0},
-		{"abcdefgh", "abcdefgh", AlignLeft, 10, 0},
-		{"abcdefgh", "abcdefgh", AlignRight, 10, 2},
-		{"abcdefgh", "abcdefgh", AlignCenter, 10, 1},
-		{"abcdefg", "abcdefg", AlignCenter, 10, 2},
+		{"abcdefgh", "abcde", мКнст.AlignLeft, 5, 0},
+		{"abcdefgh", "defgh", мКнст.AlignRight, 5, 0},
+		{"abcdefgh", "bcdef", мКнст.AlignCenter, 5, 0},
+		{"abcdefgh", "abcdefgh", мКнст.AlignLeft, 10, 0},
+		{"abcdefgh", "abcdefgh", мКнст.AlignRight, 10, 2},
+		{"abcdefgh", "abcdefgh", мКнст.AlignCenter, 10, 1},
+		{"abcdefg", "abcdefg", мКнст.AlignCenter, 10, 2},
 	}
 
 	for _, c := range cases {
@@ -69,25 +70,25 @@ func TestAlignText(t *testing.T) {
 func TestAlignColorizedText(t *testing.T) {
 	cases := []struct {
 		in, want   string
-		align      Align
+		align      мКнст.Align
 		max, shift int
 	}{
 		// uncolored cases
-		{"abcdefgh", "abcde", AlignLeft, 5, 0},
-		{"abcdefgh", "defgh", AlignRight, 5, 0},
-		{"abcdefgh", "bcdef", AlignCenter, 5, 0},
-		{"abcdefgh", "abcdefgh", AlignLeft, 10, 0},
-		{"abcdefgh", "abcdefgh", AlignRight, 10, 2},
-		{"abcdefgh", "abcdefgh", AlignCenter, 10, 1},
-		{"abcdefg", "abcdefg", AlignCenter, 10, 2},
+		{"abcdefgh", "abcde", мКнст.AlignLeft, 5, 0},
+		{"abcdefgh", "defgh", мКнст.AlignRight, 5, 0},
+		{"abcdefgh", "bcdef", мКнст.AlignCenter, 5, 0},
+		{"abcdefgh", "abcdefgh", мКнст.AlignLeft, 10, 0},
+		{"abcdefgh", "abcdefgh", мКнст.AlignRight, 10, 2},
+		{"abcdefgh", "abcdefgh", мКнст.AlignCenter, 10, 1},
+		{"abcdefg", "abcdefg", мКнст.AlignCenter, 10, 2},
 		// colored cases
-		{"abc<t:green>defg", "abc<t:green>defg", AlignCenter, 10, 2},
-		{"abc<t:green>defgh", "abc<t:green>defgh", AlignRight, 10, 2},
-		{"abc<t:green>defgh", "abc<t:green>defgh", AlignCenter, 10, 1},
-		{"<b:blue>ab<b:cyan>cdefgh", "<b:blue>ab<b:cyan>cde", AlignLeft, 5, 0},
-		{"<b:blue>abcdefgh", "<b:cyan>defgh", AlignRight, 5, 0},
-		{"<b:blue>abcdefgh", "<b:blue>b<b:cyan>cdef", AlignCenter, 5, 0},
-		{"abc<t:green>defg", "ab", AlignLeft, 2, 0},
+		{"abc<t:green>defg", "abc<t:green>defg", мКнст.AlignCenter, 10, 2},
+		{"abc<t:green>defgh", "abc<t:green>defgh", мКнст.AlignRight, 10, 2},
+		{"abc<t:green>defgh", "abc<t:green>defgh", мКнст.AlignCenter, 10, 1},
+		{"<b:blue>ab<b:cyan>cdefgh", "<b:blue>ab<b:cyan>cde", мКнст.AlignLeft, 5, 0},
+		{"<b:blue>abcdefgh", "<b:cyan>defgh", мКнст.AlignRight, 5, 0},
+		{"<b:blue>abcdefgh", "<b:blue>b<b:cyan>cdef", мКнст.AlignCenter, 5, 0},
+		{"abc<t:green>defg", "ab", мКнст.AlignLeft, 2, 0},
 	}
 
 	for _, c := range cases {

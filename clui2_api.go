@@ -3,7 +3,7 @@ package clui
 import (
 	term "github.com/nsf/termbox-go"
 )
-
+//InitLibrary --
 func InitLibrary() bool {
 	initThemeManager()
 	initComposer()
@@ -11,7 +11,7 @@ func InitLibrary() bool {
 	return initCanvas()
 }
 
-// Close closes console management and makes a console cursor visible
+//DeinitLibrary Close closes console management and makes a console cursor visible
 func DeinitLibrary() {
 	term.SetCursor(3, 3)
 	term.Close()

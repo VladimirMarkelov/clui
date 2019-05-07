@@ -1,8 +1,8 @@
 package clui
 
 import (
-	term "github.com/nsf/termbox-go"
 	мКнст "./пакКонстанты"
+	term "github.com/nsf/termbox-go"
 )
 
 // ThumbPosition returns a scrollbar thumb position depending
@@ -263,9 +263,9 @@ func NextControl(parent Control, curr Control, next bool) Control {
 
 	if next {
 		return linear[nIndex]
-	} else {
-		return linear[pIndex]
 	}
+	return linear[pIndex]
+
 }
 
 // SendEventToChild tries to find a child control that should recieve the evetn
