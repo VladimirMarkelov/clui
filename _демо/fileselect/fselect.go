@@ -1,43 +1,44 @@
 package main
 
 import (
-	ui "github.com/VladimirMarkelov/clui"
+	ui "../.."
+	мИнт "../../пакИнтерфейсы"
 )
 
 func createView() {
-	view := ui.AddWindow(0, 0, 30, 7, "File select")
-	view.SetPack(ui.Vertical)
+	view := ui.AddWindow(0, 0, 30, 7, "Выбор файла")
+	view.SetPack(мИнт.Vertical)
 	view.SetGaps(0, 1)
 	view.SetPaddings(2, 2)
 
-	frmPath := ui.CreateFrame(view, 1, 1, ui.BorderNone, ui.Fixed)
-	frmPath.SetPack(ui.Horizontal)
-	ui.CreateLabel(frmPath, ui.AutoSize, ui.AutoSize, "Initial path", ui.Fixed)
+	frmPath := ui.CreateFrame(view, 1, 1, мИнт.BorderNone, мИнт.Fixed)
+	frmPath.SetPack(мИнт.Horizontal)
+	ui.CreateLabel(frmPath, мИнт.AutoSize, мИнт.AutoSize, "Начальный путь", мИнт.Fixed)
 	edPath := ui.CreateEditField(frmPath, 16, "", 1)
 
-	frmMask := ui.CreateFrame(view, 1, 1, ui.BorderNone, ui.Fixed)
-	frmMask.SetPack(ui.Horizontal)
-	ui.CreateLabel(frmMask, ui.AutoSize, ui.AutoSize, "File masks", ui.Fixed)
+	frmMask := ui.CreateFrame(view, 1, 1, мИнт.BorderNone, мИнт.Fixed)
+	frmMask.SetPack(мИнт.Horizontal)
+	ui.CreateLabel(frmMask, мИнт.AutoSize, мИнт.AutoSize, "Маска файла", мИнт.Fixed)
 	edMasks := ui.CreateEditField(frmMask, 16, "*", 1)
 
-	frmOpts := ui.CreateFrame(view, 1, 1, ui.BorderNone, ui.Fixed)
-	frmOpts.SetPack(ui.Horizontal)
-	cbDir := ui.CreateCheckBox(frmOpts, ui.AutoSize, "Select directory", ui.Fixed)
-	cbMust := ui.CreateCheckBox(frmOpts, ui.AutoSize, "Must exists", ui.Fixed)
-	ui.CreateFrame(frmOpts, 1, 1, ui.BorderNone, 1)
+	frmOpts := ui.CreateFrame(view, 1, 1, мИнт.BorderNone, мИнт.Fixed)
+	frmOpts.SetPack(мИнт.Horizontal)
+	cbDir := ui.CreateCheckBox(frmOpts, мИнт.AutoSize, "Выбор папки", мИнт.Fixed)
+	cbMust := ui.CreateCheckBox(frmOpts, мИнт.AutoSize, "Должно присутствовать", мИнт.Fixed)
+	ui.CreateFrame(frmOpts, 1, 1, мИнт.BorderNone, 1)
 
-	lblSelected := ui.CreateLabel(view, 30, 5, "Selected:", ui.Fixed)
+	lblSelected := ui.CreateLabel(view, 30, 5, "Выбрано:", мИнт.Fixed)
 	lblSelected.SetMultiline(true)
 
-	frmBtns := ui.CreateFrame(view, 1, 1, ui.BorderNone, ui.Fixed)
-	frmBtns.SetPack(ui.Horizontal)
-	btnSet := ui.CreateButton(frmBtns, ui.AutoSize, 4, "Select", ui.Fixed)
-	btnQuit := ui.CreateButton(frmBtns, ui.AutoSize, 4, "Quit", ui.Fixed)
-	ui.CreateFrame(frmBtns, 1, 1, ui.BorderNone, 1)
+	frmBtns := ui.CreateFrame(view, 1, 1, мИнт.BorderNone, мИнт.Fixed)
+	frmBtns.SetPack(мИнт.Horizontal)
+	btnSet := ui.CreateButton(frmBtns, мИнт.AutoSize, 4, "Выбрать", мИнт.Fixed)
+	btnQuit := ui.CreateButton(frmBtns, мИнт.AutoSize, 4, "Выход", мИнт.Fixed)
+	ui.CreateFrame(frmBtns, 1, 1, мИнт.BorderNone, 1)
 
 	ui.ActivateControl(view, edMasks)
 
-	btnSet.OnClick(func(ev ui.Event) {
+	btnSet.OnClick(func(ev мИнт.ИСобытие) {
 		s := "Select "
 		if cbDir.State() == 1 {
 			s += "directory"
@@ -55,21 +56,21 @@ func createView() {
 			cbMust.State() == 1)
 		dlg.OnClose(func() {
 			if !dlg.Selected {
-				lblSelected.SetTitle("Selected:\nNothing")
+				lblSelected.SetTitle("Выбрано:\nПусто")
 				return
 			}
 
 			var lb string
 			if dlg.Exists {
-				lb = "Selected existing"
+				lb = "Выбрано существующее"
 			} else {
-				lb = "Create new"
+				lb = "Создано новое"
 			}
 
 			if cbDir.State() == 0 {
-				lb += " file:\n"
+				lb += " файл:\n"
 			} else {
-				lb += " directory:\n"
+				lb += " директория:\n"
 			}
 
 			lb += dlg.FilePath
@@ -77,7 +78,7 @@ func createView() {
 		})
 	})
 
-	btnQuit.OnClick(func(ev ui.Event) {
+	btnQuit.OnClick(func(ev мИнт.ИСобытие) {
 		go ui.Stop()
 	})
 }

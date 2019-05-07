@@ -1,31 +1,37 @@
 package main
 
 import (
-	ui "github.com/VladimirMarkelov/clui"
+	ui "../.."
+	мИнт "../../пакИнтерфейсы"
+	мСоб "../../пакСобытия"
 )
 
 func createView() {
-	view := ui.AddWindow(0, 0, 10, 7, "EditField Demo")
-	view.SetTitleButtons(ui.ButtonMaximize | ui.ButtonClose)
+	view := ui.AddWindow(0, 0, 10, 7, "Пример редактора")
+	view.SetTitleButtons(мИнт.ButtonMaximize | мИнт.ButtonClose)
 
-	frmChk := ui.CreateFrame(view, 8, 5, ui.BorderNone, ui.Fixed)
-	frmChk.SetPack(ui.Vertical)
+	frmChk := ui.CreateFrame(view, 8, 5, мИнт.BorderNone, мИнт.Fixed)
+	frmChk.SetPack(мИнт.Vertical)
 	frmChk.SetPaddings(1, 1)
 	frmChk.SetGaps(1, 1)
-	ui.CreateLabel(frmChk, ui.AutoSize, ui.AutoSize, "Enter password:", ui.Fixed)
-	edFld := ui.CreateEditField(frmChk, 20, "", ui.Fixed)
+	ui.CreateLabel(frmChk, мИнт.AutoSize, мИнт.AutoSize, "Введите пароль:", мИнт.Fixed)
+	edFld := ui.CreateEditField(frmChk, 20, "", мИнт.Fixed)
 	edFld.SetPasswordMode(true)
-	chkPass := ui.CreateCheckBox(frmChk, ui.AutoSize, "Show Password", ui.Fixed)
+	chkPass := ui.CreateCheckBox(frmChk, мИнт.AutoSize, "Показать пароль", мИнт.Fixed)
 
 	ui.ActivateControl(view, edFld)
 
 	chkPass.OnChange(func(state int) {
 		if state == 1 {
 			edFld.SetPasswordMode(false)
-			ui.PutEvent(ui.Event{Type: ui.EventRedraw})
+			ev := &мСоб.Event{}
+			ev.TypeSet(мИнт.EventRedraw)
+			ui.PutEvent(ev)
 		} else if state == 0 {
 			edFld.SetPasswordMode(true)
-			ui.PutEvent(ui.Event{Type: ui.EventRedraw})
+			ev := &мСоб.Event{}
+			ev.TypeSet(мИнт.EventRedraw)
+			ui.PutEvent(ev)
 		}
 	})
 }

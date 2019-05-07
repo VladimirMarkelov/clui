@@ -1,3 +1,5 @@
+package main
+
 /*
 Demo includes:
     - How to intialize and run the application
@@ -8,14 +10,15 @@ Demo includes:
     - How to make composer refresh the screen
     - How to intercept Enter key(term.KeyCtrlM) in EditField(ListBox is the same)
 */
-package main
 
 import (
 	"fmt"
 	"strconv"
 
-	ui "github.com/VladimirMarkelov/clui"
+	ui "../.."
 	term "github.com/nsf/termbox-go"
+	мИнт "../../пакИнтерфейсы"
+	мСоб "../../пакСобытия"
 )
 
 func updateProgress(value string, pb *ui.ProgressBar) {
@@ -25,9 +28,9 @@ func updateProgress(value string, pb *ui.ProgressBar) {
 
 func changeTheme(lb *ui.ListBox, btn *ui.Button, tp int) {
 	items := ui.ThemeNames()
-	dlgType := ui.SelectDialogRadio
+	dlgType := мИнт.SelectDialogRadio
 	if tp == 1 {
-		dlgType = ui.SelectDialogList
+		dlgType = мИнт.SelectDialogList
 	}
 
 	curr := -1
@@ -38,12 +41,12 @@ func changeTheme(lb *ui.ListBox, btn *ui.Button, tp int) {
 		}
 	}
 
-	selDlg := ui.CreateSelectDialog("Choose a theme", items, curr, dlgType)
+	selDlg := ui.CreateSelectDialog("Выберите тему", items, curr, dlgType)
 	selDlg.OnClose(func() {
 		switch selDlg.Result() {
-		case ui.DialogButton1:
+		case мИнт.DialogButton1:
 			idx := selDlg.Value()
-			lb.AddItem(fmt.Sprintf("Selected item: %v", selDlg.Value()))
+			lb.AddItem(fmt.Sprintf("Выбран пункт: %v", selDlg.Value()))
 			lb.SelectItem(lb.ItemCount() - 1)
 			if idx != -1 {
 				ui.SetCurrentTheme(items[idx])
@@ -52,74 +55,78 @@ func changeTheme(lb *ui.ListBox, btn *ui.Button, tp int) {
 
 		btn.SetEnabled(true)
 		// ask the composer to repaint all windows
-		ui.PutEvent(ui.Event{Type: ui.EventRedraw})
+		ev:=&мСоб.Event{}
+		ev.TypeSet(мИнт.EventRedraw)
+		ui.PutEvent(ev)
 	})
 }
 
 func createView() {
 
-	view := ui.AddWindow(0, 0, 20, 7, "Theme Manager Demo")
+	view := ui.AddWindow(0, 0, 20, 7, "Приме рменеджера тем")
 
-	frmLeft := ui.CreateFrame(view, 8, 4, ui.BorderNone, 1)
-	frmLeft.SetPack(ui.Vertical)
-	frmLeft.SetGaps(ui.KeepValue, 1)
+	frmLeft := ui.CreateFrame(view, 8, 4, мИнт.BorderNone, 1)
+	frmLeft.SetPack(мИнт.Vertical)
+	frmLeft.SetGaps(мИнт.KeepValue, 1)
 	frmLeft.SetPaddings(1, 1)
 
-	frmTheme := ui.CreateFrame(frmLeft, 8, 1, ui.BorderNone, ui.Fixed)
-	frmTheme.SetGaps(1, ui.KeepValue)
-	checkBox := ui.CreateCheckBox(frmTheme, ui.AutoSize, "Use ListBox", ui.Fixed)
-	btnTheme := ui.CreateButton(frmTheme, ui.AutoSize, 4, "Select theme", ui.Fixed)
-	ui.CreateFrame(frmLeft, 1, 1, ui.BorderNone, 1)
+	frmTheme := ui.CreateFrame(frmLeft, 8, 1, мИнт.BorderNone, мИнт.Fixed)
+	frmTheme.SetGaps(1, мИнт.KeepValue)
+	checkBox := ui.CreateCheckBox(frmTheme, мИнт.AutoSize, "Использовать ListBox", мИнт.Fixed)
+	btnTheme := ui.CreateButton(frmTheme, мИнт.AutoSize, 4, "Выберте тему", мИнт.Fixed)
+	ui.CreateFrame(frmLeft, 1, 1, мИнт.BorderNone, 1)
 
-	frmPb := ui.CreateFrame(frmLeft, 8, 1, ui.BorderNone, ui.Fixed)
-	ui.CreateLabel(frmPb, 1, 1, "[", ui.Fixed)
+	frmPb := ui.CreateFrame(frmLeft, 8, 1, мИнт.BorderNone, мИнт.Fixed)
+	ui.CreateLabel(frmPb, 1, 1, "[", мИнт.Fixed)
 	pb := ui.CreateProgressBar(frmPb, 20, 1, 1)
 	pb.SetLimits(0, 10)
 	pb.SetTitle("{{value}} of {{max}}")
-	ui.CreateLabel(frmPb, 1, 1, "]", ui.Fixed)
+	ui.CreateLabel(frmPb, 1, 1, "]", мИнт.Fixed)
 
-	edit := ui.CreateEditField(frmLeft, 5, "0", ui.Fixed)
+	edit := ui.CreateEditField(frmLeft, 5, "0", мИнт.Fixed)
 
-	frmEdit := ui.CreateFrame(frmLeft, 8, 1, ui.BorderNone, ui.Fixed)
+	frmEdit := ui.CreateFrame(frmLeft, 8, 1, мИнт.BorderNone, мИнт.Fixed)
 	frmEdit.SetPaddings(1, 1)
-	frmEdit.SetGaps(1, ui.KeepValue)
-	btnSet := ui.CreateButton(frmEdit, ui.AutoSize, 4, "Set", ui.Fixed)
-	btnStep := ui.CreateButton(frmEdit, ui.AutoSize, 4, "Step", ui.Fixed)
-	ui.CreateFrame(frmEdit, 1, 1, ui.BorderNone, 1)
-	btnQuit := ui.CreateButton(frmEdit, ui.AutoSize, 4, "Quit", ui.Fixed)
+	frmEdit.SetGaps(1, мИнт.KeepValue)
+	btnSet := ui.CreateButton(frmEdit, мИнт.AutoSize, 4, "Установить", мИнт.Fixed)
+	btnStep := ui.CreateButton(frmEdit, мИнт.AutoSize, 4, "Шаг", мИнт.Fixed)
+	ui.CreateFrame(frmEdit, 1, 1, мИнт.BorderNone, 1)
+	btnQuit := ui.CreateButton(frmEdit, мИнт.AutoSize, 4, "Выход", мИнт.Fixed)
 
-	logBox := ui.CreateListBox(view, 28, 5, ui.Fixed)
+	logBox := ui.CreateListBox(view, 28, 5, мИнт.Fixed)
 
 	ui.ActivateControl(view, edit)
 
 	edit.OnKeyPress(func(key term.Key, ch rune) bool {
 		if key == term.KeyCtrlM {
 			v := edit.Title()
-			logBox.AddItem(fmt.Sprintf("New PB value(KeyPress): %v", v))
+			logBox.AddItem(fmt.Sprintf("Новое PB значение(KeyPress): %v", v))
 			logBox.SelectItem(logBox.ItemCount() - 1)
 			updateProgress(v, pb)
 			return true
 		}
 		return false
 	})
-	btnTheme.OnClick(func(ev ui.Event) {
+	btnTheme.OnClick(func(ev мИнт.ИСобытие) {
 		btnTheme.SetEnabled(false)
 		tp := checkBox.State()
 		changeTheme(logBox, btnTheme, tp)
 	})
-	btnSet.OnClick(func(ev ui.Event) {
+	btnSet.OnClick(func(ev мИнт.ИСобытие) {
 		v := edit.Title()
-		logBox.AddItem(fmt.Sprintf("New ProgressBar value: %v", v))
+		logBox.AddItem(fmt.Sprintf("Новое значение ProgressBar: %v", v))
 		logBox.SelectItem(logBox.ItemCount() - 1)
 		updateProgress(v, pb)
 	})
-	btnStep.OnClick(func(ev ui.Event) {
+	btnStep.OnClick(func(ev мИнт.ИСобытие) {
 		go pb.Step()
-		logBox.AddItem("ProgressBar step")
+		logBox.AddItem("Шаг ProgressBar")
 		logBox.SelectItem(logBox.ItemCount() - 1)
-		ui.PutEvent(ui.Event{Type: ui.EventRedraw})
+		ev=&мСоб.Event{}
+		ev.TypeSet(мИнт.EventRedraw)
+		ui.PutEvent(ev)
 	})
-	btnQuit.OnClick(func(ev ui.Event) {
+	btnQuit.OnClick(func(ev мИнт.ИСобытие) {
 		go ui.Stop()
 	})
 }

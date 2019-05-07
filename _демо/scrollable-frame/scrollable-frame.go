@@ -2,25 +2,26 @@ package main
 
 import (
 	"fmt"
-	ui "github.com/VladimirMarkelov/clui"
+	ui "../.."
+	мИнт "../../пакИнтерфейсы"
 )
 
 func main() {
 	ui.InitLibrary()
 	defer ui.DeinitLibrary()
 
-	wnd := ui.AddWindow(0, 0, 60, ui.AutoSize, "Scrollable frame")
+	wnd := ui.AddWindow(0, 0, 60, мИнт.AutoSize, "Фрейм со скроллом")
 	wnd.SetSizable(false)
 
-	frm := ui.CreateFrame(wnd, 50, 12, ui.BorderNone, ui.Fixed)
-	frm.SetPack(ui.Vertical)
+	frm := ui.CreateFrame(wnd, 50, 12, мИнт.BorderNone, мИнт.Fixed)
+	frm.SetPack(мИнт.Vertical)
 	frm.SetScrollable(true)
 
 	for i := 0; i < 10; i++ {
-		label := fmt.Sprintf("Button %d - press to quit", i)
-		btn := ui.CreateButton(frm, 40, ui.AutoSize, label, 1)
+		label := fmt.Sprintf("Кнопка %d - нажимте для выхода", i)
+		btn := ui.CreateButton(frm, 40, мИнт.AutoSize, label, 1)
 
-		btn.OnClick(func(ev ui.Event) {
+		btn.OnClick(func(ev мИнт.ИСобытие) {
 			go ui.Stop()
 		})
 	}
