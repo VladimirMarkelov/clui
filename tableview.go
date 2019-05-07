@@ -3,7 +3,6 @@ package clui
 import (
 	"fmt"
 	term "github.com/nsf/termbox-go"
-	мКнст "./пакКонстанты"
 	мИнт "./пакИнтерфейсы"
 )
 
@@ -81,7 +80,7 @@ type Column struct {
 	Width     int
 	Alignment мИнт.Align
 	Fg, Bg    term.Attribute
-	Sort      мКнст.SortOrder
+	Sort      мИнт.SortOrder
 }
 
 // ColumnDrawInfo is a structure used in OnDrawCell event.
@@ -116,13 +115,13 @@ type ColumnDrawInfo struct {
 // TableView ask for while a user is interacting with the table
 type TableEvent struct {
 	// requested action: Add, Edit, Delete, Sort data
-	Action мКнст.TableAction
+	Action мИнт.TableAction
 	// Currently selected column
 	Col int
 	// Currently selected row (it is not used for TableActionSort)
 	Row int
 	// Sort order (it is used only in TableActionSort event)
-	Sort мКнст.SortOrder
+	Sort мИнт.SortOrder
 }
 
 /*
@@ -137,10 +136,10 @@ func CreateTableView(parent мИнт.ИВиджет, width, height int, scale in
 	l := new(TableView)
 	l.BaseControl = NewBaseControl()
 
-	if height == мКнст.AutoSize {
+	if height == мИнт.AutoSize {
 		height = 3
 	}
-	if width == мКнст.AutoSize {
+	if width == мИнт.AutoSize {
 		width = 10
 	}
 
@@ -172,14 +171,14 @@ func (l *TableView) drawHeader() {
 	PushAttributes()
 	defer PopAttributes()
 
-	fg, bg := RealColor(l.fg, l.Style(), мКнст.ColorTableHeaderText), RealColor(l.bg, l.Style(), мКнст.ColorTableHeaderBack)
-	fgLine := RealColor(l.fg, l.Style(), мКнст.ColorTableLineText)
+	fg, bg := RealColor(l.fg, l.Style(), мИнт.ColorTableHeaderText), RealColor(l.bg, l.Style(), мИнт.ColorTableHeaderBack)
+	fgLine := RealColor(l.fg, l.Style(), мИнт.ColorTableLineText)
 	x, y := l.Pos()
 	w, _ := l.Size()
 	SetTextColor(fg)
 	SetBackColor(bg)
 	FillRect(x, y, w, 1, ' ')
-	parts := []rune(SysObject(мКнст.ObjTableView))
+	parts := []rune(SysObject(мИнт.ObjTableView))
 
 	for i := 0; i < w; i++ {
 		PutChar(x+i, y+1, parts[0])
@@ -195,7 +194,7 @@ func (l *TableView) drawHeader() {
 	SetBackColor(bg)
 	if l.showRowNo {
 		cW := l.counterWidth()
-		shift, str := AlignText("#", cW, мКнст.AlignRight)
+		shift, str := AlignText("#", cW, мИнт.AlignRight)
 		SetTextColor(fg)
 		DrawRawText(x+pos+shift, y, str)
 		if l.showVLines {
@@ -218,10 +217,10 @@ func (l *TableView) drawHeader() {
 		}
 
 		dw := 0
-		if l.columns[idx].Sort != мКнст.SortNone {
+		if l.columns[idx].Sort != мИнт.SortNone {
 			dw = -1
 			ch := parts[3]
-			if l.columns[idx].Sort == мКнст.SortDesc {
+			if l.columns[idx].Sort == мИнт.SortDesc {
 				ch = parts[4]
 			}
 			SetTextColor(fg)
@@ -277,11 +276,11 @@ func (l *TableView) drawCells() {
 	dy := 2
 	maxDy := l.height - 2
 
-	fg, bg := RealColor(l.fg, l.Style(), мКнст.ColorTableText), RealColor(l.bg, l.Style(), мКнст.ColorTableBack)
-	fgRow, bgRow := RealColor(l.fg, l.Style(), мКнст.ColorTableSelectedText), RealColor(l.bg, l.Style(), мКнст.ColorTableSelectedBack)
-	fgCell, bgCell := RealColor(l.fg, l.Style(), мКнст.ColorTableActiveCellText), RealColor(l.bg, l.Style(), мКнст.ColorTableActiveCellBack)
-	fgLine := RealColor(l.fg, l.Style(), мКнст.ColorTableLineText)
-	parts := []rune(SysObject(мКнст.ObjTableView))
+	fg, bg := RealColor(l.fg, l.Style(), мИнт.ColorTableText), RealColor(l.bg, l.Style(), мИнт.ColorTableBack)
+	fgRow, bgRow := RealColor(l.fg, l.Style(), мИнт.ColorTableSelectedText), RealColor(l.bg, l.Style(), мИнт.ColorTableSelectedBack)
+	fgCell, bgCell := RealColor(l.fg, l.Style(), мИнт.ColorTableActiveCellText), RealColor(l.bg, l.Style(), мИнт.ColorTableActiveCellBack)
+	fgLine := RealColor(l.fg, l.Style(), мИнт.ColorTableLineText)
+	parts := []rune(SysObject(мИнт.ObjTableView))
 
 	start := 0
 	if l.showRowNo {
@@ -291,7 +290,7 @@ func (l *TableView) drawCells() {
 				break
 			}
 			s := fmt.Sprintf("%v", idx+l.topRow)
-			shift, str := AlignText(s, start, мКнст.AlignRight)
+			shift, str := AlignText(s, start, мИнт.AlignRight)
 			SetTextColor(fg)
 			SetBackColor(bg)
 			DrawText(l.x+shift, l.y+dy+idx-1, str)
@@ -374,7 +373,7 @@ func (l *TableView) Draw() {
 		l.onBeforeDraw(firstCol, firstRow, colCount, rowCount)
 	}
 
-	bg := RealColor(l.bg, l.Style(), мКнст.ColorTableBack)
+	bg := RealColor(l.bg, l.Style(), мИнт.ColorTableBack)
 	SetBackColor(bg)
 	FillRect(x, y+2, w, h-2, ' ')
 	l.drawHeader()
@@ -727,27 +726,27 @@ func (l *TableView) headerClicked(dx int) {
 	colID := l.mouseToCol(dx)
 	if colID == -1 {
 		if l.onAction != nil {
-			ev := TableEvent{Action: мКнст.TableActionSort, Col: -1, Row: -1}
+			ev := TableEvent{Action: мИнт.TableActionSort, Col: -1, Row: -1}
 			l.onAction(ev)
 		}
 	} else {
 		sort := l.columns[colID].Sort
 
 		for idx := range l.columns {
-			l.columns[idx].Sort = мКнст.SortNone
+			l.columns[idx].Sort = мИнт.SortNone
 		}
 
-		if sort == мКнст.SortAsc {
-			sort = мКнст.SortDesc
-		} else if sort == мКнст.SortNone {
-			sort = мКнст.SortAsc
+		if sort == мИнт.SortAsc {
+			sort = мИнт.SortDesc
+		} else if sort == мИнт.SortNone {
+			sort = мИнт.SortAsc
 		} else {
-			sort = мКнст.SortNone
+			sort = мИнт.SortNone
 		}
 		l.columns[colID].Sort = sort
 
 		if l.onAction != nil {
-			ev := TableEvent{Action: мКнст.TableActionSort, Col: colID, Row: -1, Sort: sort}
+			ev := TableEvent{Action: мИнт.TableActionSort, Col: colID, Row: -1, Sort: sort}
 			l.onAction(ev)
 		}
 	}
@@ -812,17 +811,17 @@ func (l *TableView) ProcessEvent(event мИнт.ИСобытие) bool {
 			return true
 		case term.KeyCtrlM, term.KeyF2:
 			if l.selectedRow != -1 && l.selectedCol != -1 && l.onAction != nil {
-				ev := TableEvent{Action: мКнст.TableActionEdit, Col: l.selectedCol, Row: l.selectedRow}
+				ev := TableEvent{Action: мИнт.TableActionEdit, Col: l.selectedCol, Row: l.selectedRow}
 				l.onAction(ev)
 			}
 		case term.KeyDelete:
 			if l.selectedRow != -1 && l.onAction != nil {
-				ev := TableEvent{Action: мКнст.TableActionDelete, Col: l.selectedCol, Row: l.selectedRow}
+				ev := TableEvent{Action: мИнт.TableActionDelete, Col: l.selectedCol, Row: l.selectedRow}
 				l.onAction(ev)
 			}
 		case term.KeyInsert:
 			if l.onAction != nil {
-				ev := TableEvent{Action: мКнст.TableActionNew, Col: l.selectedCol, Row: l.selectedRow}
+				ev := TableEvent{Action: мИнт.TableActionNew, Col: l.selectedCol, Row: l.selectedRow}
 				l.onAction(ev)
 			}
 		case term.KeyF4:
@@ -831,19 +830,19 @@ func (l *TableView) ProcessEvent(event мИнт.ИСобытие) bool {
 				sort := l.columns[colID].Sort
 
 				for idx := range l.columns {
-					l.columns[idx].Sort = мКнст.SortNone
+					l.columns[idx].Sort = мИнт.SortNone
 				}
 
-				if sort == мКнст.SortAsc {
-					sort = мКнст.SortDesc
-				} else if sort == мКнст.SortNone {
-					sort = мКнст.SortAsc
+				if sort == мИнт.SortAsc {
+					sort = мИнт.SortDesc
+				} else if sort == мИнт.SortNone {
+					sort = мИнт.SortAsc
 				} else {
-					sort = мКнст.SortNone
+					sort = мИнт.SortNone
 				}
 				l.columns[colID].Sort = sort
 
-				ev := TableEvent{Action: мКнст.TableActionSort, Col: colID, Row: -1, Sort: sort}
+				ev := TableEvent{Action: мИнт.TableActionSort, Col: colID, Row: -1, Sort: sort}
 				l.onAction(ev)
 			}
 		default:

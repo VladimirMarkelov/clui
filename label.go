@@ -2,7 +2,6 @@ package clui
 
 import (
 	xs "github.com/huandu/xstrings"
-	мКнст "./пакКонстанты"
 	мИнт "./пакИнтерфейсы"
 )
 
@@ -16,7 +15,7 @@ is always left aligned
 */
 type Label struct {
 	*BaseControl
-	direction   мКнст.Direction
+	direction   мИнт.Direction
 	multiline   bool
 	textDisplay мИнт.Align
 }
@@ -34,10 +33,10 @@ func CreateLabel(parent мИнт.ИВиджет, w, h int, title string, scale i
 	c := new(Label)
 	c.BaseControl = NewBaseControl()
 
-	if w == мКнст.AutoSize {
+	if w == мИнт.AutoSize {
 		w = xs.Len(title)
 	}
-	if h == мКнст.AutoSize {
+	if h == мИнт.AutoSize {
 		h = 1
 	}
 
@@ -48,7 +47,7 @@ func CreateLabel(parent мИнт.ИВиджет, w, h int, title string, scale i
 	c.SetConstraints(w, h)
 	c.SetScale(scale)
 	c.tabSkip = true
-	c.textDisplay = мКнст.AlignLeft
+	c.textDisplay = мИнт.AlignLeft
 
 	if parent != nil {
 		parent.AddChild(c)
@@ -58,12 +57,12 @@ func CreateLabel(parent мИнт.ИВиджет, w, h int, title string, scale i
 }
 
 // Direction returns direction of text output: vertical or horizontal
-func (l *Label) Direction() мКнст.Direction {
+func (l *Label) Direction() мИнт.Direction {
 	return l.direction
 }
 
 // SetDirection sets the text output direction
-func (l *Label) SetDirection(dir мКнст.Direction) {
+func (l *Label) SetDirection(dir мИнт.Direction) {
 	l.direction = dir
 }
 //Draw --
@@ -75,9 +74,9 @@ func (l *Label) Draw() {
 	PushAttributes()
 	defer PopAttributes()
 
-	fg, bg := RealColor(l.fg, l.Style(), мКнст.ColorText), RealColor(l.bg, l.Style(), мКнст.ColorBack)
+	fg, bg := RealColor(l.fg, l.Style(), мИнт.ColorText), RealColor(l.bg, l.Style(), мИнт.ColorBack)
 	if !l.Enabled() {
-		fg = RealColor(l.fg, l.Style(), мКнст.ColorDisabledText)
+		fg = RealColor(l.fg, l.Style(), мИнт.ColorDisabledText)
 	}
 
 	SetTextColor(fg)
@@ -105,7 +104,7 @@ func (l *Label) Draw() {
 				SetBackColor(elem.Bg)
 				putCharUnsafe(xx, yy, elem.Ch)
 
-				if l.direction == мКнст.Horizontal {
+				if l.direction == мИнт.Horizontal {
 					xx++
 					if xx >= l.x+l.width {
 						xx = l.x
@@ -123,7 +122,7 @@ func (l *Label) Draw() {
 			elem = parser.NextElement()
 		}
 	} else {
-		if l.direction == мКнст.Horizontal {
+		if l.direction == мИнт.Horizontal {
 			shift, str := AlignColorizedText(l.title, l.width, l.align)
 			if str != l.title && l.align != l.textDisplay {
 				shift, str = AlignColorizedText(l.title, l.width, l.textDisplay)
@@ -166,7 +165,7 @@ func (l *Label) TextDisplay() мИнт.Align {
 // for the property. Any other value does is skipped and does not affect
 // displaying the title
 func (l *Label) SetTextDisplay(align мИнт.Align) {
-	if align != мКнст.AlignLeft && align != мКнст.AlignRight {
+	if align != мИнт.AlignLeft && align != мИнт.AlignRight {
 		return
 	}
 

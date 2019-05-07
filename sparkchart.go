@@ -4,7 +4,6 @@ import (
 	"fmt"
 	// xs "github.com/huandu/xstrings"
 	term "github.com/nsf/termbox-go"
-	мКнст "./пакКонстанты"
 	мИнт "./пакИнтерфейсы"
 )
 
@@ -49,10 +48,10 @@ func CreateSparkChart(parent мИнт.ИВиджет, w, h int, scale int) *Spar
 	c := new(SparkChart)
 	c.BaseControl = NewBaseControl()
 
-	if w == мКнст.AutoSize {
+	if w == мИнт.AutoSize {
 		w = 10
 	}
-	if h == мКнст.AutoSize {
+	if h == мИнт.AutoSize {
 		h = 5
 	}
 
@@ -85,7 +84,7 @@ func (b *SparkChart) Draw() {
 	PushAttributes()
 	defer PopAttributes()
 
-	fg, bg := RealColor(b.fg, b.Style(), мКнст.ColorSparkChartText), RealColor(b.bg, b.Style(), мКнст.ColorSparkChartBack)
+	fg, bg := RealColor(b.fg, b.Style(), мИнт.ColorSparkChartText), RealColor(b.bg, b.Style(), мИнт.ColorSparkChartBack)
 	SetTextColor(fg)
 	SetBackColor(bg)
 	FillRect(b.x, b.y, b.width, b.height, ' ')
@@ -119,9 +118,9 @@ func (b *SparkChart) drawBars() {
 	h := b.height
 	pos := b.x + start
 
-	mxFg, mxBg := RealColor(b.maxFg, b.Style(), мКнст.ColorSparkChartMaxText), RealColor(b.maxBg, b.Style(), мКнст.ColorSparkChartMaxBack)
-	brFg, brBg := RealColor(b.fg, b.Style(), мКнст.ColorSparkChartBarText), RealColor(b.bg, b.Style(), мКнст.ColorSparkChartBarBack)
-	parts := []rune(SysObject(мКнст.ObjSparkChart))
+	mxFg, mxBg := RealColor(b.maxFg, b.Style(), мИнт.ColorSparkChartMaxText), RealColor(b.maxBg, b.Style(), мИнт.ColorSparkChartMaxBack)
+	brFg, brBg := RealColor(b.fg, b.Style(), мИнт.ColorSparkChartBarText), RealColor(b.bg, b.Style(), мИнт.ColorSparkChartBarBack)
+	parts := []rune(SysObject(мИнт.ObjSparkChart))
 
 	var dt []float64
 	if len(b.data) > width {

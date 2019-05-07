@@ -2,7 +2,6 @@ package clui
 
 import (
 	мИнт "./пакИнтерфейсы"
-	мКнст "./пакКонстанты"
 	мСоб "./пакСобытия"
 	term "github.com/nsf/termbox-go"
 	"strings"
@@ -43,10 +42,10 @@ func CreateListBox(parent мИнт.ИВиджет, width, height int, scale int)
 	l := new(ListBox)
 	l.BaseControl = NewBaseControl()
 
-	if height == мКнст.AutoSize {
+	if height == мИнт.AutoSize {
 		height = 3
 	}
-	if width == мКнст.AutoSize {
+	if width == мИнт.AutoSize {
 		width = 5
 	}
 
@@ -90,11 +89,11 @@ func (l *ListBox) drawItems() {
 	maxDy := l.height - 1
 	maxWidth := l.width - 1
 
-	fg, bg := RealColor(l.fg, l.Style(), мКнст.ColorEditText), RealColor(l.bg, l.Style(), мКнст.ColorEditBack)
+	fg, bg := RealColor(l.fg, l.Style(), мИнт.ColorEditText), RealColor(l.bg, l.Style(), мИнт.ColorEditBack)
 	if l.Active() {
-		fg, bg = RealColor(l.fg, l.Style(), мКнст.ColorEditActiveText), RealColor(l.bg, l.Style(), мКнст.ColorEditActiveBack)
+		fg, bg = RealColor(l.fg, l.Style(), мИнт.ColorEditActiveText), RealColor(l.bg, l.Style(), мИнт.ColorEditActiveBack)
 	}
-	fgSel, bgSel := RealColor(l.fgActive, l.Style(), мКнст.ColorSelectionText), RealColor(l.bgActive, l.Style(), мКнст.ColorSelectionBack)
+	fgSel, bgSel := RealColor(l.fgActive, l.Style(), мИнт.ColorSelectionText), RealColor(l.bgActive, l.Style(), мИнт.ColorSelectionBack)
 
 	for curr <= maxCurr && dy <= maxDy {
 		f, b := fg, bg
@@ -125,9 +124,9 @@ func (l *ListBox) Draw() {
 	x, y := l.Pos()
 	w, h := l.Size()
 
-	fg, bg := RealColor(l.fg, l.Style(), мКнст.ColorEditText), RealColor(l.bg, l.Style(), мКнст.ColorEditBack)
+	fg, bg := RealColor(l.fg, l.Style(), мИнт.ColorEditText), RealColor(l.bg, l.Style(), мИнт.ColorEditBack)
 	if l.Active() {
-		fg, bg = RealColor(l.fg, l.Style(), мКнст.ColorEditActiveText), RealColor(l.bg, l.Style(), мКнст.ColorEditActiveBack)
+		fg, bg = RealColor(l.fg, l.Style(), мИнт.ColorEditActiveText), RealColor(l.bg, l.Style(), мИнт.ColorEditActiveBack)
 	}
 	SetTextColor(fg)
 	SetBackColor(bg)

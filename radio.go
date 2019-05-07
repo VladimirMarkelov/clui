@@ -3,7 +3,6 @@ package clui
 import (
 	xs "github.com/huandu/xstrings"
 	term "github.com/nsf/termbox-go"
-	мКнст "./пакКонстанты"
 	мИнт "./пакИнтерфейсы"
 )
 
@@ -32,7 +31,7 @@ func CreateRadio(parent мИнт.ИВиджет, width int, title string, scale 
 	c := new(Radio)
 	c.BaseControl = NewBaseControl()
 
-	if width == мКнст.AutoSize {
+	if width == мИнт.AutoSize {
 		width = xs.Len(title) + 4
 	}
 
@@ -65,14 +64,14 @@ func (c *Radio) Draw() {
 	x, y := c.Pos()
 	w, h := c.Size()
 
-	fg, bg := RealColor(c.fg, c.Style(), мКнст.ColorControlText), RealColor(c.bg, c.Style(), мКнст.ColorControlBack)
+	fg, bg := RealColor(c.fg, c.Style(), мИнт.ColorControlText), RealColor(c.bg, c.Style(), мИнт.ColorControlBack)
 	if !c.Enabled() {
-		fg, bg = RealColor(c.fg, c.Style(), мКнст.ColorControlDisabledText), RealColor(c.bg, c.Style(), мКнст.ColorControlDisabledBack)
+		fg, bg = RealColor(c.fg, c.Style(), мИнт.ColorControlDisabledText), RealColor(c.bg, c.Style(), мИнт.ColorControlDisabledBack)
 	} else if c.Active() {
-		fg, bg = RealColor(c.fg, c.Style(), мКнст.ColorControlActiveText), RealColor(c.bg, c.Style(), мКнст.ColorControlActiveBack)
+		fg, bg = RealColor(c.fg, c.Style(), мИнт.ColorControlActiveText), RealColor(c.bg, c.Style(), мИнт.ColorControlActiveBack)
 	}
 
-	parts := []rune(SysObject(мКнст.ObjRadio))
+	parts := []rune(SysObject(мИнт.ObjRadio))
 	cOpen, cClose, cEmpty, cCheck := parts[0], parts[1], parts[2], parts[3]
 	cState := cEmpty
 	if c.selected {

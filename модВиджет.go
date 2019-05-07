@@ -1,7 +1,6 @@
 package clui
 
 import (
-	мКнст "./пакКонстанты"
 	term "github.com/nsf/termbox-go"
 	"sync"
 	"sync/atomic"
@@ -370,7 +369,7 @@ func (c *BaseControl) ResizeChildren() {
 
 	fullWidth := c.width - 2*c.padX
 	fullHeight := c.height - 2*c.padY
-	if c.pack == мКнст.Horizontal {
+	if c.pack == мИнт.Horizontal {
 		fullWidth -= (children - 1) * c.gapX
 	} else {
 		fullHeight -= (children - 1) * c.gapY
@@ -385,7 +384,7 @@ func (c *BaseControl) ResizeChildren() {
 		}
 
 		cw, ch := child.MinimalSize()
-		if c.pack == мКнст.Horizontal {
+		if c.pack == мИнт.Horizontal {
 			minWidth += cw
 		} else {
 			minHeight += ch
@@ -394,7 +393,7 @@ func (c *BaseControl) ResizeChildren() {
 
 	aStep := 0
 	diff := fullWidth - minWidth
-	if c.pack == мКнст.Vertical {
+	if c.pack == мИнт.Vertical {
 		diff = fullHeight - minHeight
 	}
 	if totalSc > 0 {
@@ -409,7 +408,7 @@ func (c *BaseControl) ResizeChildren() {
 		tw, th := ctrl.MinimalSize()
 		sc := ctrl.Scale()
 		d := int(ctrl.Scale() * aStep)
-		if c.pack == мКнст.Horizontal {
+		if c.pack == мИнт.Horizontal {
 			if sc != 0 {
 				if sc == totalSc {
 					tw += diff
@@ -531,7 +530,7 @@ func (c *BaseControl) MinimalSize() (w int, h int) {
 	totalX := 2 * c.padX
 	totalY := 2 * c.padY
 
-	if c.pack == мКнст.Vertical {
+	if c.pack == мИнт.Vertical {
 		totalY += (children - 1) * c.gapY
 	} else {
 		totalX += (children - 1) * c.gapX
@@ -546,7 +545,7 @@ func (c *BaseControl) MinimalSize() (w int, h int) {
 			continue
 		}
 		ww, hh := ctrl.MinimalSize()
-		if c.pack == мКнст.Vertical {
+		if c.pack == мИнт.Vertical {
 			totalY += hh
 			if ww+2*c.padX > totalX {
 				totalX = ww + 2*c.padX
@@ -618,20 +617,20 @@ func (c *BaseControl) setClipper() {
 func (c *BaseControl) HitTest(x, y int) мИнт.HitResult {
 	if x > c.x && x < c.x+c.width-1 &&
 		y > c.y && y < c.y+c.height-1 {
-		return мКнст.HitInside
+		return мИнт.HitInside
 	}
 
 	if (x == c.x || x == c.x+c.width-1) &&
 		y >= c.y && y < c.y+c.height {
-		return мКнст.HitBorder
+		return мИнт.HitBorder
 	}
 
 	if (y == c.y || y == c.y+c.height-1) &&
 		x >= c.x && x < c.x+c.width {
-		return мКнст.HitBorder
+		return мИнт.HitBorder
 	}
 
-	return мКнст.HitOutside
+	return мИнт.HitOutside
 }
 
 //ProcessEvent --
@@ -654,7 +653,7 @@ func (c *BaseControl) PlaceChildren() {
 
 		ctrl.SetPos(xx, yy)
 		ww, hh := ctrl.Size()
-		if c.pack == мКнст.Vertical {
+		if c.pack == мИнт.Vertical {
 			yy += c.gapY + hh
 		} else {
 			xx += c.gapX + ww

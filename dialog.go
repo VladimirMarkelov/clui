@@ -2,7 +2,6 @@ package clui
 
 import (
 	term "github.com/nsf/termbox-go"
-	мКнст "./пакКонстанты"
 	//мСоб "./пакСобытия"
 	мИнт "./пакИнтерфейсы"
 )
@@ -32,7 +31,7 @@ type SelectDialog struct {
 	rg        *RadioGroup
 	list      *ListBox
 	edit      *EditField
-	typ       мКнст.SelectDialogType
+	typ       мИнт.SelectDialogType
 	onClose   func()
 }
 
@@ -68,23 +67,23 @@ func CreateConfirmationDialog(title, question string, buttons []string, defaultB
 	defer WindowManager().EndUpdate()
 	dlg.View.SetConstraints(30, 3)
 	dlg.View.SetModal(true)
-	dlg.View.SetPack(мКнст.Vertical)
-	CreateFrame(dlg.View, 1, 1, мКнст.BorderNone, мКнст.Fixed)
+	dlg.View.SetPack(мИнт.Vertical)
+	CreateFrame(dlg.View, 1, 1, мИнт.BorderNone, мИнт.Fixed)
 
-	fbtn := CreateFrame(dlg.View, 1, 1, мКнст.BorderNone, 1)
-	CreateFrame(fbtn, 1, 1, мКнст.BorderNone, мКнст.Fixed)
+	fbtn := CreateFrame(dlg.View, 1, 1, мИнт.BorderNone, 1)
+	CreateFrame(fbtn, 1, 1, мИнт.BorderNone, мИнт.Fixed)
 	lb := CreateLabel(fbtn, 10, 3, question, 1)
 	lb.SetMultiline(true)
-	CreateFrame(fbtn, 1, 1, мКнст.BorderNone, мКнст.Fixed)
+	CreateFrame(fbtn, 1, 1, мИнт.BorderNone, мИнт.Fixed)
 
-	CreateFrame(dlg.View, 1, 1, мКнст.BorderNone, мКнст.Fixed)
-	frm1 := CreateFrame(dlg.View, 16, 4, мКнст.BorderNone, мКнст.Fixed)
-	CreateFrame(frm1, 1, 1, мКнст.BorderNone, 1)
+	CreateFrame(dlg.View, 1, 1, мИнт.BorderNone, мИнт.Fixed)
+	frm1 := CreateFrame(dlg.View, 16, 4, мИнт.BorderNone, мИнт.Fixed)
+	CreateFrame(frm1, 1, 1, мИнт.BorderNone, 1)
 
 	bText := buttons[0]
-	btn1 := CreateButton(frm1, мКнст.AutoSize, мКнст.AutoSize, bText, мКнст.Fixed)
+	btn1 := CreateButton(frm1, мИнт.AutoSize, мИнт.AutoSize, bText, мИнт.Fixed)
 	btn1.OnClick(func(ev мИнт.ИСобытие) {
-		dlg.result = мКнст.DialogButton1
+		dlg.result = мИнт.DialogButton1
 
 		WindowManager().DestroyWindow(dlg.View)
 		WindowManager().BeginUpdate()
@@ -97,10 +96,10 @@ func CreateConfirmationDialog(title, question string, buttons []string, defaultB
 	var btn2, btn3 *Button
 
 	if len(buttons) > 1 {
-		CreateFrame(frm1, 1, 1, мКнст.BorderNone, 1)
-		btn2 = CreateButton(frm1, мКнст.AutoSize, мКнст.AutoSize, buttons[1], мКнст.Fixed)
+		CreateFrame(frm1, 1, 1, мИнт.BorderNone, 1)
+		btn2 = CreateButton(frm1, мИнт.AutoSize, мИнт.AutoSize, buttons[1], мИнт.Fixed)
 		btn2.OnClick(func(ev мИнт.ИСобытие) {
-			dlg.result = мКнст.DialogButton2
+			dlg.result = мИнт.DialogButton2
 			WindowManager().DestroyWindow(dlg.View)
 			if dlg.onClose != nil {
 				dlg.onClose()
@@ -108,10 +107,10 @@ func CreateConfirmationDialog(title, question string, buttons []string, defaultB
 		})
 	}
 	if len(buttons) > 2 {
-		CreateFrame(frm1, 1, 1, мКнст.BorderNone, 1)
-		btn3 = CreateButton(frm1, мКнст.AutoSize, мКнст.AutoSize, buttons[2], мКнст.Fixed)
+		CreateFrame(frm1, 1, 1, мИнт.BorderNone, 1)
+		btn3 = CreateButton(frm1, мИнт.AutoSize, мИнт.AutoSize, buttons[2], мИнт.Fixed)
 		btn3.OnClick(func(ev мИнт.ИСобытие) {
-			dlg.result = мКнст.DialogButton3
+			dlg.result = мИнт.DialogButton3
 			WindowManager().DestroyWindow(dlg.View)
 			if dlg.onClose != nil {
 				dlg.onClose()
@@ -119,19 +118,19 @@ func CreateConfirmationDialog(title, question string, buttons []string, defaultB
 		})
 	}
 
-	CreateFrame(frm1, 1, 1, мКнст.BorderNone, 1)
+	CreateFrame(frm1, 1, 1, мИнт.BorderNone, 1)
 
-	if defaultButton == мКнст.DialogButton2 && len(buttons) > 1 {
+	if defaultButton == мИнт.DialogButton2 && len(buttons) > 1 {
 		ActivateControl(dlg.View, btn2)
-	} else if defaultButton == мКнст.DialogButton3 && len(buttons) > 2 {
+	} else if defaultButton == мИнт.DialogButton3 && len(buttons) > 2 {
 		ActivateControl(dlg.View, btn3)
 	} else {
 		ActivateControl(dlg.View, btn1)
 	}
 
 	dlg.View.OnClose(func(ev мИнт.ИСобытие) bool {
-		if dlg.result == мКнст.DialogAlive {
-			dlg.result = мКнст.DialogClosed
+		if dlg.result == мИнт.DialogAlive {
+			dlg.result = мИнт.DialogClosed
 			if ev.X() != 1 {
 				WindowManager().DestroyWindow(dlg.View)
 			}
@@ -165,7 +164,7 @@ func (d *ConfirmationDialog) Result() int {
 
 //CreateEditDialog --
 func CreateEditDialog(title, message, initialText string) *SelectDialog {
-	return CreateSelectDialog(title, []string{message, initialText}, 0, мКнст.SelectDialogEdit)
+	return CreateSelectDialog(title, []string{message, initialText}, 0, мИнт.SelectDialogEdit)
 }
 
 // CreateSelectDialog creates new dialog to select an item from list.
@@ -176,7 +175,7 @@ func CreateEditDialog(title, message, initialText string) *SelectDialog {
 //  the dialog is created
 // typ is a selection type: ListBox or RadioGroup
 // Returns nil in case of creation process fails, e.g, if item list is empty
-func CreateSelectDialog(title string, items []string, selectedItem int, typ мКнст.SelectDialogType) *SelectDialog {
+func CreateSelectDialog(title string, items []string, selectedItem int, typ мИнт.SelectDialogType) *SelectDialog {
 	dlg := new(SelectDialog)
 
 	if len(items) == 0 {
@@ -191,10 +190,10 @@ func CreateSelectDialog(title string, items []string, selectedItem int, typ мК
 	WindowManager().BeginUpdate()
 	defer WindowManager().EndUpdate()
 	dlg.View.SetModal(true)
-	dlg.View.SetPack(мКнст.Vertical)
+	dlg.View.SetPack(мИнт.Vertical)
 
-	if typ == мКнст.SelectDialogList {
-		fList := CreateFrame(dlg.View, 1, 1, мКнст.BorderNone, 1)
+	if typ == мИнт.SelectDialogList {
+		fList := CreateFrame(dlg.View, 1, 1, мИнт.BorderNone, 1)
 		fList.SetPaddings(1, 1)
 		fList.SetGaps(0, 0)
 		dlg.list = CreateListBox(fList, 15, 5, 1)
@@ -204,14 +203,14 @@ func CreateSelectDialog(title string, items []string, selectedItem int, typ мК
 		if selectedItem >= 0 && selectedItem < len(items) {
 			dlg.list.SelectItem(selectedItem)
 		}
-	} else if typ == мКнст.SelectDialogEdit {
-		CreateFrame(dlg.View, 1, 1, мКнст.BorderNone, мКнст.Fixed)
+	} else if typ == мИнт.SelectDialogEdit {
+		CreateFrame(dlg.View, 1, 1, мИнт.BorderNone, мИнт.Fixed)
 		lb := CreateLabel(dlg.View, 10, 3, items[0], 1)
 		lb.SetMultiline(true)
 
 		fWidth, _ := dlg.View.Size()
-		dlg.edit = CreateEditField(dlg.View, fWidth-2, items[1], мКнст.AutoSize)
-		CreateFrame(dlg.View, 1, 1, мКнст.BorderNone, мКнст.Fixed)
+		dlg.edit = CreateEditField(dlg.View, fWidth-2, items[1], мИнт.AutoSize)
+		CreateFrame(dlg.View, 1, 1, мИнт.BorderNone, мИнт.Fixed)
 
 		dlg.edit.OnKeyPress(func(key term.Key, r rune) bool {
 			var input string
@@ -219,7 +218,7 @@ func CreateSelectDialog(title string, items []string, selectedItem int, typ мК
 				input = dlg.edit.Title()
 				dlg.edtResult = input
 				dlg.value = -1
-				dlg.result = мКнст.DialogButton1
+				dlg.result = мИнт.DialogButton1
 
 				WindowManager().DestroyWindow(dlg.View)
 				if dlg.onClose != nil {
@@ -230,13 +229,13 @@ func CreateSelectDialog(title string, items []string, selectedItem int, typ мК
 			return false
 		})
 	} else {
-		fRadio := CreateFrame(dlg.View, 1, 1, мКнст.BorderNone, мКнст.Fixed)
+		fRadio := CreateFrame(dlg.View, 1, 1, мИнт.BorderNone, мИнт.Fixed)
 		fRadio.SetPaddings(1, 1)
 		fRadio.SetGaps(0, 0)
-		fRadio.SetPack(мКнст.Vertical)
+		fRadio.SetPack(мИнт.Vertical)
 		dlg.rg = CreateRadioGroup()
 		for _, item := range items {
-			r := CreateRadio(fRadio, мКнст.AutoSize, item, мКнст.Fixed)
+			r := CreateRadio(fRadio, мИнт.AutoSize, item, мИнт.Fixed)
 			dlg.rg.AddItem(r)
 		}
 		if selectedItem >= 0 && selectedItem < len(items) {
@@ -244,14 +243,14 @@ func CreateSelectDialog(title string, items []string, selectedItem int, typ мК
 		}
 	}
 
-	frm1 := CreateFrame(dlg.View, 16, 4, мКнст.BorderNone, мКнст.Fixed)
-	CreateFrame(frm1, 1, 1, мКнст.BorderNone, 1)
-	btn1 := CreateButton(frm1, мКнст.AutoSize, мКнст.AutoSize, "OK", мКнст.Fixed)
+	frm1 := CreateFrame(dlg.View, 16, 4, мИнт.BorderNone, мИнт.Fixed)
+	CreateFrame(frm1, 1, 1, мИнт.BorderNone, 1)
+	btn1 := CreateButton(frm1, мИнт.AutoSize, мИнт.AutoSize, "OK", мИнт.Fixed)
 	btn1.OnClick(func(ev мИнт.ИСобытие) {
-		dlg.result = мКнст.DialogButton1
-		if dlg.typ == мКнст.SelectDialogList {
+		dlg.result = мИнт.DialogButton1
+		if dlg.typ == мИнт.SelectDialogList {
 			dlg.value = dlg.list.SelectedItem()
-		} else if dlg.typ == мКнст.SelectDialogEdit {
+		} else if dlg.typ == мИнт.SelectDialogEdit {
 			dlg.edtResult = dlg.edit.Title()
 			dlg.value = -1
 		} else {
@@ -263,10 +262,10 @@ func CreateSelectDialog(title string, items []string, selectedItem int, typ мК
 		}
 	})
 
-	CreateFrame(frm1, 1, 1, мКнст.BorderNone, 1)
-	btn2 := CreateButton(frm1, мКнст.AutoSize, мКнст.AutoSize, "Cancel", мКнст.Fixed)
+	CreateFrame(frm1, 1, 1, мИнт.BorderNone, 1)
+	btn2 := CreateButton(frm1, мИнт.AutoSize, мИнт.AutoSize, "Cancel", мИнт.Fixed)
 	btn2.OnClick(func(ev мИнт.ИСобытие) {
-		dlg.result = мКнст.DialogButton2
+		dlg.result = мИнт.DialogButton2
 		dlg.edtResult = ""
 		dlg.value = -1
 		WindowManager().DestroyWindow(dlg.View)
@@ -275,16 +274,16 @@ func CreateSelectDialog(title string, items []string, selectedItem int, typ мК
 		}
 	})
 
-	if typ == мКнст.SelectDialogEdit {
+	if typ == мИнт.SelectDialogEdit {
 		ActivateControl(dlg.View, dlg.edit)
 	} else {
 		ActivateControl(dlg.View, btn2)
 	}
-	CreateFrame(frm1, 1, 1, мКнст.BorderNone, 1)
+	CreateFrame(frm1, 1, 1, мИнт.BorderNone, 1)
 
 	dlg.View.OnClose(func(ev мИнт.ИСобытие) bool {
-		if dlg.result == мКнст.DialogAlive {
-			dlg.result = мКнст.DialogClosed
+		if dlg.result == мИнт.DialogAlive {
+			dlg.result = мИнт.DialogClosed
 			if ev.X() != 1 {
 				WindowManager().DestroyWindow(dlg.View)
 			}

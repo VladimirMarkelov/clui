@@ -9,7 +9,7 @@ import (
 	"strings"
 	"sync"
 	"unicode/utf8"
-	мКнст "./пакКонстанты"
+	мИнт "./пакИнтерфейсы"
 )
 
 /*
@@ -135,78 +135,78 @@ func ThemeReset() {
 	defTheme.colors = make(map[string]term.Attribute, 0)
 	defTheme.objects = make(map[string]string, 0)
 
-	defTheme.objects[мКнст.ObjSingleBorder] = "─│┌┐└┘"
-	defTheme.objects[мКнст.ObjDoubleBorder] = "═║╔╗╚╝"
-	defTheme.objects[мКнст.ObjEdit] = "←→V*"
-	defTheme.objects[мКнст.ObjScrollBar] = "░■▲▼◄►"
-	defTheme.objects[мКнст.ObjViewButtons] = "^↓○[]"
-	defTheme.objects[мКнст.ObjCheckBox] = "[] X?"
-	defTheme.objects[мКнст.ObjRadio] = "() *"
-	defTheme.objects[мКнст.ObjProgressBar] = "░▒"
-	defTheme.objects[мКнст.ObjBarChart] = "█─│┌┐└┘┬┴├┤┼"
-	defTheme.objects[мКнст.ObjSparkChart] = "█"
-	defTheme.objects[мКнст.ObjTableView] = "─│┼▼▲"
+	defTheme.objects[мИнт.ObjSingleBorder] = "─│┌┐└┘"
+	defTheme.objects[мИнт.ObjDoubleBorder] = "═║╔╗╚╝"
+	defTheme.objects[мИнт.ObjEdit] = "←→V*"
+	defTheme.objects[мИнт.ObjScrollBar] = "░■▲▼◄►"
+	defTheme.objects[мИнт.ObjViewButtons] = "^↓○[]"
+	defTheme.objects[мИнт.ObjCheckBox] = "[] X?"
+	defTheme.objects[мИнт.ObjRadio] = "() *"
+	defTheme.objects[мИнт.ObjProgressBar] = "░▒"
+	defTheme.objects[мИнт.ObjBarChart] = "█─│┌┐└┘┬┴├┤┼"
+	defTheme.objects[мИнт.ObjSparkChart] = "█"
+	defTheme.objects[мИнт.ObjTableView] = "─│┼▼▲"
 
-	defTheme.colors[мКнст.ColorDisabledText] = мКнст.ColorBlackBold
-	defTheme.colors[мКнст.ColorDisabledBack] = мКнст.ColorWhite
-	defTheme.colors[мКнст.ColorText] = мКнст.ColorWhite
-	defTheme.colors[мКнст.ColorBack] = мКнст.ColorBlack
-	defTheme.colors[мКнст.ColorViewBack] = мКнст.ColorBlack
-	defTheme.colors[мКнст.ColorViewText] = мКнст.ColorWhite
+	defTheme.colors[мИнт.ColorDisabledText] = мИнт.ColorBlackBold
+	defTheme.colors[мИнт.ColorDisabledBack] = мИнт.ColorWhite
+	defTheme.colors[мИнт.ColorText] = мИнт.ColorWhite
+	defTheme.colors[мИнт.ColorBack] = мИнт.ColorBlack
+	defTheme.colors[мИнт.ColorViewBack] = мИнт.ColorBlack
+	defTheme.colors[мИнт.ColorViewText] = мИнт.ColorWhite
 
-	defTheme.colors[мКнст.ColorControlText] = мКнст.ColorWhite
-	defTheme.colors[мКнст.ColorControlBack] = мКнст.ColorBlack
-	defTheme.colors[мКнст.ColorControlActiveText] = мКнст.ColorWhite
-	defTheme.colors[мКнст.ColorControlActiveBack] = мКнст.ColorMagenta
-	defTheme.colors[мКнст.ColorControlShadow] = мКнст.ColorBlue
-	defTheme.colors[мКнст.ColorControlDisabledText] = мКнст.ColorWhite
-	defTheme.colors[мКнст.ColorControlDisabledBack] = мКнст.ColorBlack
+	defTheme.colors[мИнт.ColorControlText] = мИнт.ColorWhite
+	defTheme.colors[мИнт.ColorControlBack] = мИнт.ColorBlack
+	defTheme.colors[мИнт.ColorControlActiveText] = мИнт.ColorWhite
+	defTheme.colors[мИнт.ColorControlActiveBack] = мИнт.ColorMagenta
+	defTheme.colors[мИнт.ColorControlShadow] = мИнт.ColorBlue
+	defTheme.colors[мИнт.ColorControlDisabledText] = мИнт.ColorWhite
+	defTheme.colors[мИнт.ColorControlDisabledBack] = мИнт.ColorBlack
 
-	defTheme.colors[мКнст.ColorButtonText] = мКнст.ColorWhite
-	defTheme.colors[мКнст.ColorButtonBack] = мКнст.ColorGreen
-	defTheme.colors[мКнст.ColorButtonActiveText] = мКнст.ColorWhite
-	defTheme.colors[мКнст.ColorButtonActiveBack] = мКнст.ColorMagenta
-	defTheme.colors[мКнст.ColorButtonShadow] = мКнст.ColorBlue
-	defTheme.colors[мКнст.ColorButtonDisabledText] = мКнст.ColorWhite
-	defTheme.colors[мКнст.ColorButtonDisabledBack] = мКнст.ColorBlack
+	defTheme.colors[мИнт.ColorButtonText] = мИнт.ColorWhite
+	defTheme.colors[мИнт.ColorButtonBack] = мИнт.ColorGreen
+	defTheme.colors[мИнт.ColorButtonActiveText] = мИнт.ColorWhite
+	defTheme.colors[мИнт.ColorButtonActiveBack] = мИнт.ColorMagenta
+	defTheme.colors[мИнт.ColorButtonShadow] = мИнт.ColorBlue
+	defTheme.colors[мИнт.ColorButtonDisabledText] = мИнт.ColorWhite
+	defTheme.colors[мИнт.ColorButtonDisabledBack] = мИнт.ColorBlack
 
-	defTheme.colors[мКнст.ColorEditText] = мКнст.ColorBlack
-	defTheme.colors[мКнст.ColorEditBack] = мКнст.ColorWhite
-	defTheme.colors[мКнст.ColorEditActiveText] = мКнст.ColorBlack
-	defTheme.colors[мКнст.ColorEditActiveBack] = мКнст.ColorYellow
-	defTheme.colors[мКнст.ColorSelectionText] = мКнст.ColorYellow
-	defTheme.colors[мКнст.ColorSelectionBack] = мКнст.ColorBlue
+	defTheme.colors[мИнт.ColorEditText] = мИнт.ColorBlack
+	defTheme.colors[мИнт.ColorEditBack] = мИнт.ColorWhite
+	defTheme.colors[мИнт.ColorEditActiveText] = мИнт.ColorBlack
+	defTheme.colors[мИнт.ColorEditActiveBack] = мИнт.ColorYellow
+	defTheme.colors[мИнт.ColorSelectionText] = мИнт.ColorYellow
+	defTheme.colors[мИнт.ColorSelectionBack] = мИнт.ColorBlue
 
-	defTheme.colors[мКнст.ColorScrollBack] = мКнст.ColorBlack
-	defTheme.colors[мКнст.ColorScrollText] = мКнст.ColorWhite
-	defTheme.colors[мКнст.ColorThumbBack] = мКнст.ColorBlack
-	defTheme.colors[мКнст.ColorThumbText] = мКнст.ColorWhite
+	defTheme.colors[мИнт.ColorScrollBack] = мИнт.ColorBlack
+	defTheme.colors[мИнт.ColorScrollText] = мИнт.ColorWhite
+	defTheme.colors[мИнт.ColorThumbBack] = мИнт.ColorBlack
+	defTheme.colors[мИнт.ColorThumbText] = мИнт.ColorWhite
 
-	defTheme.colors[мКнст.ColorProgressText] = мКнст.ColorBlue
-	defTheme.colors[мКнст.ColorProgressBack] = мКнст.ColorBlack
-	defTheme.colors[мКнст.ColorProgressActiveText] = мКнст.ColorBlack
-	defTheme.colors[мКнст.ColorProgressActiveBack] = мКнст.ColorBlue
-	defTheme.colors[мКнст.ColorProgressTitleText] = мКнст.ColorWhite
+	defTheme.colors[мИнт.ColorProgressText] = мИнт.ColorBlue
+	defTheme.colors[мИнт.ColorProgressBack] = мИнт.ColorBlack
+	defTheme.colors[мИнт.ColorProgressActiveText] = мИнт.ColorBlack
+	defTheme.colors[мИнт.ColorProgressActiveBack] = мИнт.ColorBlue
+	defTheme.colors[мИнт.ColorProgressTitleText] = мИнт.ColorWhite
 
-	defTheme.colors[мКнст.ColorBarChartBack] = мКнст.ColorBlack
-	defTheme.colors[мКнст.ColorBarChartText] = мКнст.ColorWhite
+	defTheme.colors[мИнт.ColorBarChartBack] = мИнт.ColorBlack
+	defTheme.colors[мИнт.ColorBarChartText] = мИнт.ColorWhite
 
-	defTheme.colors[мКнст.ColorSparkChartBack] = мКнст.ColorBlack
-	defTheme.colors[мКнст.ColorSparkChartText] = мКнст.ColorWhite
-	defTheme.colors[мКнст.ColorSparkChartBarBack] = мКнст.ColorBlack
-	defTheme.colors[мКнст.ColorSparkChartBarText] = мКнст.ColorCyan
-	defTheme.colors[мКнст.ColorSparkChartMaxBack] = мКнст.ColorBlack
-	defTheme.colors[мКнст.ColorSparkChartMaxText] = мКнст.ColorCyanBold
+	defTheme.colors[мИнт.ColorSparkChartBack] = мИнт.ColorBlack
+	defTheme.colors[мИнт.ColorSparkChartText] = мИнт.ColorWhite
+	defTheme.colors[мИнт.ColorSparkChartBarBack] = мИнт.ColorBlack
+	defTheme.colors[мИнт.ColorSparkChartBarText] = мИнт.ColorCyan
+	defTheme.colors[мИнт.ColorSparkChartMaxBack] = мИнт.ColorBlack
+	defTheme.colors[мИнт.ColorSparkChartMaxText] = мИнт.ColorCyanBold
 
-	defTheme.colors[мКнст.ColorTableText] = мКнст.ColorWhite
-	defTheme.colors[мКнст.ColorTableBack] = мКнст.ColorBlack
-	defTheme.colors[мКнст.ColorTableSelectedText] = мКнст.ColorWhite
-	defTheme.colors[мКнст.ColorTableSelectedBack] = мКнст.ColorBlack
-	defTheme.colors[мКнст.ColorTableActiveCellText] = мКнст.ColorWhiteBold
-	defTheme.colors[мКнст.ColorTableActiveCellBack] = мКнст.ColorBlack
-	defTheme.colors[мКнст.ColorTableLineText] = мКнст.ColorWhite
-	defTheme.colors[мКнст.ColorTableHeaderText] = мКнст.ColorWhite
-	defTheme.colors[мКнст.ColorTableHeaderBack] = мКнст.ColorBlack
+	defTheme.colors[мИнт.ColorTableText] = мИнт.ColorWhite
+	defTheme.colors[мИнт.ColorTableBack] = мИнт.ColorBlack
+	defTheme.colors[мИнт.ColorTableSelectedText] = мИнт.ColorWhite
+	defTheme.colors[мИнт.ColorTableSelectedBack] = мИнт.ColorBlack
+	defTheme.colors[мИнт.ColorTableActiveCellText] = мИнт.ColorWhiteBold
+	defTheme.colors[мИнт.ColorTableActiveCellBack] = мИнт.ColorBlack
+	defTheme.colors[мИнт.ColorTableLineText] = мИнт.ColorWhite
+	defTheme.colors[мИнт.ColorTableHeaderText] = мИнт.ColorWhite
+	defTheme.colors[мИнт.ColorTableHeaderBack] = мИнт.ColorBlack
 
 	themeManager.themes[defaultTheme] = defTheme
 }
@@ -533,11 +533,11 @@ func RealColor(clr term.Attribute, style string, id string) term.Attribute {
 
 	ccolor := fmt.Sprintf("%s%s", prefix, id)
 
-	if clr == мКнст.ColorDefault {
+	if clr == мИнт.ColorDefault {
 		clr = SysColor(ccolor)
 	}
 
-	if clr == мКнст.ColorDefault {
+	if clr == мИнт.ColorDefault {
 		panic("Failed to load color value for " + ccolor)
 	}
 

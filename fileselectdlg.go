@@ -8,7 +8,6 @@ import (
 	"strings"
 
 	term "github.com/nsf/termbox-go"
-	мКнст "./пакКонстанты"
 	мИнт "./пакИнтерфейсы"
 )
 
@@ -217,32 +216,32 @@ func CreateFileSelectDialog(title, fileMasks, initPath string, selectDir, mustEx
 	defer WindowManager().EndUpdate()
 
 	dlg.View.SetModal(true)
-	dlg.View.SetPack(мКнст.Vertical)
+	dlg.View.SetPack(мИнт.Vertical)
 
 	dlg.currPath = initPath
 	dlg.detectPath()
-	dlg.curDir = CreateLabel(dlg.View, мКнст.AutoSize, мКнст.AutoSize, "", мКнст.Fixed)
-	dlg.curDir.SetTextDisplay(мКнст.AlignRight)
+	dlg.curDir = CreateLabel(dlg.View, мИнт.AutoSize, мИнт.AutoSize, "", мИнт.Fixed)
+	dlg.curDir.SetTextDisplay(мИнт.AlignRight)
 
-	flist := CreateFrame(dlg.View, 1, 1, мКнст.BorderNone, 1)
+	flist := CreateFrame(dlg.View, 1, 1, мИнт.BorderNone, 1)
 	flist.SetPaddings(1, 1)
-	flist.SetPack(мКнст.Horizontal)
+	flist.SetPack(мИнт.Horizontal)
 	dlg.listBox = CreateListBox(flist, 16, ch-20, 1)
 
-	fselected := CreateFrame(dlg.View, 1, 1, мКнст.BorderNone, мКнст.Fixed)
+	fselected := CreateFrame(dlg.View, 1, 1, мИнт.BorderNone, мИнт.Fixed)
 	// text + edit field to enter name manually
-	fselected.SetPack(мКнст.Vertical)
+	fselected.SetPack(мИнт.Vertical)
 	fselected.SetPaddings(1, 0)
-	CreateLabel(fselected, мКнст.AutoSize, мКнст.AutoSize, "Selected object:", 1)
+	CreateLabel(fselected, мИнт.AutoSize, мИнт.AutoSize, "Selected object:", 1)
 	dlg.edFile = CreateEditField(fselected, cw-22, "", 1)
 
 	// buttons at the right
-	blist := CreateFrame(flist, 1, 1, мКнст.BorderNone, мКнст.Fixed)
-	blist.SetPack(мКнст.Vertical)
+	blist := CreateFrame(flist, 1, 1, мИнт.BorderNone, мИнт.Fixed)
+	blist.SetPack(мИнт.Vertical)
 	blist.SetPaddings(1, 1)
-	btnOpen := CreateButton(blist, мКнст.AutoSize, мКнст.AutoSize, "Open", мКнст.Fixed)
-	btnSelect := CreateButton(blist, мКнст.AutoSize, мКнст.AutoSize, "Select", мКнст.Fixed)
-	btnCancel := CreateButton(blist, мКнст.AutoSize, мКнст.AutoSize, "Cancel", мКнст.Fixed)
+	btnOpen := CreateButton(blist, мИнт.AutoSize, мИнт.AutoSize, "Open", мИнт.Fixed)
+	btnSelect := CreateButton(blist, мИнт.AutoSize, мИнт.AutoSize, "Select", мИнт.Fixed)
+	btnCancel := CreateButton(blist, мИнт.AutoSize, мИнт.AutoSize, "Cancel", мИнт.Fixed)
 
 	btnCancel.OnClick(func(ev мИнт.ИСобытие) {
 		WindowManager().DestroyWindow(dlg.View)
@@ -275,8 +274,8 @@ func CreateFileSelectDialog(title, fileMasks, initPath string, selectDir, mustEx
 	})
 
 	dlg.View.OnClose(func(ev мИнт.ИСобытие) bool {
-		if dlg.result == мКнст.DialogAlive {
-			dlg.result = мКнст.DialogClosed
+		if dlg.result == мИнт.DialogAlive {
+			dlg.result = мИнт.DialogClosed
 			if ev.X() != 1 {
 				WindowManager().DestroyWindow(dlg.View)
 			}

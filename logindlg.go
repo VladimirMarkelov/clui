@@ -1,7 +1,6 @@
 package clui
 
 import(
-	мКнст "./пакКонстанты"
 	мИнт "./пакИнтерфейсы"
 )
 const (
@@ -57,32 +56,32 @@ func CreateLoginDialog(title, userName string) *LoginDialog {
 	defer WindowManager().EndUpdate()
 
 	dlg.View.SetModal(true)
-	dlg.View.SetPack(мКнст.Vertical)
+	dlg.View.SetPack(мИнт.Vertical)
 
-	userfrm := CreateFrame(dlg.View, 1, 1, мКнст.BorderNone, мКнст.Fixed)
+	userfrm := CreateFrame(dlg.View, 1, 1, мИнт.BorderNone, мИнт.Fixed)
 	userfrm.SetPaddings(1, 1)
-	userfrm.SetPack(мКнст.Horizontal)
+	userfrm.SetPack(мИнт.Horizontal)
 	userfrm.SetGaps(1, 0)
-	CreateLabel(userfrm, мКнст.AutoSize, мКнст.AutoSize, "User name", мКнст.Fixed)
+	CreateLabel(userfrm, мИнт.AutoSize, мИнт.AutoSize, "User name", мИнт.Fixed)
 	edUser := CreateEditField(userfrm, 20, userName, 1)
 
-	passfrm := CreateFrame(dlg.View, 1, 1, мКнст.BorderNone, 1)
+	passfrm := CreateFrame(dlg.View, 1, 1, мИнт.BorderNone, 1)
 	passfrm.SetPaddings(1, 1)
-	passfrm.SetPack(мКнст.Horizontal)
+	passfrm.SetPack(мИнт.Horizontal)
 	passfrm.SetGaps(1, 0)
-	CreateLabel(passfrm, мКнст.AutoSize, мКнст.AutoSize, "Password", мКнст.Fixed)
+	CreateLabel(passfrm, мИнт.AutoSize, мИнт.AutoSize, "Password", мИнт.Fixed)
 	edPass := CreateEditField(passfrm, 20, "", 1)
 	edPass.SetPasswordMode(true)
 
-	filler := CreateFrame(dlg.View, 1, 1, мКнст.BorderNone, 1)
-	filler.SetPack(мКнст.Horizontal)
-	lbRes := CreateLabel(filler, мКнст.AutoSize, мКнст.AutoSize, "", 1)
+	filler := CreateFrame(dlg.View, 1, 1, мИнт.BorderNone, 1)
+	filler.SetPack(мИнт.Horizontal)
+	lbRes := CreateLabel(filler, мИнт.AutoSize, мИнт.AutoSize, "", 1)
 
-	blist := CreateFrame(dlg.View, 1, 1, мКнст.BorderNone, мКнст.Fixed)
-	blist.SetPack(мКнст.Horizontal)
+	blist := CreateFrame(dlg.View, 1, 1, мИнт.BorderNone, мИнт.Fixed)
+	blist.SetPack(мИнт.Horizontal)
 	blist.SetPaddings(1, 1)
-	btnOk := CreateButton(blist, 10, 4, "OK", мКнст.Fixed)
-	btnCancel := CreateButton(blist, 10, 4, "Cancel", мКнст.Fixed)
+	btnOk := CreateButton(blist, 10, 4, "OK", мИнт.Fixed)
+	btnCancel := CreateButton(blist, 10, 4, "Cancel", мИнт.Fixed)
 
 	btnCancel.OnClick(func(ev мИнт.ИСобытие) {
 		WindowManager().DestroyWindow(dlg.View)
@@ -119,8 +118,8 @@ func CreateLoginDialog(title, userName string) *LoginDialog {
 	})
 
 	dlg.View.OnClose(func(ev мИнт.ИСобытие) bool {
-		if dlg.result == мКнст.DialogAlive {
-			dlg.result = мКнст.DialogClosed
+		if dlg.result == мИнт.DialogAlive {
+			dlg.result = мИнт.DialogClosed
 			if ev.X() != 1 {
 				WindowManager().DestroyWindow(dlg.View)
 			}

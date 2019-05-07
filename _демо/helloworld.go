@@ -1,7 +1,8 @@
 package main
 
 import (
-	ui "github.com/VladimirMarkelov/clui"
+	ui ".."
+	мИнт "../пакИнтерфейсы"
 )
 
 func main() {
@@ -11,7 +12,7 @@ func main() {
 	view := ui.AddWindow(0, 0, 10, 7, "Hello World!")
 
 	btnQuit := ui.CreateButton(view, 15, 4, "Hi", 1)
-	btnQuit.OnClick(func(ev ui.Event) {
+	btnQuit.OnClick(func(ev мИнт.ИСобытие) {
 		go ui.Stop()
 	})
 

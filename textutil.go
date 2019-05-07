@@ -5,7 +5,6 @@ import (
 	term "github.com/nsf/termbox-go"
 	"regexp"
 	"strings"
-	мКнст "./пакКонстанты"
 	мИнт "./пакИнтерфейсы"
 )
 
@@ -74,9 +73,9 @@ func AlignText(str string, width int, align мИнт.Align) (shift int, out stri
 		return 0, CutText(str, width)
 	}
 
-	if align == мКнст.AlignRight {
+	if align == мИнт.AlignRight {
 		return width - length, str
-	} else if align == мКнст.AlignCenter {
+	} else if align == мИнт.AlignCenter {
 		return (width - length) / 2, str
 	}
 
@@ -98,9 +97,9 @@ func AlignColorizedText(str string, width int, align мИнт.Align) (int, strin
 	}
 
 	skip := 0
-	if align == мКнст.AlignRight {
+	if align == мИнт.AlignRight {
 		skip = length - width
-	} else if align == мКнст.AlignCenter {
+	} else if align == мИнт.AlignCenter {
 		skip = (length - width) / 2
 	}
 

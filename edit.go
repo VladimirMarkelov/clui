@@ -4,7 +4,6 @@ import (
 	xs "github.com/huandu/xstrings"
 	term "github.com/nsf/termbox-go"
 	"strings"
-	мКнст "./пакКонстанты"
 	мИнт "./пакИнтерфейсы"
 	мСоб "./пакСобытия"
 )
@@ -57,7 +56,7 @@ func (e *EditField) Draw() {
 	x, y := e.Pos()
 	w, _ := e.Size()
 
-	parts := []rune(SysObject(мКнст.ObjEdit))
+	parts := []rune(SysObject(мИнт.ObjEdit))
 	chLeft, chRight := string(parts[0]), string(parts[1])
 	chStar := "*"
 	if len(parts) > 3 {
@@ -103,11 +102,11 @@ func (e *EditField) Draw() {
 		}
 	}
 
-	fg, bg := RealColor(e.fg, e.Style(), мКнст.ColorEditText), RealColor(e.bg, e.Style(), мКнст.ColorEditBack)
+	fg, bg := RealColor(e.fg, e.Style(), мИнт.ColorEditText), RealColor(e.bg, e.Style(), мИнт.ColorEditBack)
 	if !e.Enabled() {
-		fg, bg = RealColor(e.fg, e.Style(), мКнст.ColorDisabledText), RealColor(e.fg, e.Style(), мКнст.ColorDisabledBack)
+		fg, bg = RealColor(e.fg, e.Style(), мИнт.ColorDisabledText), RealColor(e.fg, e.Style(), мИнт.ColorDisabledBack)
 	} else if e.Active() {
-		fg, bg = RealColor(e.fg, e.Style(), мКнст.ColorEditActiveText), RealColor(e.bg, e.Style(), мКнст.ColorEditActiveBack)
+		fg, bg = RealColor(e.fg, e.Style(), мИнт.ColorEditActiveText), RealColor(e.bg, e.Style(), мИнт.ColorEditActiveBack)
 	}
 
 	SetTextColor(fg)
@@ -256,14 +255,14 @@ func (e *EditField) MaxWidth() int {
 // Method does nothing if new size is less than minimal size
 // EditField height cannot be changed - it equals 1 always
 func (e *EditField) SetSize(width, height int) {
-	if width != мКнст.KeepValue && (width > 1000 || width < e.minW) {
+	if width != мИнт.KeepValue && (width > 1000 || width < e.minW) {
 		return
 	}
-	if height != мКнст.KeepValue && (height > 200 || height < e.minH) {
+	if height != мИнт.KeepValue && (height > 200 || height < e.minH) {
 		return
 	}
 
-	if width != мКнст.KeepValue {
+	if width != мИнт.KeepValue {
 		e.width = width
 	}
 

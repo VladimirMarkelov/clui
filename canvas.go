@@ -5,7 +5,7 @@ import (
 	term "github.com/nsf/termbox-go"
 	"strings"
 	"unicode"
-	мКнст "./пакКонстанты"
+	мИнт "./пакИнтерфейсы"
 )
 
 type attr struct {
@@ -93,8 +93,8 @@ func Reset() {
 	canvas.width, canvas.height = term.Size()
 	canvas.clipX, canvas.clipY = 0, 0
 	canvas.clipW, canvas.clipH = canvas.width, canvas.height
-	canvas.textColor = мКнст.ColorWhite
-	canvas.backColor = мКнст.ColorBlack
+	canvas.textColor = мИнт.ColorWhite
+	canvas.backColor = мИнт.ColorBlack
 
 	canvas.attrStack = make([]attr, 0)
 	canvas.clipStack = make([]rect, 0)
@@ -378,13 +378,13 @@ func DrawRawTextVertical(x, y int, text string) {
 }
 
 // DrawFrame paints the frame without changing area inside it
-func DrawFrame(x, y, w, h int, border мКнст.BorderStyle) {
+func DrawFrame(x, y, w, h int, border мИнт.BorderStyle) {
 	var chars string
-	if border == мКнст.BorderThick {
-		chars = SysObject(мКнст.ObjDoubleBorder)
-	} else if border == мКнст.BorderThin {
-		chars = SysObject(мКнст.ObjSingleBorder)
-	} else if border == мКнст.BorderNone {
+	if border == мИнт.BorderThick {
+		chars = SysObject(мИнт.ObjDoubleBorder)
+	} else if border == мИнт.BorderThin {
+		chars = SysObject(мИнт.ObjSingleBorder)
+	} else if border == мИнт.BorderNone {
 		chars = "      "
 	} else {
 		chars = "      "
@@ -437,13 +437,13 @@ func DrawScrollBar(x, y, w, h, pos int) {
 	PushAttributes()
 	defer PopAttributes()
 
-	fg, bg := RealColor(мКнст.ColorDefault, "", мКнст.ColorScrollText), RealColor(мКнст.ColorDefault, "", мКнст.ColorScrollBack)
+	fg, bg := RealColor(мИнт.ColorDefault, "", мИнт.ColorScrollText), RealColor(мИнт.ColorDefault, "", мИнт.ColorScrollBack)
 	// TODO: add thumb styling
 	// fgThumb, bgThumb := RealColor(ColorDefault, "", ColorThumbText), RealColor(ColorDefault, "", ColorThumbBack)
 	SetTextColor(fg)
 	SetBackColor(bg)
 
-	parts := []rune(SysObject(мКнст.ObjScrollBar))
+	parts := []rune(SysObject(мИнт.ObjScrollBar))
 	chLine, chThumb, chUp, chDown := parts[0], parts[1], parts[2], parts[3]
 	chLeft, chRight := parts[4], parts[5]
 

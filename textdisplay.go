@@ -3,7 +3,6 @@ package clui
 import (
 	xs "github.com/huandu/xstrings"
 	term "github.com/nsf/termbox-go"
-	мКнст "./пакКонстанты"
 	мИнт "./пакИнтерфейсы"
 )
 //TextDisplay --
@@ -30,10 +29,10 @@ func CreateTextDisplay(parent мИнт.ИВиджет, width, height int, scale 
 	l := new(TextDisplay)
 	l.BaseControl = NewBaseControl()
 
-	if height == мКнст.AutoSize {
+	if height == мИнт.AutoSize {
 		height = 10
 	}
-	if width == мКнст.AutoSize {
+	if width == мИнт.AutoSize {
 		width = 20
 	}
 
@@ -61,9 +60,9 @@ func (l *TextDisplay) drawText() {
 	PushAttributes()
 	defer PopAttributes()
 
-	bg, fg := RealColor(l.bg, l.Style(), мКнст.ColorEditBack), RealColor(l.fg, l.Style(), мКнст.ColorEditText)
+	bg, fg := RealColor(l.bg, l.Style(), мИнт.ColorEditBack), RealColor(l.fg, l.Style(), мИнт.ColorEditText)
 	if l.Active() {
-		bg, fg = RealColor(l.bg, l.Style(), мКнст.ColorEditActiveBack), RealColor(l.fg, l.Style(), мКнст.ColorEditActiveText)
+		bg, fg = RealColor(l.bg, l.Style(), мИнт.ColorEditActiveBack), RealColor(l.fg, l.Style(), мИнт.ColorEditActiveText)
 	}
 	SetTextColor(fg)
 	SetBackColor(bg)
@@ -102,9 +101,9 @@ func (l *TextDisplay) Draw() {
 	x, y := l.Pos()
 	w, h := l.Size()
 
-	bg, fg := RealColor(l.bg, l.Style(), мКнст.ColorEditBack), RealColor(l.fg, l.Style(), мКнст.ColorEditText)
+	bg, fg := RealColor(l.bg, l.Style(), мИнт.ColorEditBack), RealColor(l.fg, l.Style(), мИнт.ColorEditText)
 	if l.Active() {
-		bg, fg = RealColor(l.bg, l.Style(), мКнст.ColorEditActiveBack), RealColor(l.fg, l.Style(), мКнст.ColorEditActiveText)
+		bg, fg = RealColor(l.bg, l.Style(), мИнт.ColorEditActiveBack), RealColor(l.fg, l.Style(), мИнт.ColorEditActiveText)
 	}
 
 	SetTextColor(fg)

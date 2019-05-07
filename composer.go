@@ -2,7 +2,6 @@ package clui
 
 import (
 	мИнт "./пакИнтерфейсы"
-	мКнст "./пакКонстанты"
 	мСоб "./пакСобытия"
 	term "github.com/nsf/termbox-go"
 	"sync"
@@ -14,7 +13,7 @@ import (
 type Composer struct {
 	// list of visible Views
 	windows      []мИнт.ИВиджет
-	windowBorder мКнст.BorderStyle
+	windowBorder мИнт.BorderStyle
 	consumer     мИнт.ИВиджет
 	// last pressed key - to make repeatable actions simpler, e.g, at first
 	// one presses Ctrl+S and then just repeatedly presses arrow lest to
@@ -26,7 +25,7 @@ type Composer struct {
 	// last processed coordinates: e.g, for mouse move
 	lastX, lastY int
 	// Type of dragging
-	dragType мКнст.DragType
+	dragType мИнт.DragType
 	// For safe Window manipulations
 	mtx sync.RWMutex
 }
@@ -38,7 +37,7 @@ var (
 func initComposer() {
 	comp = new(Composer)
 	comp.windows = make([]мИнт.ИВиджет, 0)
-	comp.windowBorder = мКнст.BorderAuto
+	comp.windowBorder = мИнт.BorderAuto
 	comp.consumer = nil
 	comp.lastKey = term.KeyEsc
 }
@@ -80,7 +79,7 @@ func termboxEventToLocal(ev *term.Event) мИнт.ИСобытие {
 //RefreshScreen Repaints everything on the screen
 func RefreshScreen() {
 	comp.BeginUpdate()
-	term.Clear(мКнст.ColorWhite, мКнст.ColorBlack)
+	term.Clear(мИнт.ColorWhite, мИнт.ColorBlack)
 	comp.EndUpdate()
 
 	windows := comp.getWindowList()
@@ -126,12 +125,12 @@ func AddWindow(posX, posY, width, height int, title string) *Window {
 }
 
 //BorderStyle returns the default window border
-func (c *Composer) BorderStyle() мКнст.BorderStyle {
+func (c *Composer) BorderStyle() мИнт.BorderStyle {
 	return c.windowBorder
 }
 
 // SetBorder changes the default window border
-func (c *Composer) SetBorder(border мКнст.BorderStyle) {
+func (c *Composer) SetBorder(border мИнт.BorderStyle) {
 	c.windowBorder = border
 }
 
@@ -165,18 +164,18 @@ func (c *Composer) getWindowList() []мИнт.ИВиджет {
 func (c *Composer) checkWindowUnderMouse(screenX, screenY int) (мИнт.ИВиджет, мИнт.HitResult) {
 	windows := c.getWindowList()
 	if len(windows) == 0 {
-		return nil, мКнст.HitOutside
+		return nil, мИнт.HitOutside
 	}
 
 	for i := len(windows) - 1; i >= 0; i-- {
 		window := windows[i]
 		hit := window.HitTest(screenX, screenY)
-		if hit != мКнст.HitOutside {
+		if hit != мИнт.HitOutside {
 			return window, hit
 		}
 	}
 
-	return nil, мКнст.HitOutside
+	return nil, мИнт.HitOutside
 }
 
 func (c *Composer) activateWindow(window мИнт.ИВиджет) bool {
@@ -382,7 +381,7 @@ func (c *Composer) closeTopWindow() {
 }
 
 func (c *Composer) processWindowDrag(ev мИнт.ИСобытие) {
-	if ev.Mod() != term.ModMotion || c.dragType == мКнст.DragNone {
+	if ev.Mod() != term.ModMotion || c.dragType == мИнт.DragNone {
 		return
 	}
 	dx := ev.X() - c.lastX
@@ -397,7 +396,7 @@ func (c *Composer) processWindowDrag(ev мИнт.ИСобытие) {
 	cw, ch := ScreenSize()
 
 	switch c.dragType {
-	case мКнст.DragMove:
+	case мИнт.DragMove:
 		newX = newX + dx
 		newY = newY + dy
 		if newX >= 0 && newY >= 0 && newX+newW < cw && newY+newH < ch {
@@ -412,7 +411,7 @@ func (c *Composer) processWindowDrag(ev мИнт.ИСобытие) {
 			c.sendEventToActiveWindow(event)
 			RefreshScreen()
 		}
-	case мКнст.DragResizeLeft:
+	case мИнт.DragResizeLeft:
 		newX = newX + dx
 		newW = newW - dx
 		if newX >= 0 && newY >= 0 && newX+newW < cw && newY+newH < ch {
@@ -430,7 +429,7 @@ func (c *Composer) processWindowDrag(ev мИнт.ИСобытие) {
 			c.sendEventToActiveWindow(event)
 			RefreshScreen()
 		}
-	case мКнст.DragResizeRight:
+	case мИнт.DragResizeRight:
 		newW = newW + dx
 		if newX >= 0 && newY >= 0 && newX+newW < cw && newY+newH < ch {
 			c.lastX = ev.X()
@@ -442,7 +441,7 @@ func (c *Composer) processWindowDrag(ev мИнт.ИСобытие) {
 			c.sendEventToActiveWindow(event)
 			RefreshScreen()
 		}
-	case мКнст.DragResizeBottom:
+	case мИнт.DragResizeBottom:
 		newH = newH + dy
 		if newX >= 0 && newY >= 0 && newX+newW < cw && newY+newH < ch {
 			c.lastX = ev.X()
@@ -454,7 +453,7 @@ func (c *Composer) processWindowDrag(ev мИнт.ИСобытие) {
 			c.sendEventToActiveWindow(event)
 			RefreshScreen()
 		}
-	case мКнст.DragResizeTopLeft:
+	case мИнт.DragResizeTopLeft:
 		newX = newX + dx
 		newW = newW - dx
 		newY = newY + dy
@@ -474,7 +473,7 @@ func (c *Composer) processWindowDrag(ev мИнт.ИСобытие) {
 			c.sendEventToActiveWindow(event)
 			RefreshScreen()
 		}
-	case мКнст.DragResizeBottomLeft:
+	case мИнт.DragResizeBottomLeft:
 		newX = newX + dx
 		newW = newW - dx
 		newH = newH + dy
@@ -493,7 +492,7 @@ func (c *Composer) processWindowDrag(ev мИнт.ИСобытие) {
 			c.sendEventToActiveWindow(event)
 			RefreshScreen()
 		}
-	case мКнст.DragResizeBottomRight:
+	case мИнт.DragResizeBottomRight:
 		newW = newW + dx
 		newH = newH + dy
 		if newX >= 0 && newY >= 0 && newX+newW < cw && newY+newH < ch {
@@ -506,7 +505,7 @@ func (c *Composer) processWindowDrag(ev мИнт.ИСобытие) {
 			c.sendEventToActiveWindow(event)
 			RefreshScreen()
 		}
-	case мКнст.DragResizeTopRight:
+	case мИнт.DragResizeTopRight:
 		newY = newY + dy
 		newW = newW + dx
 		newH = newH - dy
@@ -538,53 +537,53 @@ func (c *Composer) processMouse(ev мИнт.ИСобытие) {
 	}
 
 	view, hit := c.checkWindowUnderMouse(ev.X(), ev.Y())
-	if c.dragType != мКнст.DragNone {
+	if c.dragType != мИнт.DragNone {
 		view = c.topWindow()
 	}
 
 	if c.topWindow() == view {
-		if ev.Key() == term.MouseRelease && c.dragType != мКнст.DragNone {
-			c.dragType = мКнст.DragNone
+		if ev.Key() == term.MouseRelease && c.dragType != мИнт.DragNone {
+			c.dragType = мИнт.DragNone
 			return
 		}
 
-		if ev.Mod() == term.ModMotion && c.dragType != мКнст.DragNone {
+		if ev.Mod() == term.ModMotion && c.dragType != мИнт.DragNone {
 			c.processWindowDrag(ev)
 			return
 		}
 
-		if hit != мКнст.HitInside && ev.Key() == term.MouseLeft {
-			if hit != мКнст.HitButtonClose && hit != мКнст.HitButtonBottom && hit != мКнст.HitButtonMaximize {
+		if hit != мИнт.HitInside && ev.Key() == term.MouseLeft {
+			if hit != мИнт.HitButtonClose && hit != мИнт.HitButtonBottom && hit != мИнт.HitButtonMaximize {
 				c.lastX = ev.X()
 				c.lastY = ev.Y()
 				c.mdownX = ev.X()
 				c.mdownY = ev.Y()
 			}
 			switch hit {
-			case мКнст.HitButtonClose:
+			case мИнт.HitButtonClose:
 				c.closeTopWindow()
-			case мКнст.HitButtonBottom:
+			case мИнт.HitButtonBottom:
 				c.moveActiveWindowToBottom()
-			case мКнст.HitButtonMaximize:
+			case мИнт.HitButtonMaximize:
 				v := c.topWindow().(*Window)
 				maximized := v.Maximized()
 				v.SetMaximized(!maximized)
-			case мКнст.HitTop:
-				c.dragType = мКнст.DragMove
-			case мКнст.HitBottom:
-				c.dragType = мКнст.DragResizeBottom
-			case мКнст.HitLeft:
-				c.dragType = мКнст.DragResizeLeft
-			case мКнст.HitRight:
-				c.dragType = мКнст.DragResizeRight
-			case мКнст.HitTopLeft:
-				c.dragType = мКнст.DragResizeTopLeft
-			case мКнст.HitTopRight:
-				c.dragType = мКнст.DragResizeTopRight
-			case мКнст.HitBottomRight:
-				c.dragType = мКнст.DragResizeBottomRight
-			case мКнст.HitBottomLeft:
-				c.dragType = мКнст.DragResizeBottomLeft
+			case мИнт.HitTop:
+				c.dragType = мИнт.DragMove
+			case мИнт.HitBottom:
+				c.dragType = мИнт.DragResizeBottom
+			case мИнт.HitLeft:
+				c.dragType = мИнт.DragResizeLeft
+			case мИнт.HitRight:
+				c.dragType = мИнт.DragResizeRight
+			case мИнт.HitTopLeft:
+				c.dragType = мИнт.DragResizeTopLeft
+			case мИнт.HitTopRight:
+				c.dragType = мИнт.DragResizeTopRight
+			case мИнт.HitBottomRight:
+				c.dragType = мИнт.DragResizeBottomRight
+			case мИнт.HitBottomLeft:
+				c.dragType = мИнт.DragResizeBottomLeft
 			}
 
 			return
@@ -716,7 +715,7 @@ func (c *Composer) processKey(ev мИнт.ИСобытие) {
 			c.moveActiveWindowToBottom()
 		case term.KeyCtrlM:
 			w := c.topWindow().(*Window)
-			if w.Sizable() && (w.TitleButtons()&мКнст.ButtonMaximize == мКнст.ButtonMaximize) {
+			if w.Sizable() && (w.TitleButtons()&мИнт.ButtonMaximize == мИнт.ButtonMaximize) {
 				maxxed := w.Maximized()
 				w.SetMaximized(!maxxed)
 				RefreshScreen()

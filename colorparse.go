@@ -2,7 +2,7 @@ package clui
 
 import (
 	term "github.com/nsf/termbox-go"
-	мКнст "./пакКонстанты"
+	мИнт "./пакИнтерфейсы"
 )
 
 // TextElementType type of the parsed element of the string
@@ -109,7 +109,7 @@ func (p *ColorParser) parseColor() (term.Attribute, TextElementType, bool) {
 			if c == '>' {
 				p.index = newIdx + 1
 				if cText == "" {
-					attr = мКнст.ColorDefault
+					attr = мИнт.ColorDefault
 				} else {
 					attr = StringToColor(cText)
 				}
@@ -154,13 +154,13 @@ func (p *ColorParser) NextElement() TextElement {
 	}
 
 	if atype == ElemBackColor {
-		if attr == мКнст.ColorDefault {
+		if attr == мИнт.ColorDefault {
 			p.currBack = p.defBack
 		} else {
 			p.currBack = attr
 		}
 	} else if atype == ElemTextColor {
-		if attr == мКнст.ColorDefault {
+		if attr == мИнт.ColorDefault {
 			p.currText = p.defText
 		} else {
 			p.currText = attr

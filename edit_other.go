@@ -6,7 +6,6 @@ import (
 	"github.com/atotto/clipboard"
 	xs "github.com/huandu/xstrings"
 	term "github.com/nsf/termbox-go"
-	мКнст "./пакКонстанты"
 	мИнт "./пакИнтерфейсы"
 )
 
@@ -47,7 +46,7 @@ func CreateEditField(parent мИнт.ИВиджет, width int, text string, sca
 	e.SetTitle(text)
 	e.SetEnabled(true)
 
-	if width == мКнст.AutoSize {
+	if width == мИнт.AutoSize {
 		width = xs.Len(text) + 1
 	}
 

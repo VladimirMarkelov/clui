@@ -2,12 +2,12 @@ package clui
 
 import (
 	"testing"
-	мКнст "./пакКонстанты"
+	мИнт "./пакИнтерфейсы"
 )
 
 func TestListBox(t *testing.T) {
 	width, height := 10, 5
-	lbox := CreateListBox(nil, width, height, мКнст.Fixed)
+	lbox := CreateListBox(nil, width, height, мИнт.Fixed)
 
 	w, h := lbox.Size()
 	if w != width {

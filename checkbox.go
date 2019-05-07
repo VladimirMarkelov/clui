@@ -3,7 +3,6 @@ package clui
 import (
 	xs "github.com/huandu/xstrings"
 	term "github.com/nsf/termbox-go"
-	мКнст "./пакКонстанты"
 	мИнт "./пакИнтерфейсы"
 )
 
@@ -33,7 +32,7 @@ func CreateCheckBox(parent мИнт.ИВиджет, width int, title string, sca
 	c.BaseControl = NewBaseControl()
 	c.parent = parent
 
-	if width == мКнст.AutoSize {
+	if width == мИнт.AutoSize {
 		width = xs.Len(title) + 4
 	}
 
@@ -68,14 +67,14 @@ func (c *CheckBox) Draw() {
 	x, y := c.Pos()
 	w, h := c.Size()
 
-	fg, bg := RealColor(c.fg, c.Style(), мКнст.ColorControlText), RealColor(c.bg, c.Style(), мКнст.ColorControlBack)
+	fg, bg := RealColor(c.fg, c.Style(), мИнт.ColorControlText), RealColor(c.bg, c.Style(), мИнт.ColorControlBack)
 	if !c.Enabled() {
-		fg, bg = RealColor(c.fg, c.Style(), мКнст.ColorControlDisabledText), RealColor(c.bg, c.Style(), мКнст.ColorControlDisabledBack)
+		fg, bg = RealColor(c.fg, c.Style(), мИнт.ColorControlDisabledText), RealColor(c.bg, c.Style(), мИнт.ColorControlDisabledBack)
 	} else if c.Active() {
-		fg, bg = RealColor(c.fg, c.Style(), мКнст.ColorControlActiveText), RealColor(c.bg, c.Style(), мКнст.ColorControlActiveBack)
+		fg, bg = RealColor(c.fg, c.Style(), мИнт.ColorControlActiveText), RealColor(c.bg, c.Style(), мИнт.ColorControlActiveBack)
 	}
 
-	parts := []rune(SysObject(мКнст.ObjCheckBox))
+	parts := []rune(SysObject(мИнт.ObjCheckBox))
 
 	cOpen, cClose, cEmpty, cCheck, cUnknown := parts[0], parts[1], parts[2], parts[3], parts[4]
 	cState := []rune{cEmpty, cCheck, cUnknown}
@@ -183,14 +182,14 @@ func (c *CheckBox) Allow3State() bool {
 // Method does nothing if new size is less than minimal size
 // CheckBox height cannot be changed - it equals 1 always
 func (c *CheckBox) SetSize(width, height int) {
-	if width != мКнст.KeepValue && (width > 1000 || width < c.minW) {
+	if width != мИнт.KeepValue && (width > 1000 || width < c.minW) {
 		return
 	}
-	if height != мКнст.KeepValue && (height > 200 || height < c.minH) {
+	if height != мИнт.KeepValue && (height > 200 || height < c.minH) {
 		return
 	}
 
-	if width != мКнст.KeepValue {
+	if width != мИнт.KeepValue {
 		c.width = width
 	}
 

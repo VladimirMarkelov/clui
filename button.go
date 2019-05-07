@@ -5,7 +5,6 @@ import (
 	term "github.com/nsf/termbox-go"
 	"sync/atomic"
 	"time"
-	мКнст "./пакКонстанты"
 	мИнт "./пакИнтерфейсы"
 	мСоб "./пакСобытия"
 )
@@ -37,12 +36,12 @@ func CreateButton(parent мИнт.ИВиджет, width, height int, title strin
 	b.BaseControl = NewBaseControl()
 
 	b.parent = parent
-	b.align = мКнст.AlignCenter
+	b.align = мИнт.AlignCenter
 
-	if height == мКнст.AutoSize {
+	if height == мИнт.AutoSize {
 		height = 4
 	}
-	if width == мКнст.AutoSize {
+	if width == мИнт.AutoSize {
 		width = xs.Len(title) + 2 + 1
 	}
 
@@ -80,13 +79,13 @@ func (b *Button) Draw() {
 	w, h := b.Size()
 
 	fg, bg := b.fg, b.bg
-	shadow := RealColor(b.shadowColor, b.Style(), мКнст.ColorButtonShadow)
+	shadow := RealColor(b.shadowColor, b.Style(), мИнт.ColorButtonShadow)
 	if b.disabled {
-		fg, bg = RealColor(fg, b.Style(), мКнст.ColorButtonDisabledText), RealColor(bg, b.Style(), мКнст.ColorButtonDisabledBack)
+		fg, bg = RealColor(fg, b.Style(), мИнт.ColorButtonDisabledText), RealColor(bg, b.Style(), мИнт.ColorButtonDisabledBack)
 	} else if b.Active() {
-		fg, bg = RealColor(b.fgActive, b.Style(), мКнст.ColorButtonActiveText), RealColor(b.bgActive, b.Style(), мКнст.ColorButtonActiveBack)
+		fg, bg = RealColor(b.fgActive, b.Style(), мИнт.ColorButtonActiveText), RealColor(b.bgActive, b.Style(), мИнт.ColorButtonActiveBack)
 	} else {
-		fg, bg = RealColor(fg, b.Style(), мКнст.ColorButtonText), RealColor(bg, b.Style(), мКнст.ColorButtonBack)
+		fg, bg = RealColor(fg, b.Style(), мИнт.ColorButtonText), RealColor(bg, b.Style(), мИнт.ColorButtonBack)
 	}
 
 	dy := int((h - 1) / 2)

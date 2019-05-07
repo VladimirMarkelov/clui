@@ -5,7 +5,6 @@ import (
 	term "github.com/nsf/termbox-go"
 	"strconv"
 	"strings"
-	мКнст "./пакКонстанты"
 	мИнт "./пакИнтерфейсы"
 )
 
@@ -18,7 +17,7 @@ empty one. By default colors are the same.
 */
 type ProgressBar struct {
 	*BaseControl
-	direction        мКнст.Direction
+	direction        мИнт.Direction
 	min, max         int
 	value            int
 	emptyFg, emptyBg term.Attribute
@@ -36,10 +35,10 @@ func CreateProgressBar(parent мИнт.ИВиджет, width, height int, scale 
 	b := new(ProgressBar)
 	b.BaseControl = NewBaseControl()
 
-	if height == мКнст.AutoSize {
+	if height == мИнт.AutoSize {
 		height = 1
 	}
-	if width == мКнст.AutoSize {
+	if width == мИнт.AutoSize {
 		width = 10
 	}
 
@@ -49,9 +48,9 @@ func CreateProgressBar(parent мИнт.ИВиджет, width, height int, scale 
 	b.SetScale(scale)
 	b.min = 0
 	b.max = 10
-	b.direction = мКнст.Horizontal
+	b.direction = мИнт.Horizontal
 	b.parent = parent
-	b.align = мКнст.AlignCenter
+	b.align = мИнт.AlignCenter
 
 	if parent != nil {
 		parent.AddChild(b)
@@ -87,10 +86,10 @@ func (b *ProgressBar) Draw() {
 	PushAttributes()
 	defer PopAttributes()
 
-	fgOff, fgOn := RealColor(b.fg, b.Style(), мКнст.ColorProgressText), RealColor(b.fgActive, b.Style(), мКнст.ColorProgressActiveText)
-	bgOff, bgOn := RealColor(b.bg, b.Style(), мКнст.ColorProgressBack), RealColor(b.bgActive, b.Style(), мКнст.ColorProgressActiveBack)
+	fgOff, fgOn := RealColor(b.fg, b.Style(), мИнт.ColorProgressText), RealColor(b.fgActive, b.Style(), мИнт.ColorProgressActiveText)
+	bgOff, bgOn := RealColor(b.bg, b.Style(), мИнт.ColorProgressBack), RealColor(b.bgActive, b.Style(), мИнт.ColorProgressActiveBack)
 
-	parts := []rune(SysObject(мКнст.ObjProgressBar))
+	parts := []rune(SysObject(мИнт.ObjProgressBar))
 	cFilled, cEmpty := parts[0], parts[1]
 
 	prc := 0
@@ -101,7 +100,7 @@ func (b *ProgressBar) Draw() {
 	}
 
 	var title string
-	if b.direction == мКнст.Horizontal && b.Title() != "" {
+	if b.direction == мИнт.Horizontal && b.Title() != "" {
 		title = b.Title()
 		title = strings.Replace(title, "{{percent}}", strconv.Itoa(prc), -1)
 		title = strings.Replace(title, "{{value}}", strconv.Itoa(b.value), -1)
@@ -112,7 +111,7 @@ func (b *ProgressBar) Draw() {
 	x, y := b.Pos()
 	w, h := b.Size()
 
-	if b.direction == мКнст.Horizontal {
+	if b.direction == мИнт.Horizontal {
 		filled := prc * w / 100
 		sFilled := strings.Repeat(string(cFilled), filled)
 		sEmpty := strings.Repeat(string(cEmpty), w-filled)
@@ -128,7 +127,7 @@ func (b *ProgressBar) Draw() {
 
 		if title != "" {
 			shift, str := AlignText(title, w, b.align)
-			titleClr := RealColor(b.titleFg, b.Style(), мКнст.ColorProgressTitleText)
+			titleClr := RealColor(b.titleFg, b.Style(), мИнт.ColorProgressTitleText)
 			var sOn, sOff string
 			if filled == 0 || shift >= filled {
 				sOff = str

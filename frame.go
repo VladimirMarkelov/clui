@@ -3,7 +3,6 @@ package clui
 import (
 	xs "github.com/huandu/xstrings"
 	"math"
-	мКнст "./пакКонстанты"
 	мИнт "./пакИнтерфейсы"
 )
 
@@ -15,7 +14,7 @@ is required
 */
 type Frame struct {
 	*BaseControl
-	border         мКнст.BorderStyle
+	border         мИнт.BorderStyle
 	children       []мИнт.ИВиджет
 	pack           мИнт.PackType
 	scrollable     bool
@@ -31,19 +30,19 @@ bs - type of border: no border, single or double.
 scale - the way of scaling the control when the parent is resized. Use DoNotScale constant if the
 control should keep its original size.
 */
-func CreateFrame(parent мИнт.ИВиджет, width, height int, bs мКнст.BorderStyle, scale int) *Frame {
+func CreateFrame(parent мИнт.ИВиджет, width, height int, bs мИнт.BorderStyle, scale int) *Frame {
 	f := new(Frame)
 	f.BaseControl = NewBaseControl()
 
-	if width == мКнст.AutoSize {
+	if width == мИнт.AutoSize {
 		width = 5
 	}
-	if height == мКнст.AutoSize {
+	if height == мИнт.AutoSize {
 		height = 3
 	}
 
-	if bs == мКнст.BorderAuto {
-		bs = мКнст.BorderNone
+	if bs == мИнт.BorderAuto {
+		bs = мИнт.BorderNone
 	}
 
 	f.SetSize(width, height)
@@ -54,7 +53,7 @@ func CreateFrame(parent мИнт.ИВиджет, width, height int, bs мКнс�
 	f.scale = scale
 
 	f.gapX, f.gapY = 0, 0
-	if bs == мКнст.BorderNone {
+	if bs == мИнт.BorderNone {
 		f.padX, f.padY = 0, 0
 	} else {
 		f.padX, f.padY = 1, 1
@@ -73,11 +72,11 @@ func (f *Frame) SetScrollable(scrollable bool) {
 	if scrollable {
 		px, py := f.Paddings()
 
-		if f.Pack() == мКнст.Vertical {
+		if f.Pack() == мИнт.Vertical {
 			px++
 		}
 
-		if f.Pack() == мКнст.Horizontal {
+		if f.Pack() == мИнт.Horizontal {
 			py++
 		}
 
@@ -133,10 +132,10 @@ func (f *Frame) Draw() {
 		DrawScrollBar(x+w, y, 1, h, f.lastScrollProp)
 	}
 
-	fg, bg := RealColor(f.fg, f.Style(), мКнст.ColorViewText), RealColor(f.bg, f.Style(), мКнст.ColorViewBack)
+	fg, bg := RealColor(f.fg, f.Style(), мИнт.ColorViewText), RealColor(f.bg, f.Style(), мИнт.ColorViewBack)
 
-	if f.border == мКнст.BorderNone {
-		if bg != мКнст.ColorDefault {
+	if f.border == мИнт.BorderNone {
+		if bg != мИнт.ColorDefault {
 			SetBackColor(bg)
 			FillRect(x, y, w, h, ' ')
 		}

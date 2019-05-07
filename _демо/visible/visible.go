@@ -2,6 +2,7 @@ package main
 
 import (
 	ui "../.."
+	мИнт "../../пакИнтерфейсы"
 )
 
 func main() {
@@ -9,11 +10,11 @@ func main() {
 	defer ui.DeinitLibrary()
 
 	view := ui.AddWindow(0, 0, 10, 7, "Hello World!")
-	view.SetPack(ui.Vertical)
+	view.SetPack(мИнт.Vertical)
 
-	frmResize := ui.CreateFrame(view, 8, 6, ui.BorderNone, ui.Fixed)
+	frmResize := ui.CreateFrame(view, 8, 6, ui.BorderNone, мИнт.Fixed)
 	frmResize.SetTitle("FrameTop")
-	frmResize.SetPack(ui.Horizontal)
+	frmResize.SetPack(мИнт.Horizontal)
 	btn1 := ui.CreateButton(frmResize, 8, 5, "Button 1", 1)
 	btn2 := ui.CreateButton(frmResize, 8, 5, "Button 2", 1)
 	btn3 := ui.CreateButton(frmResize, 8, 5, "Button 3", 1)

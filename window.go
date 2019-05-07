@@ -2,7 +2,6 @@ package clui
 
 import (
 	мИнт "./пакИнтерфейсы"
-	мКнст "./пакКонстанты"
 	мСоб "./пакСобытия"
 	xs "github.com/huandu/xstrings"
 	term "github.com/nsf/termbox-go"
@@ -12,7 +11,7 @@ import (
 type Window struct {
 	*BaseControl
 
-	buttons   мКнст.ViewButton
+	buttons   мИнт.ViewButton
 	maximized bool
 	// maximization support
 	origWidth  int
@@ -22,7 +21,7 @@ type Window struct {
 	hidden     bool
 	immovable  bool
 	fixedSize  bool
-	border     мКнст.BorderStyle
+	border     мИнт.BorderStyle
 
 	onClose        func(мИнт.ИСобытие) bool
 	onScreenResize func(мИнт.ИСобытие)
@@ -40,10 +39,10 @@ func CreateWindow(x, y, w, h int, title string) *Window {
 	wnd := new(Window)
 	wnd.BaseControl = NewBaseControl()
 
-	if w == мКнст.AutoSize || w < 1 || w > 1000 {
+	if w == мИнт.AutoSize || w < 1 || w > 1000 {
 		w = 10
 	}
-	if h == мКнст.AutoSize || h < 1 || h > 1000 {
+	if h == мИнт.AutoSize || h < 1 || h > 1000 {
 		w = 5
 	}
 
@@ -51,25 +50,25 @@ func CreateWindow(x, y, w, h int, title string) *Window {
 	wnd.SetSize(w, h)
 	wnd.SetPos(x, y)
 	wnd.SetTitle(title)
-	wnd.buttons = мКнст.ButtonClose | мКнст.ButtonBottom | мКнст.ButtonMaximize
+	wnd.buttons = мИнт.ButtonClose | мИнт.ButtonBottom | мИнт.ButtonMaximize
 	wnd.children = make([]мИнт.ИВиджет, 0)
 	wnd.SetPaddings(1, 1)
 	wnd.SetGaps(1, 0)
 	wnd.SetScale(1)
-	wnd.SetBorder(мКнст.BorderAuto)
+	wnd.SetBorder(мИнт.BorderAuto)
 
 	return wnd
 }
 
 func (wnd *Window) buttonCount() int {
 	cnt := 0
-	if wnd.buttons&мКнст.ButtonClose == мКнст.ButtonClose {
+	if wnd.buttons&мИнт.ButtonClose == мИнт.ButtonClose {
 		cnt++
 	}
-	if wnd.buttons&мКнст.ButtonMaximize == мКнст.ButtonMaximize {
+	if wnd.buttons&мИнт.ButtonMaximize == мИнт.ButtonMaximize {
 		cnt++
 	}
-	if wnd.buttons&мКнст.ButtonBottom == мКнст.ButtonBottom {
+	if wnd.buttons&мИнт.ButtonBottom == мИнт.ButtonBottom {
 		cnt++
 	}
 
@@ -80,14 +79,14 @@ func (wnd *Window) drawFrame() {
 	PushAttributes()
 	defer PopAttributes()
 
-	var bs мКнст.BorderStyle
-	if wnd.border == мКнст.BorderAuto {
+	var bs мИнт.BorderStyle
+	if wnd.border == мИнт.BorderAuto {
 		if wnd.inactive {
-			bs = мКнст.BorderThin
+			bs = мИнт.BorderThin
 		} else {
-			bs = мКнст.BorderThick
+			bs = мИнт.BorderThick
 		}
-	} else if wnd.border == мКнст.BorderNone {
+	} else if wnd.border == мИнт.BorderNone {
 	} else {
 		bs = wnd.border
 	}
@@ -123,21 +122,21 @@ func (wnd *Window) drawButtons() {
 	PushAttributes()
 	defer PopAttributes()
 
-	chars := []rune(SysObject(мКнст.ObjViewButtons))
+	chars := []rune(SysObject(мИнт.ObjViewButtons))
 	cMax, cBottom, cClose, cOpenB, cCloseB := chars[0], chars[1], chars[2], chars[3], chars[4]
 
 	pos := wnd.x + wnd.width - btnCount - 2
 	putCharUnsafe(pos, wnd.y, cOpenB)
 	pos++
-	if wnd.buttons&мКнст.ButtonBottom == мКнст.ButtonBottom {
+	if wnd.buttons&мИнт.ButtonBottom == мИнт.ButtonBottom {
 		putCharUnsafe(pos, wnd.y, cBottom)
 		pos++
 	}
-	if wnd.buttons&мКнст.ButtonMaximize == мКнст.ButtonMaximize {
+	if wnd.buttons&мИнт.ButtonMaximize == мИнт.ButtonMaximize {
 		putCharUnsafe(pos, wnd.y, cMax)
 		pos++
 	}
-	if wnd.buttons&мКнст.ButtonClose == мКнст.ButtonClose {
+	if wnd.buttons&мИнт.ButtonClose == мИнт.ButtonClose {
 		putCharUnsafe(pos, wnd.y, cClose)
 		pos++
 	}
@@ -151,7 +150,7 @@ func (wnd *Window) Draw() {
 	PushAttributes()
 	defer PopAttributes()
 
-	fg, bg := RealColor(wnd.fg, wnd.Style(), мКнст.ColorViewText), RealColor(wnd.bg, wnd.Style(), мКнст.ColorViewBack)
+	fg, bg := RealColor(wnd.fg, wnd.Style(), мИнт.ColorViewText), RealColor(wnd.bg, wnd.Style(), мИнт.ColorViewBack)
 	SetBackColor(bg)
 
 	FillRect(wnd.x, wnd.y, wnd.width, wnd.height, ' ')
@@ -170,60 +169,60 @@ func (wnd *Window) Draw() {
 func (wnd *Window) HitTest(x, y int) мИнт.HitResult {
 	if x > wnd.x && x < wnd.x+wnd.width-1 &&
 		y > wnd.y && y < wnd.y+wnd.height-1 {
-		return мКнст.HitInside
+		return мИнт.HitInside
 	}
 
-	hResult := мКнст.HitOutside
+	hResult := мИнт.HitOutside
 
 	if x == wnd.x && y == wnd.y {
-		hResult = мКнст.HitTopLeft
+		hResult = мИнт.HitTopLeft
 	} else if x == wnd.x+wnd.width-1 && y == wnd.y {
-		hResult = мКнст.HitTopRight
+		hResult = мИнт.HitTopRight
 	} else if x == wnd.x && y == wnd.y+wnd.height-1 {
-		hResult = мКнст.HitBottomLeft
+		hResult = мИнт.HitBottomLeft
 	} else if x == wnd.x+wnd.width-1 && y == wnd.y+wnd.height-1 {
-		hResult = мКнст.HitBottomRight
+		hResult = мИнт.HitBottomRight
 	} else if x == wnd.x && y > wnd.y && y < wnd.y+wnd.height-1 {
-		hResult = мКнст.HitLeft
+		hResult = мИнт.HitLeft
 	} else if x == wnd.x+wnd.width-1 && y > wnd.y && y < wnd.y+wnd.height-1 {
-		hResult = мКнст.HitRight
+		hResult = мИнт.HitRight
 	} else if y == wnd.y && x > wnd.x && x < wnd.x+wnd.width-1 {
 		btnCount := wnd.buttonCount()
 		if x < wnd.x+wnd.width-1-btnCount {
-			hResult = мКнст.HitTop
+			hResult = мИнт.HitTop
 		} else {
-			hitRes := []мИнт.HitResult{мКнст.HitTop, мКнст.HitTop, мКнст.HitTop}
+			hitRes := []мИнт.HitResult{мИнт.HitTop, мИнт.HitTop, мИнт.HitTop}
 			pos := 0
 
-			if wnd.buttons&мКнст.ButtonBottom == мКнст.ButtonBottom {
-				hitRes[pos] = мКнст.HitButtonBottom
+			if wnd.buttons&мИнт.ButtonBottom == мИнт.ButtonBottom {
+				hitRes[pos] = мИнт.HitButtonBottom
 				pos++
 			}
-			if wnd.buttons&мКнст.ButtonMaximize == мКнст.ButtonMaximize {
-				hitRes[pos] = мКнст.HitButtonMaximize
+			if wnd.buttons&мИнт.ButtonMaximize == мИнт.ButtonMaximize {
+				hitRes[pos] = мИнт.HitButtonMaximize
 				pos++
 			}
-			if wnd.buttons&мКнст.ButtonClose == мКнст.ButtonClose {
-				hitRes[pos] = мКнст.HitButtonClose
+			if wnd.buttons&мИнт.ButtonClose == мИнт.ButtonClose {
+				hitRes[pos] = мИнт.HitButtonClose
 				pos++
 			}
 
 			hResult = hitRes[x-(wnd.x+wnd.width-1-btnCount)]
 		}
 	} else if y == wnd.y+wnd.height-1 && x > wnd.x && x < wnd.x+wnd.width-1 {
-		hResult = мКнст.HitBottom
+		hResult = мИнт.HitBottom
 	}
 
-	if hResult != мКнст.HitOutside {
-		if wnd.immovable && hResult == мКнст.HitTop {
-			hResult = мКнст.HitInside
+	if hResult != мИнт.HitOutside {
+		if wnd.immovable && hResult == мИнт.HitTop {
+			hResult = мИнт.HitInside
 		}
 		if wnd.fixedSize &&
-			(hResult == мКнст.HitBottom || hResult == мКнст.HitLeft ||
-				hResult == мКнст.HitRight || hResult == мКнст.HitTopLeft ||
-				hResult == мКнст.HitTopRight || hResult == мКнст.HitBottomRight ||
-				hResult == мКнст.HitBottomLeft || hResult == мКнст.HitButtonMaximize) {
-			hResult = мКнст.HitInside
+			(hResult == мИнт.HitBottom || hResult == мИнт.HitLeft ||
+				hResult == мИнт.HitRight || hResult == мИнт.HitTopLeft ||
+				hResult == мИнт.HitTopRight || hResult == мИнт.HitBottomRight ||
+				hResult == мИнт.HitBottomLeft || hResult == мИнт.HitButtonMaximize) {
+			hResult = мИнт.HitInside
 		}
 	}
 
@@ -330,12 +329,12 @@ func (wnd *Window) OnScreenResize(fn func(мИнт.ИСобытие)) {
 }
 
 // Border returns the default window border
-func (wnd *Window) Border() мКнст.BorderStyle {
+func (wnd *Window) Border() мИнт.BorderStyle {
 	return wnd.border
 }
 
 // SetBorder changes the default window border
-func (wnd *Window) SetBorder(border мКнст.BorderStyle) {
+func (wnd *Window) SetBorder(border мИнт.BorderStyle) {
 	wnd.border = border
 }
 
@@ -411,11 +410,11 @@ func (wnd *Window) SetSizable(sizable bool) {
 }
 
 // TitleButtons returns a set of buttons shown in the Window title bar
-func (wnd *Window) TitleButtons() мКнст.ViewButton {
+func (wnd *Window) TitleButtons() мИнт.ViewButton {
 	return wnd.buttons
 }
 
 // SetTitleButtons sets the title bar buttons available for a user
-func (wnd *Window) SetTitleButtons(buttons мКнст.ViewButton) {
+func (wnd *Window) SetTitleButtons(buttons мИнт.ViewButton) {
 	wnd.buttons = buttons
 }

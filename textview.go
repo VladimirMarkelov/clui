@@ -6,7 +6,6 @@ import (
 	term "github.com/nsf/termbox-go"
 	"os"
 	"strings"
-	мКнст "./пакКонстанты"
 	мИнт "./пакИнтерфейсы"
 )
 
@@ -50,10 +49,10 @@ func CreateTextView(parent мИнт.ИВиджет, width, height int, scale int
 	l := new(TextView)
 	l.BaseControl = NewBaseControl()
 
-	if height == мКнст.AutoSize {
+	if height == мИнт.AutoSize {
 		height = 3
 	}
-	if width == мКнст.AutoSize {
+	if width == мИнт.AutoSize {
 		width = 5
 	}
 
@@ -179,9 +178,9 @@ func (l *TextView) Draw() {
 	x, y := l.Pos()
 	w, h := l.Size()
 
-	bg, fg := RealColor(l.bg, l.Style(), мКнст.ColorEditBack), RealColor(l.fg, l.Style(), мКнст.ColorEditText)
+	bg, fg := RealColor(l.bg, l.Style(), мИнт.ColorEditBack), RealColor(l.fg, l.Style(), мИнт.ColorEditText)
 	if l.Active() {
-		bg, fg = RealColor(l.bg, l.Style(), мКнст.ColorEditActiveBack), RealColor(l.fg, l.Style(), мКнст.ColorEditActiveText)
+		bg, fg = RealColor(l.bg, l.Style(), мИнт.ColorEditActiveBack), RealColor(l.fg, l.Style(), мИнт.ColorEditActiveText)
 	}
 
 	SetTextColor(fg)
