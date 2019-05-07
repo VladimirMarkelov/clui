@@ -5,6 +5,7 @@ import (
 	term "github.com/nsf/termbox-go"
 	"strconv"
 	"strings"
+	мКнст "./пакКонстанты"
 )
 
 /*
@@ -16,7 +17,7 @@ empty one. By default colors are the same.
 */
 type ProgressBar struct {
 	BaseControl
-	direction        Direction
+	direction        мКнст.Direction
 	min, max         int
 	value            int
 	emptyFg, emptyBg term.Attribute

@@ -69,8 +69,7 @@ type BarChart struct {
 	onDrawCell  func(*BarDataCell)
 }
 
-/*
-NewBarChart creates a new bar chart.
+/*CreateBarChart creates a new bar chart.
 view - is a View that manages the control
 parent - is container that keeps the control. The same View can be a view and a parent at the same time.
 w and h - are minimal size of the control.
@@ -105,7 +104,7 @@ func CreateBarChart(parent Control, w, h int, scale int) *BarChart {
 	return c
 }
 
-// Repaint draws the control on its View surface
+//Draw Repaint draws the control on its View surface
 func (b *BarChart) Draw() {
 	if b.hidden {
 		return

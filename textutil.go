@@ -5,6 +5,7 @@ import (
 	term "github.com/nsf/termbox-go"
 	"regexp"
 	"strings"
+	мКнст "./пакКонстанты"
 )
 
 var (
@@ -65,7 +66,7 @@ func CutText(str string, maxWidth int) string {
 // to draw a label aligned but with transparent beginning
 // and ending. If you do not need transparency you can
 // add spaces manually using the returned shift value
-func AlignText(str string, width int, align Align) (shift int, out string) {
+func AlignText(str string, width int, align мКнст.Align) (shift int, out string) {
 	length := xs.Len(str)
 
 	if length >= width {

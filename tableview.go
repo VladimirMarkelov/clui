@@ -3,6 +3,7 @@ package clui
 import (
 	"fmt"
 	term "github.com/nsf/termbox-go"
+	мКнст "./пакКонстанты"
 )
 
 /*
@@ -77,9 +78,9 @@ type TableView struct {
 type Column struct {
 	Title     string
 	Width     int
-	Alignment Align
+	Alignment мКнст.Align
 	Fg, Bg    term.Attribute
-	Sort      SortOrder
+	Sort      мКнст.SortOrder
 }
 
 // ColumnDrawInfo is a structure used in OnDrawCell event.
@@ -99,7 +100,7 @@ type ColumnDrawInfo struct {
 	// cell displayed text
 	Text string
 	// text alignment
-	Alignment Align
+	Alignment мКнст.Align
 	// is the row that contains the cell selected(active)
 	RowSelected bool
 	// is the column that contains the cell selected(active)
@@ -114,13 +115,13 @@ type ColumnDrawInfo struct {
 // TableView ask for while a user is interacting with the table
 type TableEvent struct {
 	// requested action: Add, Edit, Delete, Sort data
-	Action TableAction
+	Action мКнст.TableAction
 	// Currently selected column
 	Col int
 	// Currently selected row (it is not used for TableActionSort)
 	Row int
 	// Sort order (it is used only in TableActionSort event)
-	Sort SortOrder
+	Sort мКнст.SortOrder
 }
 
 /*
@@ -670,7 +671,7 @@ func (l *TableView) verticalScrollClick(dy int) {
 	}
 }
 
-func (l *TableView) processMouseClick(ev Event) bool {
+func (l *TableView) processMouseClick(ev мКнст.Event) bool {
 	if ev.Key != term.MouseLeft {
 		return false
 	}
@@ -757,7 +758,7 @@ processes an event it should return true. If the method returns false it means
 that the control do not want or cannot process the event and the caller sends
 the event to the control parent
 */
-func (l *TableView) ProcessEvent(event Event) bool {
+func (l *TableView) ProcessEvent(event мКнст.Event) bool {
 	if !l.Active() || !l.Enabled() {
 		return false
 	}

@@ -6,6 +6,7 @@ import (
 	"github.com/atotto/clipboard"
 	xs "github.com/huandu/xstrings"
 	term "github.com/nsf/termbox-go"
+	мКнст "./пакКонстанты"
 )
 
 /*
@@ -27,7 +28,7 @@ type EditField struct {
 	maxWidth  int
 	showStars bool
 
-	onChange   func(Event)
+	onChange   func(мКнст.Event)
 	onKeyPress func(term.Key, rune) bool
 }
 
@@ -73,7 +74,7 @@ processes an event it should return true. If the method returns false it means
 that the control do not want or cannot process the event and the caller sends
 the event to the control parent
 */
-func (e *EditField) ProcessEvent(event Event) bool {
+func (e *EditField) ProcessEvent(event мКнст.Event) bool {
 	if !e.Active() || !e.Enabled() {
 		return false
 	}

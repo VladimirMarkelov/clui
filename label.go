@@ -2,6 +2,7 @@ package clui
 
 import (
 	xs "github.com/huandu/xstrings"
+	мКнст "./пакКонстанты"
 )
 
 /*
@@ -14,9 +15,9 @@ is always left aligned
 */
 type Label struct {
 	BaseControl
-	direction   Direction
+	direction   мКнст.Direction
 	multiline   bool
-	textDisplay Align
+	textDisplay мКнст.Align
 }
 
 /*
@@ -56,12 +57,12 @@ func CreateLabel(parent Control, w, h int, title string, scale int) *Label {
 }
 
 // Direction returns direction of text output: vertical or horizontal
-func (l *Label) Direction() Direction {
+func (l *Label) Direction() мКнст.Direction {
 	return l.direction
 }
 
 // SetDirection sets the text output direction
-func (l *Label) SetDirection(dir Direction) {
+func (l *Label) SetDirection(dir мКнст.Direction) {
 	l.direction = dir
 }
 
@@ -155,7 +156,7 @@ func (l *Label) SetMultiline(multi bool) {
 // - AlignLeft - the head of the title is shown
 // - AlignRight - the tail of the title is shown
 // The property is used only by single line Label
-func (l *Label) TextDisplay() Align {
+func (l *Label) TextDisplay() мКнст.Align {
 	return l.textDisplay
 }
 
@@ -163,7 +164,7 @@ func (l *Label) TextDisplay() Align {
 // is longer than the lable. Only AlignLeft and AlignRigth are valid values
 // for the property. Any other value does is skipped and does not affect
 // displaying the title
-func (l *Label) SetTextDisplay(align Align) {
+func (l *Label) SetTextDisplay(align мКнст.Align) {
 	if align != AlignLeft && align != AlignRight {
 		return
 	}

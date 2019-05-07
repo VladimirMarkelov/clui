@@ -273,7 +273,7 @@ func NextControl(parent Control, curr Control, next bool) Control {
 // makes it active, and then sends the event to it.
 // If it is not mouse click event then it looks for the first active child and
 // sends the event to it if it is not nil
-func SendEventToChild(parent Control, ev Event) bool {
+func SendEventToChild(parent Control, ev мКнст.Event) bool {
 	var child Control
 	if IsMouseClickEvent(ev) {
 		child = ChildAt(parent, ev.X, ev.Y)

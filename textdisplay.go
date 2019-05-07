@@ -3,6 +3,7 @@ package clui
 import (
 	xs "github.com/huandu/xstrings"
 	term "github.com/nsf/termbox-go"
+	мКнст "./пакКонстанты"
 )
 
 type TextDisplay struct {
@@ -156,7 +157,7 @@ func (l *TextDisplay) moveDown(count int) {
 	}
 }
 
-func (l *TextDisplay) processMouseClick(ev Event) bool {
+func (l *TextDisplay) processMouseClick(ev мКнст.Event) bool {
 	if ev.Key != term.MouseLeft {
 		return false
 	}
@@ -179,7 +180,7 @@ processes an event it should return true. If the method returns false it means
 that the control do not want or cannot process the event and the caller sends
 the event to the control parent
 */
-func (l *TextDisplay) ProcessEvent(event Event) bool {
+func (l *TextDisplay) ProcessEvent(event мКнст.Event) bool {
 	if !l.Active() || !l.Enabled() {
 		return false
 	}

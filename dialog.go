@@ -2,6 +2,7 @@ package clui
 
 import (
 	term "github.com/nsf/termbox-go"
+	мКнст "./пакКонстанты"
 )
 
 // ConfirmationDialog is a simple dialog to get a user
@@ -29,7 +30,7 @@ type SelectDialog struct {
 	rg        *RadioGroup
 	list      *ListBox
 	edit      *EditField
-	typ       SelectDialogType
+	typ       мКнст.SelectDialogType
 	onClose   func()
 }
 
@@ -160,11 +161,12 @@ func (d *ConfirmationDialog) Result() int {
 
 // ------------------------ Selection Dialog ---------------------
 
+//CreateEditDialog --
 func CreateEditDialog(title, message, initialText string) *SelectDialog {
 	return CreateSelectDialog(title, []string{message, initialText}, 0, SelectDialogEdit)
 }
 
-// NewSelectDialog creates new dialog to select an item from list.
+// CreateSelectDialog creates new dialog to select an item from list.
 // c is a composer that manages the dialog
 // title is a dialog title
 // items is a list of items to select from
@@ -172,7 +174,7 @@ func CreateEditDialog(title, message, initialText string) *SelectDialog {
 //  the dialog is created
 // typ is a selection type: ListBox or RadioGroup
 // Returns nil in case of creation process fails, e.g, if item list is empty
-func CreateSelectDialog(title string, items []string, selectedItem int, typ SelectDialogType) *SelectDialog {
+func CreateSelectDialog(title string, items []string, selectedItem int, typ мКнст.SelectDialogType) *SelectDialog {
 	dlg := new(SelectDialog)
 
 	if len(items) == 0 {

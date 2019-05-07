@@ -4,10 +4,11 @@ import (
 	xs "github.com/huandu/xstrings"
 	term "github.com/nsf/termbox-go"
 	"strings"
+	мКнст "./пакКонстанты"
 )
 
 // OnChange sets the callback that is called when EditField content is changed
-func (e *EditField) OnChange(fn func(Event)) {
+func (e *EditField) OnChange(fn func(мКнст.Event)) {
 	e.onChange = fn
 }
 

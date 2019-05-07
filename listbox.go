@@ -3,6 +3,7 @@ package clui
 import (
 	term "github.com/nsf/termbox-go"
 	"strings"
+	мКнст "./пакКонстанты"
 )
 
 /*
@@ -24,7 +25,7 @@ type ListBox struct {
 	topLine       int
 	buttonPos     int
 
-	onSelectItem func(Event)
+	onSelectItem func(мКнст.Event)
 	onKeyPress   func(term.Key) bool
 }
 
@@ -246,7 +247,7 @@ func (l *ListBox) Clear() {
 	l.topLine = 0
 }
 
-func (l *ListBox) processMouseClick(ev Event) bool {
+func (l *ListBox) processMouseClick(ev мКнст.Event) bool {
 	if ev.Key != term.MouseLeft {
 		return false
 	}
@@ -309,7 +310,7 @@ processes an event it should return true. If the method returns false it means
 that the control do not want or cannot process the event and the caller sends
 the event to the control parent
 */
-func (l *ListBox) ProcessEvent(event Event) bool {
+func (l *ListBox) ProcessEvent(event мКнст.Event) bool {
 	if !l.Active() || !l.Enabled() {
 		return false
 	}
@@ -455,7 +456,7 @@ func (l *ListBox) RemoveItem(id int) bool {
 
 // OnSelectItem sets a callback that is called every time
 // the selected item is changed
-func (l *ListBox) OnSelectItem(fn func(Event)) {
+func (l *ListBox) OnSelectItem(fn func(мКнст.Event)) {
 	l.onSelectItem = fn
 }
 

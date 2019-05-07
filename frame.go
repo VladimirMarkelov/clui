@@ -3,6 +3,7 @@ package clui
 import (
 	xs "github.com/huandu/xstrings"
 	"math"
+	мКнст "./пакКонстанты"
 )
 
 /*
@@ -13,9 +14,9 @@ is required
 */
 type Frame struct {
 	BaseControl
-	border         BorderStyle
+	border         мКнст.BorderStyle
 	children       []Control
-	pack           PackType
+	pack           мКнст.PackType
 	scrollable     bool
 	lastScrollProp int
 }
@@ -29,7 +30,7 @@ bs - type of border: no border, single or double.
 scale - the way of scaling the control when the parent is resized. Use DoNotScale constant if the
 control should keep its original size.
 */
-func CreateFrame(parent Control, width, height int, bs BorderStyle, scale int) *Frame {
+func CreateFrame(parent Control, width, height int, bs мКнст.BorderStyle, scale int) *Frame {
 	f := new(Frame)
 	f.BaseControl = NewBaseControl()
 
@@ -173,7 +174,7 @@ func (f *Frame) ScrollTo(x int, y int) {
 	f.PlaceChildren()
 }
 
-func (f *Frame) ProcessEvent(ev Event) bool {
+func (f *Frame) ProcessEvent(ev мКнст.Event) bool {
 	if ev.Type != EventActivateChild || (!f.scrollable || ev.Target == nil) {
 		return false
 	}
