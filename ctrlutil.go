@@ -2,6 +2,7 @@ package clui
 
 import (
 	term "github.com/nsf/termbox-go"
+	мКнст "./пакКонстанты"
 )
 
 // ThumbPosition returns a scrollbar thumb position depending
@@ -138,7 +139,7 @@ func FindChild(parent, control Control) Control {
 }
 
 // IsMouseClickEvent returns if a user action can be treated as mouse click.
-func IsMouseClickEvent(ev Event) bool {
+func IsMouseClickEvent(ev мКнст.Event) bool {
 	if ev.Type == EventClick {
 		return true
 	}

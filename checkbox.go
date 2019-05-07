@@ -3,6 +3,7 @@ package clui
 import (
 	xs "github.com/huandu/xstrings"
 	term "github.com/nsf/termbox-go"
+	мКнст "./пакКонстанты"
 )
 
 /*
@@ -101,7 +102,7 @@ func (c *CheckBox) Draw() {
 //   processes an event it should return true. If the method returns false it means
 //   that the control do not want or cannot process the event and the caller sends
 //   the event to the control parent
-func (c *CheckBox) ProcessEvent(event Event) bool {
+func (c *CheckBox) ProcessEvent(event мКнст.Event) bool {
 	if (!c.Active() && event.Type == EventKey) || !c.Enabled() {
 		return false
 	}

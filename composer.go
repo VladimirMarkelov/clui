@@ -3,6 +3,7 @@ package clui
 import (
 	term "github.com/nsf/termbox-go"
 	"sync"
+	мКнст "./пакКонстанты"
 )
 
 // Composer is a service object that manages Views and console, processes
@@ -11,7 +12,7 @@ import (
 type Composer struct {
 	// list of visible Views
 	windows      []Control
-	windowBorder BorderStyle
+	windowBorder мКнст.BorderStyle
 	consumer     Control
 	// last pressed key - to make repeatable actions simpler, e.g, at first
 	// one presses Ctrl+S and then just repeatedly presses arrow lest to
@@ -23,7 +24,7 @@ type Composer struct {
 	// last processed coordinates: e.g, for mouse move
 	lastX, lastY int
 	// Type of dragging
-	dragType DragType
+	dragType мКнст.DragType
 	// For safe Window manipulations
 	mtx sync.RWMutex
 }
@@ -62,7 +63,7 @@ func ReleaseEvents() {
 	comp.consumer = nil
 }
 
-func termboxEventToLocal(ev term.Event) Event {
+func termboxEventToLocal(ev term.Event) мКнст.Event {
 	e := Event{Type: EventType(ev.Type), Ch: ev.Ch,
 		Key: ev.Key, Err: ev.Err, X: ev.MouseX, Y: ev.MouseY,
 		Mod: ev.Mod, Width: ev.Width, Height: ev.Height}
@@ -118,12 +119,12 @@ func AddWindow(posX, posY, width, height int, title string) *Window {
 }
 
 // Border returns the default window border
-func (c *Composer) BorderStyle() BorderStyle {
+func (c *Composer) BorderStyle() мКнст.BorderStyle {
 	return c.windowBorder
 }
 
 // SetBorder changes the default window border
-func (c *Composer) SetBorder(border BorderStyle) {
+func (c *Composer) SetBorder(border мКнст.BorderStyle) {
 	c.windowBorder = border
 }
 
@@ -154,7 +155,7 @@ func (c *Composer) getWindowList() []Control {
 	return arr_copy
 }
 
-func (c *Composer) checkWindowUnderMouse(screenX, screenY int) (Control, HitResult) {
+func (c *Composer) checkWindowUnderMouse(screenX, screenY int) (Control, мКнст.HitResult) {
 	windows := c.getWindowList()
 	if len(windows) == 0 {
 		return nil, HitOutside
@@ -255,7 +256,7 @@ func (c *Composer) moveActiveWindowToBottom() bool {
 	return true
 }
 
-func (c *Composer) sendEventToActiveWindow(ev Event) bool {
+func (c *Composer) sendEventToActiveWindow(ev мКнст.Event) bool {
 	view := c.topWindow()
 	if view != nil {
 		return view.ProcessEvent(ev)
@@ -274,7 +275,7 @@ func (c *Composer) topWindow() Control {
 	return windows[len(windows)-1]
 }
 
-func (c *Composer) resizeTopWindow(ev Event) bool {
+func (c *Composer) resizeTopWindow(ev мКнст.Event) bool {
 	view := c.topWindow()
 	if view == nil {
 		return false
@@ -308,7 +309,7 @@ func (c *Composer) resizeTopWindow(ev Event) bool {
 	return true
 }
 
-func (c *Composer) moveTopWindow(ev Event) bool {
+func (c *Composer) moveTopWindow(ev мКнст.Event) bool {
 	view := c.topWindow()
 	if view != nil {
 		topwindow, ok := view.(*Window)
@@ -361,7 +362,7 @@ func (c *Composer) closeTopWindow() {
 	}
 }
 
-func (c *Composer) processWindowDrag(ev Event) {
+func (c *Composer) processWindowDrag(ev мКнст.Event) {
 	if ev.Mod != term.ModMotion || c.dragType == DragNone {
 		return
 	}
@@ -490,7 +491,7 @@ func (c *Composer) processWindowDrag(ev Event) {
 	}
 }
 
-func (c *Composer) processMouse(ev Event) {
+func (c *Composer) processMouse(ev мКнст.Event) {
 	if c.consumer != nil {
 		tmp := c.consumer
 		tmp.ProcessEvent(ev)
@@ -621,7 +622,7 @@ func IsDeadKey(key term.Key) bool {
 	return false
 }
 
-func (c *Composer) processKey(ev Event) {
+func (c *Composer) processKey(ev мКнст.Event) {
 	if ev.Key == term.KeyEsc {
 		if IsDeadKey(c.lastKey) {
 			c.lastKey = term.KeyEsc
@@ -697,7 +698,7 @@ func (c *Composer) processKey(ev Event) {
 	}
 }
 
-func ProcessEvent(ev Event) {
+func ProcessEvent(ev мКнст.Event) {
 	switch ev.Type {
 	case EventCloseWindow:
 		comp.closeTopWindow()

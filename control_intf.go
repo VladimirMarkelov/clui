@@ -2,6 +2,7 @@ package clui
 
 import (
 	term "github.com/nsf/termbox-go"
+	мКнст "./пакКонстанты"
 )
 
 // Control is an interface that every visible control should implement
@@ -65,9 +66,9 @@ type Control interface {
 	SetGaps(dx, dy int)
 	// Pack returns direction in which a container packs
 	// its children: horizontal or vertical
-	Pack() PackType
+	Pack() мКнст.PackType
 	// SetPack changes the direction of children packing
-	SetPack(pack PackType)
+	SetPack(pack мКнст.PackType)
 	// Scale return scale coefficient that is used to calculate
 	// new control size after its parent resizes.
 	// Fixed means the controls never changes its size.
@@ -84,8 +85,8 @@ type Control interface {
 	// See Scale method for details
 	SetScale(scale int)
 	// Align returns alignment of title in control
-	Align() Align
-	SetAlign(align Align)
+	Align() мКнст.Align
+	SetAlign(align мКнст.Align)
 
 	TextColor() term.Attribute
 	// SetTextColor changes text color of the control.
@@ -141,12 +142,12 @@ type Control interface {
 	// HitTest returns the area that corresponds to the clicked
 	// position X, Y (absolute position in console window): title,
 	// internal view area, title button, border or outside the control
-	HitTest(x, y int) HitResult
+	HitTest(x, y int) мКнст.HitResult
 	// ProcessEvent processes all events come from the control parent. If a control
 	// processes an event it should return true. If the method returns false it means
 	// that the control do not want or cannot process the event and the caller sends
 	// the event to the control parent
-	ProcessEvent(ev Event) bool
+	ProcessEvent(ev мКнст.Event) bool
 	// RefID returns the controls internal reference id
 	RefID() int64
 	// removeChild removes a child from a container

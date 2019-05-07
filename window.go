@@ -3,13 +3,14 @@ package clui
 import (
 	xs "github.com/huandu/xstrings"
 	term "github.com/nsf/termbox-go"
+	мКнст "./пакКонстанты"
 )
 
 // Window is an implemetation of View managed by Composer.
 type Window struct {
 	BaseControl
 
-	buttons   ViewButton
+	buttons   мКнст.ViewButton
 	maximized bool
 	// maximization support
 	origWidth  int
@@ -19,7 +20,7 @@ type Window struct {
 	hidden     bool
 	immovable  bool
 	fixedSize  bool
-	border     BorderStyle
+	border     мКнст.BorderStyle
 
 	onClose        func(Event) bool
 	onScreenResize func(Event)

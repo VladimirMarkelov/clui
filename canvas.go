@@ -5,6 +5,7 @@ import (
 	term "github.com/nsf/termbox-go"
 	"strings"
 	"unicode"
+	мКнст "./пакКонстанты"
 )
 
 type attr struct {
@@ -377,7 +378,7 @@ func DrawRawTextVertical(x, y int, text string) {
 }
 
 // DrawFrame paints the frame without changing area inside it
-func DrawFrame(x, y, w, h int, border BorderStyle) {
+func DrawFrame(x, y, w, h int, border мКнст.BorderStyle) {
 	var chars string
 	if border == BorderThick {
 		chars = SysObject(ObjDoubleBorder)

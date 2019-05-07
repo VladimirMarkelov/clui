@@ -5,6 +5,7 @@ import (
 	term "github.com/nsf/termbox-go"
 	"sync/atomic"
 	"time"
+	мКнст "./пакКонстанты"
 )
 
 /*
@@ -17,7 +18,7 @@ type Button struct {
 	shadowColor term.Attribute
 	bgActive    term.Attribute
 	pressed     int32
-	onClick     func(Event)
+	onClick     func(мКнст.Event)
 }
 
 /*
@@ -116,12 +117,12 @@ processes an event it should return true. If the method returns false it means
 that the control do not want or cannot process the event and the caller sends
 the event to the control parent
 */
-func (b *Button) ProcessEvent(event Event) bool {
+func (b *Button) ProcessEvent(event мКнст.Event) bool {
 	if !b.Enabled() {
 		return false
 	}
 
-	if event.Type == EventKey {
+	if event.Type == мКнст.EventKey {
 		if event.Key == term.KeySpace && b.isPressed() == 0 {
 			b.setPressed(1)
 			ev := Event{Type: EventRedraw}
@@ -164,6 +165,6 @@ func (b *Button) ProcessEvent(event Event) bool {
 
 // OnClick sets the callback that is called when one clicks button
 // with mouse or pressing space on keyboard while the button is active
-func (b *Button) OnClick(fn func(Event)) {
+func (b *Button) OnClick(fn func(мКнст.Event)) {
 	b.onClick = fn
 }
