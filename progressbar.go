@@ -25,7 +25,7 @@ type ProgressBar struct {
 }
 
 /*
-NewProgressBar creates a new ProgressBar.
+CreateProgressBar creates a new ProgressBar.
 parent - is container that keeps the control.
 width and heigth - are minimal size of the control.
 scale - the way of scaling the control when the parent is resized. Use DoNotScale constant if the
@@ -59,7 +59,7 @@ func CreateProgressBar(parent Control, width, height int, scale int) *ProgressBa
 	return b
 }
 
-// Repaint draws the control on its View surface.
+//Draw Repaint draws the control on its View surface.
 // Horizontal ProgressBar supports custom title over the bar.
 // One can set title using method SetTitle. There are a few
 // predefined variables that can be used inside title to

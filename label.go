@@ -65,7 +65,7 @@ func (l *Label) Direction() мКнст.Direction {
 func (l *Label) SetDirection(dir мКнст.Direction) {
 	l.direction = dir
 }
-
+//Draw --
 func (l *Label) Draw() {
 	if l.hidden {
 		return
@@ -98,7 +98,7 @@ func (l *Label) Draw() {
 
 			if elem.Type == ElemLineBreak {
 				xx = l.x
-				yy += 1
+				yy++
 			} else if elem.Type == ElemPrintable {
 				SetTextColor(elem.Fg)
 				SetBackColor(elem.Bg)

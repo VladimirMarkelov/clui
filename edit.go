@@ -42,7 +42,7 @@ func (e *EditField) setTitleInternal(title string) {
 	}
 }
 
-// Repaint draws the control on its View surface
+//Draw Repaint draws the control on its View surface
 func (e *EditField) Draw() {
 	if e.hidden {
 		return

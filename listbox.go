@@ -30,7 +30,7 @@ type ListBox struct {
 }
 
 /*
-NewListBox creates a new frame.
+CreateListBox creates a new frame.
 view - is a View that manages the control
 parent - is container that keeps the control. The same View can be a view and a parent at the same time.
 width and heigth - are minimal size of the control.
@@ -111,7 +111,7 @@ func (l *ListBox) drawItems() {
 	}
 }
 
-// Repaint draws the control on its View surface
+//Draw Repaint draws the control on its View surface
 func (l *ListBox) Draw() {
 	if l.hidden {
 		return

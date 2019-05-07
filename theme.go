@@ -122,7 +122,7 @@ func initThemeManager() {
 	ThemeReset()
 }
 
-// Reset removes all loaded themes from cache and reinitialize
+//ThemeReset Reset removes all loaded themes from cache and reinitialize
 // the default theme
 func ThemeReset() {
 	thememtx.Lock()

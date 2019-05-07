@@ -1,9 +1,9 @@
 package clui
 
 import (
+	мКнст "./пакКонстанты"
 	xs "github.com/huandu/xstrings"
 	term "github.com/nsf/termbox-go"
-	мКнст "./пакКонстанты"
 )
 
 // Window is an implemetation of View managed by Composer.
@@ -33,6 +33,7 @@ type keyDownCb struct {
 	fn   func(evt мКнст.Event, data interface{}) bool
 }
 
+//CreateWindow --
 func CreateWindow(x, y, w, h int, title string) *Window {
 	wnd := new(Window)
 	wnd.BaseControl = NewBaseControl()
@@ -60,13 +61,13 @@ func CreateWindow(x, y, w, h int, title string) *Window {
 
 func (wnd *Window) buttonCount() int {
 	cnt := 0
-	if wnd.buttons& мКнст.ButtonClose == мКнст.ButtonClose {
+	if wnd.buttons&мКнст.ButtonClose == мКнст.ButtonClose {
 		cnt++
 	}
-	if wnd.buttons& мКнст.ButtonMaximize == мКнст.ButtonMaximize {
+	if wnd.buttons&мКнст.ButtonMaximize == мКнст.ButtonMaximize {
 		cnt++
 	}
-	if wnd.buttons& мКнст.ButtonBottom == мКнст.ButtonBottom {
+	if wnd.buttons&мКнст.ButtonBottom == мКнст.ButtonBottom {
 		cnt++
 	}
 
@@ -126,15 +127,15 @@ func (wnd *Window) drawButtons() {
 	pos := wnd.x + wnd.width - btnCount - 2
 	putCharUnsafe(pos, wnd.y, cOpenB)
 	pos++
-	if wnd.buttons& мКнст.ButtonBottom == мКнст.ButtonBottom {
+	if wnd.buttons&мКнст.ButtonBottom == мКнст.ButtonBottom {
 		putCharUnsafe(pos, wnd.y, cBottom)
 		pos++
 	}
-	if wnd.buttons& мКнст.ButtonMaximize == мКнст.ButtonMaximize {
+	if wnd.buttons&мКнст.ButtonMaximize == мКнст.ButtonMaximize {
 		putCharUnsafe(pos, wnd.y, cMax)
 		pos++
 	}
-	if wnd.buttons& мКнст.ButtonClose == мКнст.ButtonClose {
+	if wnd.buttons&мКнст.ButtonClose == мКнст.ButtonClose {
 		putCharUnsafe(pos, wnd.y, cClose)
 		pos++
 	}
@@ -163,58 +164,59 @@ func (wnd *Window) Draw() {
 	wnd.drawButtons()
 }
 
-func (c *Window) HitTest(x, y int) мКнст.HitResult {
-	if x > c.x && x < c.x+c.width-1 &&
-		y > c.y && y < c.y+c.height-1 {
+//HitTest --
+func (wnd *Window) HitTest(x, y int) мКнст.HitResult {
+	if x > wnd.x && x < wnd.x+wnd.width-1 &&
+		y > wnd.y && y < wnd.y+wnd.height-1 {
 		return мКнст.HitInside
 	}
 
 	hResult := мКнст.HitOutside
 
-	if x == c.x && y == c.y {
+	if x == wnd.x && y == wnd.y {
 		hResult = мКнст.HitTopLeft
-	} else if x == c.x+c.width-1 && y == c.y {
+	} else if x == wnd.x+wnd.width-1 && y == wnd.y {
 		hResult = мКнст.HitTopRight
-	} else if x == c.x && y == c.y+c.height-1 {
+	} else if x == wnd.x && y == wnd.y+wnd.height-1 {
 		hResult = мКнст.HitBottomLeft
-	} else if x == c.x+c.width-1 && y == c.y+c.height-1 {
+	} else if x == wnd.x+wnd.width-1 && y == wnd.y+wnd.height-1 {
 		hResult = мКнст.HitBottomRight
-	} else if x == c.x && y > c.y && y < c.y+c.height-1 {
+	} else if x == wnd.x && y > wnd.y && y < wnd.y+wnd.height-1 {
 		hResult = мКнст.HitLeft
-	} else if x == c.x+c.width-1 && y > c.y && y < c.y+c.height-1 {
+	} else if x == wnd.x+wnd.width-1 && y > wnd.y && y < wnd.y+wnd.height-1 {
 		hResult = мКнст.HitRight
-	} else if y == c.y && x > c.x && x < c.x+c.width-1 {
-		btnCount := c.buttonCount()
-		if x < c.x+c.width-1-btnCount {
+	} else if y == wnd.y && x > wnd.x && x < wnd.x+wnd.width-1 {
+		btnCount := wnd.buttonCount()
+		if x < wnd.x+wnd.width-1-btnCount {
 			hResult = мКнст.HitTop
 		} else {
 			hitRes := []мКнст.HitResult{мКнст.HitTop, мКнст.HitTop, мКнст.HitTop}
 			pos := 0
 
-			if c.buttons& мКнст.ButtonBottom == мКнст.ButtonBottom {
+			if wnd.buttons&мКнст.ButtonBottom == мКнст.ButtonBottom {
 				hitRes[pos] = мКнст.HitButtonBottom
 				pos++
 			}
-			if c.buttons& мКнст.ButtonMaximize == мКнст.ButtonMaximize {
+			if wnd.buttons&мКнст.ButtonMaximize == мКнст.ButtonMaximize {
 				hitRes[pos] = мКнст.HitButtonMaximize
 				pos++
 			}
-			if c.buttons& мКнст.ButtonClose == мКнст.ButtonClose {
+			if wnd.buttons&мКнст.ButtonClose == мКнст.ButtonClose {
 				hitRes[pos] = мКнст.HitButtonClose
 				pos++
 			}
 
-			hResult = hitRes[x-(c.x+c.width-1-btnCount)]
+			hResult = hitRes[x-(wnd.x+wnd.width-1-btnCount)]
 		}
-	} else if y == c.y+c.height-1 && x > c.x && x < c.x+c.width-1 {
+	} else if y == wnd.y+wnd.height-1 && x > wnd.x && x < wnd.x+wnd.width-1 {
 		hResult = мКнст.HitBottom
 	}
 
 	if hResult != мКнст.HitOutside {
-		if c.immovable && hResult == мКнст.HitTop {
+		if wnd.immovable && hResult == мКнст.HitTop {
 			hResult = мКнст.HitInside
 		}
-		if c.fixedSize &&
+		if wnd.fixedSize &&
 			(hResult == мКнст.HitBottom || hResult == мКнст.HitLeft ||
 				hResult == мКнст.HitRight || hResult == мКнст.HitTopLeft ||
 				hResult == мКнст.HitTopRight || hResult == мКнст.HitBottomRight ||
@@ -226,28 +228,29 @@ func (c *Window) HitTest(x, y int) мКнст.HitResult {
 	return hResult
 }
 
-func (c *Window) ProcessEvent(ev мКнст.Event) bool {
+//ProcessEvent --
+func (wnd *Window) ProcessEvent(ev мКнст.Event) bool {
 	switch ev.Type {
 	case мКнст.EventMove:
-		c.PlaceChildren()
+		wnd.PlaceChildren()
 	case мКнст.EventResize:
-		c.ResizeChildren()
-		c.PlaceChildren()
+		wnd.ResizeChildren()
+		wnd.PlaceChildren()
 	case мКнст.EventClose:
-		if c.onClose != nil {
-			if !c.onClose(ev) {
+		if wnd.onClose != nil {
+			if !wnd.onClose(ev) {
 				return false
 			}
 		}
 		return true
 	case мКнст.EventKey:
 		if ev.Key == term.KeyTab || ev.Key == term.KeyArrowUp || ev.Key == term.KeyArrowDown {
-			if SendEventToChild(c, ev) {
+			if SendEventToChild(wnd, ev) {
 				return true
 			}
 
-			aC := ActiveControl(c)
-			nC := NextControl(c, aC, ev.Key != term.KeyArrowUp)
+			aC := ActiveControl(wnd)
+			nC := NextControl(wnd, aC, ev.Key != term.KeyArrowUp)
 
 			var clipped Control
 
@@ -272,137 +275,137 @@ func (c *Window) ProcessEvent(ev мКнст.Event) bool {
 					aC.ProcessEvent(мКнст.Event{Type: мКнст.EventActivate, X: 0})
 				}
 				if nC != nil {
-					nC.SetActive(true)
-					nC.ProcessEvent(мКнст.Event{Type: мКнст.EventActivate, X: 1})
+					aC.SetActive(true)
+					aC.ProcessEvent(мКнст.Event{Type: мКнст.EventActivate, X: 1})
 				}
 			}
 			return true
-		} else {
-			if SendEventToChild(c, ev) {
-				return true
-			}
-			if c.onKeyDown != nil {
-				return c.onKeyDown.fn(ev, c.onKeyDown.data)
-			}
-			return false
 		}
+		if SendEventToChild(wnd, ev) {
+			return true
+		}
+		if wnd.onKeyDown != nil {
+			return wnd.onKeyDown.fn(ev, wnd.onKeyDown.data)
+		}
+		return false
+
 	default:
 		if ev.Type == мКнст.EventMouse && ev.Key == term.MouseLeft {
-			DeactivateControls(c)
+			DeactivateControls(wnd)
 		}
-		return SendEventToChild(c, ev)
+		return SendEventToChild(wnd, ev)
 	}
 
 	return false
 }
 
 // OnClose sets the callback that is called when the Window is about to destroy
-func (w *Window) OnClose(fn func(мКнст.Event) bool) {
-	w.onClose = fn
+func (wnd *Window) OnClose(fn func(мКнст.Event) bool) {
+	wnd.onClose = fn
 }
 
 // OnKeyDown sets the callback that is called when a user presses a key
 // while the Window is active
-func (w *Window) OnKeyDown(fn func(мКнст.Event, interface{}) bool, data interface{}) {
+func (wnd *Window) OnKeyDown(fn func(мКнст.Event, interface{}) bool, data interface{}) {
 	if fn == nil {
-		w.onKeyDown = nil
+		wnd.onKeyDown = nil
 	} else {
-		w.onKeyDown = &keyDownCb{data: data, fn: fn}
+		wnd.onKeyDown = &keyDownCb{data: data, fn: fn}
 	}
 }
 
 // OnScreenResize sets the callback that is called when size of terminal changes
-func (w *Window) OnScreenResize(fn func(мКнст.Event)) {
-	w.onScreenResize = fn
+func (wnd *Window) OnScreenResize(fn func(мКнст.Event)) {
+	wnd.onScreenResize = fn
 }
 
 // Border returns the default window border
-func (w *Window) Border() мКнст.BorderStyle {
-	return w.border
+func (wnd *Window) Border() мКнст.BorderStyle {
+	return wnd.border
 }
 
 // SetBorder changes the default window border
-func (w *Window) SetBorder(border мКнст.BorderStyle) {
-	w.border = border
+func (wnd *Window) SetBorder(border мКнст.BorderStyle) {
+	wnd.border = border
 }
 
 // SetMaximized opens the view to full screen or restores its
 // previous size
-func (w *Window) SetMaximized(maximize bool) {
-	if maximize == w.maximized {
+func (wnd *Window) SetMaximized(maximize bool) {
+	if maximize == wnd.maximized {
 		return
 	}
 
 	if maximize {
-		w.origX, w.origY = w.Pos()
-		w.origWidth, w.origHeight = w.Size()
-		w.maximized = true
-		w.SetPos(0, 0)
+		wnd.origX, wnd.origY = wnd.Pos()
+		wnd.origWidth, wnd.origHeight = wnd.Size()
+		wnd.maximized = true
+		wnd.SetPos(0, 0)
 		width, height := ScreenSize()
-		w.SetSize(width, height)
+		wnd.SetSize(width, height)
 	} else {
-		w.maximized = false
-		w.SetPos(w.origX, w.origY)
-		w.SetSize(w.origWidth, w.origHeight)
+		wnd.maximized = false
+		wnd.SetPos(wnd.origX, wnd.origY)
+		wnd.SetSize(wnd.origWidth, wnd.origHeight)
 	}
-	w.ResizeChildren()
-	w.PlaceChildren()
+	wnd.ResizeChildren()
+	wnd.PlaceChildren()
 }
 
 // Maximized returns if the view is in full screen mode
-func (w *Window) Maximized() bool {
-	return w.maximized
+func (wnd *Window) Maximized() bool {
+	return wnd.maximized
 }
 
 // Visible returns if the window must be drawn on the screen
-func (w *Window) Visible() bool {
-	return !w.hidden
+func (wnd *Window) Visible() bool {
+	return !wnd.hidden
 }
 
 // SetVisible allows to temporarily remove the window from screen
 // and show it later without reconstruction
-func (w *Window) SetVisible(visible bool) {
-	if w.hidden == visible {
-		w.hidden = !visible
-		if w.hidden {
-			w.SetModal(false)
-			if WindowManager().topWindow() == w {
+func (wnd *Window) SetVisible(visible bool) {
+	if wnd.hidden == visible {
+		wnd.hidden = !visible
+		if wnd.hidden {
+			wnd.SetModal(false)
+			if WindowManager().topWindow() == wnd {
 				WindowManager().moveActiveWindowToBottom()
 			}
 		} else {
-			WindowManager().activateWindow(w)
+			WindowManager().activateWindow(wnd)
 		}
 	}
 }
 
 // Movable returns if the Window can be moved with mouse or keyboard
-func (w *Window) Movable() bool {
-	return !w.immovable
+func (wnd *Window) Movable() bool {
+	return !wnd.immovable
 }
 
 // Sizable returns if size of the Window can be changed with mouse or keyboard
-func (w *Window) Sizable() bool {
-	return !w.fixedSize
+func (wnd *Window) Sizable() bool {
+	return !wnd.fixedSize
 }
 
 // SetMovable turns on and off ability to change Window position with mouse
 // or keyboard
-func (w *Window) SetMovable(movable bool) {
-	w.immovable = !movable
+func (wnd *Window) SetMovable(movable bool) {
+	wnd.immovable = !movable
 }
 
 // SetSizable turns on and off ability to change Window size with mouse
 // or keyboard
-func (w *Window) SetSizable(sizable bool) {
-	w.fixedSize = !sizable
+func (wnd *Window) SetSizable(sizable bool) {
+	wnd.fixedSize = !sizable
 }
 
 // TitleButtons returns a set of buttons shown in the Window title bar
-func (w *Window) TitleButtons() мКнст.ViewButton {
-	return w.buttons
+func (wnd *Window) TitleButtons() мКнст.ViewButton {
+	return wnd.buttons
 }
 
 // SetTitleButtons sets the title bar buttons available for a user
-func (w *Window) SetTitleButtons(buttons мКнст.ViewButton) {
-	w.buttons = buttons
+func (wnd *Window) SetTitleButtons(buttons мКнст.ViewButton) {
+	wnd.buttons = buttons
 }

@@ -4,8 +4,11 @@ import(
 	мКнст "./пакКонстанты"
 )
 const (
+	//LoginOk --
 	LoginOk = iota
+	//LoginCanceled --
 	LoginCanceled
+	//LoginInvalid --
 	LoginInvalid
 )
 
@@ -30,7 +33,7 @@ type LoginDialog struct {
 	onCheck func(string, string) bool
 }
 
-// LoginDialog creates a new login dialog
+// CreateLoginDialog creates a new login dialog
 //  * title - custom dialog title
 //  * userName - initial username. Maybe useful if you want to implement
 //     a feature "remember me"

@@ -5,7 +5,7 @@ import (
 	term "github.com/nsf/termbox-go"
 	мКнст "./пакКонстанты"
 )
-
+//TextDisplay --
 type TextDisplay struct {
 	BaseControl
 	colorized bool
@@ -20,10 +20,11 @@ type TextDisplay struct {
 // In next major library version TextReader will be removed
 type TextReader = TextDisplay
 
+//CreateTextReader --
 func CreateTextReader(parent Control, width, height int, scale int) *TextDisplay {
 	return CreateTextDisplay(parent, width, height, scale)
 }
-
+//CreateTextDisplay --
 func CreateTextDisplay(parent Control, width, height int, scale int) *TextDisplay {
 	l := new(TextDisplay)
 	l.BaseControl = NewBaseControl()
@@ -88,7 +89,7 @@ func (l *TextDisplay) drawText() {
 	}
 }
 
-// Repaint draws the control on its View surface
+//Draw Repaint draws the control on its View surface
 func (l *TextDisplay) Draw() {
 	if l.hidden {
 		return
@@ -244,11 +245,11 @@ func (l *TextDisplay) OnDrawLine(fn func(int) string) {
 func (l *TextDisplay) OnPositionChanged(fn func(int, int)) {
 	l.onPositionChanged = fn
 }
-
+//LineCount --
 func (l *TextDisplay) LineCount() int {
 	return l.lineCount
 }
-
+//SetLineCount --
 func (l *TextDisplay) SetLineCount(lineNo int) {
 	if l.topLine == lineNo {
 		return
@@ -263,11 +264,11 @@ func (l *TextDisplay) SetLineCount(lineNo int) {
 		l.onPositionChanged(l.topLine, l.lineCount)
 	}
 }
-
+//TopLine --
 func (l *TextDisplay) TopLine() int {
 	return l.topLine
 }
-
+//SetTopLine --
 func (l *TextDisplay) SetTopLine(top int) {
 	if top < l.lineCount {
 		l.topLine = top

@@ -19,7 +19,7 @@ type Radio struct {
 }
 
 /*
-NewRadio creates a new radio button.
+CreateRadio creates a new radio button.
 view - is a View that manages the control
 parent - is container that keeps the control. The same View can be a view and a parent at the same time.
 width - is minimal width of the control.
@@ -52,7 +52,7 @@ func CreateRadio(parent Control, width int, title string, scale int) *Radio {
 	return c
 }
 
-// Repaint draws the control on its View surface
+//Draw Repaint draws the control on its View surface
 func (c *Radio) Draw() {
 	if c.hidden {
 		return

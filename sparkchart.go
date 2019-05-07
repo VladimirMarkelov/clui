@@ -37,7 +37,7 @@ type SparkChart struct {
 }
 
 /*
-NewSparkChart creates a new spark chart.
+CreateSparkChart creates a new spark chart.
 view - is a View that manages the control
 parent - is container that keeps the control. The same View can be a view and a parent at the same time.
 w and h - are minimal size of the control.
@@ -72,7 +72,7 @@ func CreateSparkChart(parent Control, w, h int, scale int) *SparkChart {
 	return c
 }
 
-// Repaint draws the control on its View surface
+//Draw Repaint draws the control on its View surface
 func (b *SparkChart) Draw() {
 	if b.hidden {
 		return
