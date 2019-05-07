@@ -35,10 +35,10 @@ func CreateProgressBar(parent Control, width, height int, scale int) *ProgressBa
 	b := new(ProgressBar)
 	b.BaseControl = NewBaseControl()
 
-	if height == AutoSize {
+	if height == мКнст.AutoSize {
 		height = 1
 	}
-	if width == AutoSize {
+	if width == мКнст.AutoSize {
 		width = 10
 	}
 
@@ -48,9 +48,9 @@ func CreateProgressBar(parent Control, width, height int, scale int) *ProgressBa
 	b.SetScale(scale)
 	b.min = 0
 	b.max = 10
-	b.direction = Horizontal
+	b.direction = мКнст.Horizontal
 	b.parent = parent
-	b.align = AlignCenter
+	b.align = мКнст.AlignCenter
 
 	if parent != nil {
 		parent.AddChild(b)
@@ -86,10 +86,10 @@ func (b *ProgressBar) Draw() {
 	PushAttributes()
 	defer PopAttributes()
 
-	fgOff, fgOn := RealColor(b.fg, b.Style(), ColorProgressText), RealColor(b.fgActive, b.Style(), ColorProgressActiveText)
-	bgOff, bgOn := RealColor(b.bg, b.Style(), ColorProgressBack), RealColor(b.bgActive, b.Style(), ColorProgressActiveBack)
+	fgOff, fgOn := RealColor(b.fg, b.Style(), мКнст.ColorProgressText), RealColor(b.fgActive, b.Style(), мКнст.ColorProgressActiveText)
+	bgOff, bgOn := RealColor(b.bg, b.Style(), мКнст.ColorProgressBack), RealColor(b.bgActive, b.Style(), мКнст.ColorProgressActiveBack)
 
-	parts := []rune(SysObject(ObjProgressBar))
+	parts := []rune(SysObject(мКнст.ObjProgressBar))
 	cFilled, cEmpty := parts[0], parts[1]
 
 	prc := 0
@@ -100,7 +100,7 @@ func (b *ProgressBar) Draw() {
 	}
 
 	var title string
-	if b.direction == Horizontal && b.Title() != "" {
+	if b.direction == мКнст.Horizontal && b.Title() != "" {
 		title = b.Title()
 		title = strings.Replace(title, "{{percent}}", strconv.Itoa(prc), -1)
 		title = strings.Replace(title, "{{value}}", strconv.Itoa(b.value), -1)
@@ -111,7 +111,7 @@ func (b *ProgressBar) Draw() {
 	x, y := b.Pos()
 	w, h := b.Size()
 
-	if b.direction == Horizontal {
+	if b.direction == мКнст.Horizontal {
 		filled := prc * w / 100
 		sFilled := strings.Repeat(string(cFilled), filled)
 		sEmpty := strings.Repeat(string(cEmpty), w-filled)
@@ -127,7 +127,7 @@ func (b *ProgressBar) Draw() {
 
 		if title != "" {
 			shift, str := AlignText(title, w, b.align)
-			titleClr := RealColor(b.titleFg, b.Style(), ColorProgressTitleText)
+			titleClr := RealColor(b.titleFg, b.Style(), мКнст.ColorProgressTitleText)
 			var sOn, sOff string
 			if filled == 0 || shift >= filled {
 				sOff = str

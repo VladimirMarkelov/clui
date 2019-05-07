@@ -31,7 +31,7 @@ func CreateRadio(parent Control, width int, title string, scale int) *Radio {
 	c := new(Radio)
 	c.BaseControl = NewBaseControl()
 
-	if width == AutoSize {
+	if width == мКнст.AutoSize {
 		width = xs.Len(title) + 4
 	}
 
@@ -64,14 +64,14 @@ func (c *Radio) Draw() {
 	x, y := c.Pos()
 	w, h := c.Size()
 
-	fg, bg := RealColor(c.fg, c.Style(), ColorControlText), RealColor(c.bg, c.Style(), ColorControlBack)
+	fg, bg := RealColor(c.fg, c.Style(), мКнст.ColorControlText), RealColor(c.bg, c.Style(), мКнст.ColorControlBack)
 	if !c.Enabled() {
-		fg, bg = RealColor(c.fg, c.Style(), ColorControlDisabledText), RealColor(c.bg, c.Style(), ColorControlDisabledBack)
+		fg, bg = RealColor(c.fg, c.Style(), мКнст.ColorControlDisabledText), RealColor(c.bg, c.Style(), мКнст.ColorControlDisabledBack)
 	} else if c.Active() {
-		fg, bg = RealColor(c.fg, c.Style(), ColorControlActiveText), RealColor(c.bg, c.Style(), ColorControlActiveBack)
+		fg, bg = RealColor(c.fg, c.Style(), мКнст.ColorControlActiveText), RealColor(c.bg, c.Style(), мКнст.ColorControlActiveBack)
 	}
 
-	parts := []rune(SysObject(ObjRadio))
+	parts := []rune(SysObject(мКнст.ObjRadio))
 	cOpen, cClose, cEmpty, cCheck := parts[0], parts[1], parts[2], parts[3]
 	cState := cEmpty
 	if c.selected {
@@ -105,11 +105,11 @@ the event to the control parent.
 The control processes only space button and mouse clicks to make control selected. Deselecting control is not possible: one has to click another radio of the radio group to deselect this button
 */
 func (c *Radio) ProcessEvent(event мКнст.Event) bool {
-	if (!c.Active() && event.Type == EventKey) || !c.Enabled() {
+	if (!c.Active() && event.Type == мКнст.EventKey) || !c.Enabled() {
 		return false
 	}
 
-	if (event.Type == EventKey && event.Key == term.KeySpace) || event.Type == EventClick {
+	if (event.Type == мКнст.EventKey && event.Key == term.KeySpace) || event.Type == мКнст.EventClick {
 		if c.group == nil {
 			c.SetSelected(true)
 		} else {

@@ -73,9 +73,9 @@ func AlignText(str string, width int, align мКнст.Align) (shift int, out st
 		return 0, CutText(str, width)
 	}
 
-	if align == AlignRight {
+	if align == мКнст.AlignRight {
 		return width - length, str
-	} else if align == AlignCenter {
+	} else if align == мКнст.AlignCenter {
 		return (width - length) / 2, str
 	}
 
@@ -97,9 +97,9 @@ func AlignColorizedText(str string, width int, align мКнст.Align) (int, str
 	}
 
 	skip := 0
-	if align == AlignRight {
+	if align == мКнст.AlignRight {
 		skip = length - width
-	} else if align == AlignCenter {
+	} else if align == мКнст.AlignCenter {
 		skip = (length - width) / 2
 	}
 

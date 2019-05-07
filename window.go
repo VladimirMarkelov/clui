@@ -37,10 +37,10 @@ func CreateWindow(x, y, w, h int, title string) *Window {
 	wnd := new(Window)
 	wnd.BaseControl = NewBaseControl()
 
-	if w == AutoSize || w < 1 || w > 1000 {
+	if w == мКнст.AutoSize || w < 1 || w > 1000 {
 		w = 10
 	}
-	if h == AutoSize || h < 1 || h > 1000 {
+	if h == мКнст.AutoSize || h < 1 || h > 1000 {
 		w = 5
 	}
 
@@ -48,26 +48,26 @@ func CreateWindow(x, y, w, h int, title string) *Window {
 	wnd.SetSize(w, h)
 	wnd.SetPos(x, y)
 	wnd.SetTitle(title)
-	wnd.buttons = ButtonClose | ButtonBottom | ButtonMaximize
+	wnd.buttons = мКнст.ButtonClose | мКнст.ButtonBottom | мКнст.ButtonMaximize
 	wnd.children = make([]Control, 0)
 	wnd.SetPaddings(1, 1)
 	wnd.SetGaps(1, 0)
 	wnd.SetScale(1)
-	wnd.SetBorder(BorderAuto)
+	wnd.SetBorder(мКнст.BorderAuto)
 
 	return wnd
 }
 
 func (wnd *Window) buttonCount() int {
 	cnt := 0
-	if wnd.buttons&ButtonClose == ButtonClose {
-		cnt += 1
+	if wnd.buttons& мКнст.ButtonClose == мКнст.ButtonClose {
+		cnt++
 	}
-	if wnd.buttons&ButtonMaximize == ButtonMaximize {
-		cnt += 1
+	if wnd.buttons& мКнст.ButtonMaximize == мКнст.ButtonMaximize {
+		cnt++
 	}
-	if wnd.buttons&ButtonBottom == ButtonBottom {
-		cnt += 1
+	if wnd.buttons& мКнст.ButtonBottom == мКнст.ButtonBottom {
+		cnt++
 	}
 
 	return cnt
@@ -77,14 +77,14 @@ func (wnd *Window) drawFrame() {
 	PushAttributes()
 	defer PopAttributes()
 
-	var bs BorderStyle
-	if wnd.border == BorderAuto {
+	var bs мКнст.BorderStyle
+	if wnd.border == мКнст.BorderAuto {
 		if wnd.inactive {
-			bs = BorderThin
+			bs = мКнст.BorderThin
 		} else {
-			bs = BorderThick
+			bs = мКнст.BorderThick
 		}
-	} else if wnd.border == BorderNone {
+	} else if wnd.border == мКнст.BorderNone {
 	} else {
 		bs = wnd.border
 	}
@@ -120,34 +120,35 @@ func (wnd *Window) drawButtons() {
 	PushAttributes()
 	defer PopAttributes()
 
-	chars := []rune(SysObject(ObjViewButtons))
+	chars := []rune(SysObject(мКнст.ObjViewButtons))
 	cMax, cBottom, cClose, cOpenB, cCloseB := chars[0], chars[1], chars[2], chars[3], chars[4]
 
 	pos := wnd.x + wnd.width - btnCount - 2
 	putCharUnsafe(pos, wnd.y, cOpenB)
-	pos += 1
-	if wnd.buttons&ButtonBottom == ButtonBottom {
+	pos++
+	if wnd.buttons& мКнст.ButtonBottom == мКнст.ButtonBottom {
 		putCharUnsafe(pos, wnd.y, cBottom)
-		pos += 1
+		pos++
 	}
-	if wnd.buttons&ButtonMaximize == ButtonMaximize {
+	if wnd.buttons& мКнст.ButtonMaximize == мКнст.ButtonMaximize {
 		putCharUnsafe(pos, wnd.y, cMax)
-		pos += 1
+		pos++
 	}
-	if wnd.buttons&ButtonClose == ButtonClose {
+	if wnd.buttons& мКнст.ButtonClose == мКнст.ButtonClose {
 		putCharUnsafe(pos, wnd.y, cClose)
-		pos += 1
+		pos++
 	}
 	putCharUnsafe(pos, wnd.y, cCloseB)
 }
 
+//Draw --
 func (wnd *Window) Draw() {
 	WindowManager().BeginUpdate()
 	defer WindowManager().EndUpdate()
 	PushAttributes()
 	defer PopAttributes()
 
-	fg, bg := RealColor(wnd.fg, wnd.Style(), ColorViewText), RealColor(wnd.bg, wnd.Style(), ColorViewBack)
+	fg, bg := RealColor(wnd.fg, wnd.Style(), мКнст.ColorViewText), RealColor(wnd.bg, wnd.Style(), мКнст.ColorViewBack)
 	SetBackColor(bg)
 
 	FillRect(wnd.x, wnd.y, wnd.width, wnd.height, ' ')
@@ -165,60 +166,60 @@ func (wnd *Window) Draw() {
 func (c *Window) HitTest(x, y int) мКнст.HitResult {
 	if x > c.x && x < c.x+c.width-1 &&
 		y > c.y && y < c.y+c.height-1 {
-		return HitInside
+		return мКнст.HitInside
 	}
 
-	hResult := HitOutside
+	hResult := мКнст.HitOutside
 
 	if x == c.x && y == c.y {
-		hResult = HitTopLeft
+		hResult = мКнст.HitTopLeft
 	} else if x == c.x+c.width-1 && y == c.y {
-		hResult = HitTopRight
+		hResult = мКнст.HitTopRight
 	} else if x == c.x && y == c.y+c.height-1 {
-		hResult = HitBottomLeft
+		hResult = мКнст.HitBottomLeft
 	} else if x == c.x+c.width-1 && y == c.y+c.height-1 {
-		hResult = HitBottomRight
+		hResult = мКнст.HitBottomRight
 	} else if x == c.x && y > c.y && y < c.y+c.height-1 {
-		hResult = HitLeft
+		hResult = мКнст.HitLeft
 	} else if x == c.x+c.width-1 && y > c.y && y < c.y+c.height-1 {
-		hResult = HitRight
+		hResult = мКнст.HitRight
 	} else if y == c.y && x > c.x && x < c.x+c.width-1 {
 		btnCount := c.buttonCount()
 		if x < c.x+c.width-1-btnCount {
-			hResult = HitTop
+			hResult = мКнст.HitTop
 		} else {
-			hitRes := []HitResult{HitTop, HitTop, HitTop}
+			hitRes := []мКнст.HitResult{мКнст.HitTop, мКнст.HitTop, мКнст.HitTop}
 			pos := 0
 
-			if c.buttons&ButtonBottom == ButtonBottom {
-				hitRes[pos] = HitButtonBottom
-				pos += 1
+			if c.buttons& мКнст.ButtonBottom == мКнст.ButtonBottom {
+				hitRes[pos] = мКнст.HitButtonBottom
+				pos++
 			}
-			if c.buttons&ButtonMaximize == ButtonMaximize {
-				hitRes[pos] = HitButtonMaximize
-				pos += 1
+			if c.buttons& мКнст.ButtonMaximize == мКнст.ButtonMaximize {
+				hitRes[pos] = мКнст.HitButtonMaximize
+				pos++
 			}
-			if c.buttons&ButtonClose == ButtonClose {
-				hitRes[pos] = HitButtonClose
-				pos += 1
+			if c.buttons& мКнст.ButtonClose == мКнст.ButtonClose {
+				hitRes[pos] = мКнст.HitButtonClose
+				pos++
 			}
 
 			hResult = hitRes[x-(c.x+c.width-1-btnCount)]
 		}
 	} else if y == c.y+c.height-1 && x > c.x && x < c.x+c.width-1 {
-		hResult = HitBottom
+		hResult = мКнст.HitBottom
 	}
 
-	if hResult != HitOutside {
-		if c.immovable && hResult == HitTop {
-			hResult = HitInside
+	if hResult != мКнст.HitOutside {
+		if c.immovable && hResult == мКнст.HitTop {
+			hResult = мКнст.HitInside
 		}
 		if c.fixedSize &&
-			(hResult == HitBottom || hResult == HitLeft ||
-				hResult == HitRight || hResult == HitTopLeft ||
-				hResult == HitTopRight || hResult == HitBottomRight ||
-				hResult == HitBottomLeft || hResult == HitButtonMaximize) {
-			hResult = HitInside
+			(hResult == мКнст.HitBottom || hResult == мКнст.HitLeft ||
+				hResult == мКнст.HitRight || hResult == мКнст.HitTopLeft ||
+				hResult == мКнст.HitTopRight || hResult == мКнст.HitBottomRight ||
+				hResult == мКнст.HitBottomLeft || hResult == мКнст.HitButtonMaximize) {
+			hResult = мКнст.HitInside
 		}
 	}
 
@@ -227,19 +228,19 @@ func (c *Window) HitTest(x, y int) мКнст.HitResult {
 
 func (c *Window) ProcessEvent(ev мКнст.Event) bool {
 	switch ev.Type {
-	case EventMove:
+	case мКнст.EventMove:
 		c.PlaceChildren()
-	case EventResize:
+	case мКнст.EventResize:
 		c.ResizeChildren()
 		c.PlaceChildren()
-	case EventClose:
+	case мКнст.EventClose:
 		if c.onClose != nil {
 			if !c.onClose(ev) {
 				return false
 			}
 		}
 		return true
-	case EventKey:
+	case мКнст.EventKey:
 		if ev.Key == term.KeyTab || ev.Key == term.KeyArrowUp || ev.Key == term.KeyArrowDown {
 			if SendEventToChild(c, ev) {
 				return true
@@ -262,17 +263,17 @@ func (c *Window) ProcessEvent(ev мКнст.Event) bool {
 					dir = -1
 				}
 
-				clipped.ProcessEvent(Event{Type: EventActivateChild, Target: nC, X: dir})
+				clipped.ProcessEvent(мКнст.Event{Type: мКнст.EventActivateChild, Target: nC, X: dir})
 			}
 
 			if nC != aC {
 				if aC != nil {
 					aC.SetActive(false)
-					aC.ProcessEvent(Event{Type: EventActivate, X: 0})
+					aC.ProcessEvent(мКнст.Event{Type: мКнст.EventActivate, X: 0})
 				}
 				if nC != nil {
 					nC.SetActive(true)
-					nC.ProcessEvent(Event{Type: EventActivate, X: 1})
+					nC.ProcessEvent(мКнст.Event{Type: мКнст.EventActivate, X: 1})
 				}
 			}
 			return true
@@ -286,7 +287,7 @@ func (c *Window) ProcessEvent(ev мКнст.Event) bool {
 			return false
 		}
 	default:
-		if ev.Type == EventMouse && ev.Key == term.MouseLeft {
+		if ev.Type == мКнст.EventMouse && ev.Key == term.MouseLeft {
 			DeactivateControls(c)
 		}
 		return SendEventToChild(c, ev)
@@ -316,12 +317,12 @@ func (w *Window) OnScreenResize(fn func(мКнст.Event)) {
 }
 
 // Border returns the default window border
-func (w *Window) Border() BorderStyle {
+func (w *Window) Border() мКнст.BorderStyle {
 	return w.border
 }
 
 // SetBorder changes the default window border
-func (w *Window) SetBorder(border BorderStyle) {
+func (w *Window) SetBorder(border мКнст.BorderStyle) {
 	w.border = border
 }
 
@@ -397,11 +398,11 @@ func (w *Window) SetSizable(sizable bool) {
 }
 
 // TitleButtons returns a set of buttons shown in the Window title bar
-func (w *Window) TitleButtons() ViewButton {
+func (w *Window) TitleButtons() мКнст.ViewButton {
 	return w.buttons
 }
 
 // SetTitleButtons sets the title bar buttons available for a user
-func (w *Window) SetTitleButtons(buttons ViewButton) {
+func (w *Window) SetTitleButtons(buttons мКнст.ViewButton) {
 	w.buttons = buttons
 }

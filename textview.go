@@ -49,10 +49,10 @@ func CreateTextView(parent Control, width, height int, scale int) *TextView {
 	l := new(TextView)
 	l.BaseControl = NewBaseControl()
 
-	if height == AutoSize {
+	if height == мКнст.AutoSize {
 		height = 3
 	}
-	if width == AutoSize {
+	if width == мКнст.AutoSize {
 		width = 5
 	}
 
@@ -178,9 +178,9 @@ func (l *TextView) Draw() {
 	x, y := l.Pos()
 	w, h := l.Size()
 
-	bg, fg := RealColor(l.bg, l.Style(), ColorEditBack), RealColor(l.fg, l.Style(), ColorEditText)
+	bg, fg := RealColor(l.bg, l.Style(), мКнст.ColorEditBack), RealColor(l.fg, l.Style(), мКнст.ColorEditText)
 	if l.Active() {
-		bg, fg = RealColor(l.bg, l.Style(), ColorEditActiveBack), RealColor(l.fg, l.Style(), ColorEditActiveText)
+		bg, fg = RealColor(l.bg, l.Style(), мКнст.ColorEditActiveBack), RealColor(l.fg, l.Style(), мКнст.ColorEditActiveText)
 	}
 
 	SetTextColor(fg)
@@ -319,7 +319,7 @@ func (l *TextView) ProcessEvent(event мКнст.Event) bool {
 	}
 
 	switch event.Type {
-	case EventKey:
+	case мКнст.EventKey:
 		switch event.Key {
 		case term.KeyHome:
 			l.home()
@@ -346,7 +346,7 @@ func (l *TextView) ProcessEvent(event мКнст.Event) bool {
 		default:
 			return false
 		}
-	case EventMouse:
+	case мКнст.EventMouse:
 		return l.processMouseClick(event)
 	}
 

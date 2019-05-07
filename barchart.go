@@ -441,12 +441,12 @@ func (b *BarChart) SetAutoSize(auto bool) {
 	b.autosize = auto
 }
 
-// Gap returns width of visual gap between two adjacent bars
+//BarGap Gap returns width of visual gap between two adjacent bars
 func (b *BarChart) BarGap() int32 {
 	return atomic.LoadInt32(&b.gap)
 }
 
-// SetGap sets the space width between two adjacent bars
+// SetBarGap sets the space width between two adjacent bars
 func (b *BarChart) SetBarGap(gap int32) {
 	atomic.StoreInt32(&b.gap, gap)
 }

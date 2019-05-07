@@ -19,7 +19,7 @@ var (
 
 func initMainLoop() {
 	loop = new(mainLoop)
-	loop.channel = make(chan Event)
+	loop.channel = make(chan мКнст.Event)
 }
 
 // MainLoop starts the main application event loop
@@ -45,7 +45,7 @@ func MainLoop() {
 				ProcessEvent(termboxEventToLocal(ev))
 			}
 		case cmd := <-loop.channel:
-			if cmd.Type == EventQuit {
+			if cmd.Type == мКнст.EventQuit {
 				return
 			}
 			ProcessEvent(cmd)
