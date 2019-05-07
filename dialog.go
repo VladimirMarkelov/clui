@@ -66,23 +66,23 @@ func CreateConfirmationDialog(title, question string, buttons []string, defaultB
 	defer WindowManager().EndUpdate()
 	dlg.View.SetConstraints(30, 3)
 	dlg.View.SetModal(true)
-	dlg.View.SetPack(Vertical)
-	CreateFrame(dlg.View, 1, 1, BorderNone, Fixed)
+	dlg.View.SetPack(мКнст.Vertical)
+	CreateFrame(dlg.View, 1, 1, мКнст.BorderNone, мКнст.Fixed)
 
-	fbtn := CreateFrame(dlg.View, 1, 1, BorderNone, 1)
-	CreateFrame(fbtn, 1, 1, BorderNone, Fixed)
+	fbtn := CreateFrame(dlg.View, 1, 1, мКнст.BorderNone, 1)
+	CreateFrame(fbtn, 1, 1, мКнст.BorderNone, мКнст.Fixed)
 	lb := CreateLabel(fbtn, 10, 3, question, 1)
 	lb.SetMultiline(true)
-	CreateFrame(fbtn, 1, 1, BorderNone, Fixed)
+	CreateFrame(fbtn, 1, 1, мКнст.BorderNone, мКнст.Fixed)
 
-	CreateFrame(dlg.View, 1, 1, BorderNone, Fixed)
-	frm1 := CreateFrame(dlg.View, 16, 4, BorderNone, Fixed)
-	CreateFrame(frm1, 1, 1, BorderNone, 1)
+	CreateFrame(dlg.View, 1, 1, мКнст.BorderNone, мКнст.Fixed)
+	frm1 := CreateFrame(dlg.View, 16, 4, мКнст.BorderNone, мКнст.Fixed)
+	CreateFrame(frm1, 1, 1, мКнст.BorderNone, 1)
 
 	bText := buttons[0]
-	btn1 := CreateButton(frm1, AutoSize, AutoSize, bText, Fixed)
-	btn1.OnClick(func(ev Event) {
-		dlg.result = DialogButton1
+	btn1 := CreateButton(frm1, мКнст.AutoSize, мКнст.AutoSize, bText, мКнст.Fixed)
+	btn1.OnClick(func(ev мКнст.Event) {
+		dlg.result = мКнст.DialogButton1
 
 		WindowManager().DestroyWindow(dlg.View)
 		WindowManager().BeginUpdate()
@@ -95,10 +95,10 @@ func CreateConfirmationDialog(title, question string, buttons []string, defaultB
 	var btn2, btn3 *Button
 
 	if len(buttons) > 1 {
-		CreateFrame(frm1, 1, 1, BorderNone, 1)
-		btn2 = CreateButton(frm1, AutoSize, AutoSize, buttons[1], Fixed)
-		btn2.OnClick(func(ev Event) {
-			dlg.result = DialogButton2
+		CreateFrame(frm1, 1, 1, мКнст.BorderNone, 1)
+		btn2 = CreateButton(frm1, мКнст.AutoSize, мКнст.AutoSize, buttons[1], мКнст.Fixed)
+		btn2.OnClick(func(ev мКнст.Event) {
+			dlg.result = мКнст.DialogButton2
 			WindowManager().DestroyWindow(dlg.View)
 			if dlg.onClose != nil {
 				dlg.onClose()
@@ -106,10 +106,10 @@ func CreateConfirmationDialog(title, question string, buttons []string, defaultB
 		})
 	}
 	if len(buttons) > 2 {
-		CreateFrame(frm1, 1, 1, BorderNone, 1)
-		btn3 = CreateButton(frm1, AutoSize, AutoSize, buttons[2], Fixed)
-		btn3.OnClick(func(ev Event) {
-			dlg.result = DialogButton3
+		CreateFrame(frm1, 1, 1, мКнст.BorderNone, 1)
+		btn3 = CreateButton(frm1, мКнст.AutoSize, мКнст.AutoSize, buttons[2], мКнст.Fixed)
+		btn3.OnClick(func(ev мКнст.Event) {
+			dlg.result = мКнст.DialogButton3
 			WindowManager().DestroyWindow(dlg.View)
 			if dlg.onClose != nil {
 				dlg.onClose()
@@ -117,19 +117,19 @@ func CreateConfirmationDialog(title, question string, buttons []string, defaultB
 		})
 	}
 
-	CreateFrame(frm1, 1, 1, BorderNone, 1)
+	CreateFrame(frm1, 1, 1, мКнст.BorderNone, 1)
 
-	if defaultButton == DialogButton2 && len(buttons) > 1 {
+	if defaultButton == мКнст.DialogButton2 && len(buttons) > 1 {
 		ActivateControl(dlg.View, btn2)
-	} else if defaultButton == DialogButton3 && len(buttons) > 2 {
+	} else if defaultButton == мКнст.DialogButton3 && len(buttons) > 2 {
 		ActivateControl(dlg.View, btn3)
 	} else {
 		ActivateControl(dlg.View, btn1)
 	}
 
-	dlg.View.OnClose(func(ev Event) bool {
-		if dlg.result == DialogAlive {
-			dlg.result = DialogClosed
+	dlg.View.OnClose(func(ev мКнст.Event) bool {
+		if dlg.result == мКнст.DialogAlive {
+			dlg.result = мКнст.DialogClosed
 			if ev.X != 1 {
 				WindowManager().DestroyWindow(dlg.View)
 			}
@@ -163,7 +163,7 @@ func (d *ConfirmationDialog) Result() int {
 
 //CreateEditDialog --
 func CreateEditDialog(title, message, initialText string) *SelectDialog {
-	return CreateSelectDialog(title, []string{message, initialText}, 0, SelectDialogEdit)
+	return CreateSelectDialog(title, []string{message, initialText}, 0, мКнст.SelectDialogEdit)
 }
 
 // CreateSelectDialog creates new dialog to select an item from list.
@@ -189,7 +189,7 @@ func CreateSelectDialog(title string, items []string, selectedItem int, typ мК
 	WindowManager().BeginUpdate()
 	defer WindowManager().EndUpdate()
 	dlg.View.SetModal(true)
-	dlg.View.SetPack(Vertical)
+	dlg.View.SetPack(мКнст.Vertical)
 
 	if typ == SelectDialogList {
 		fList := CreateFrame(dlg.View, 1, 1, BorderNone, 1)

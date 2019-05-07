@@ -35,12 +35,12 @@ func CreateButton(parent Control, width, height int, title string, scale int) *B
 	b.BaseControl = NewBaseControl()
 
 	b.parent = parent
-	b.align = AlignCenter
+	b.align = мКнст.AlignCenter
 
-	if height == AutoSize {
+	if height == мКнст.AutoSize {
 		height = 4
 	}
-	if width == AutoSize {
+	if width == мКнст.AutoSize {
 		width = xs.Len(title) + 2 + 1
 	}
 
@@ -78,13 +78,13 @@ func (b *Button) Draw() {
 	w, h := b.Size()
 
 	fg, bg := b.fg, b.bg
-	shadow := RealColor(b.shadowColor, b.Style(), ColorButtonShadow)
+	shadow := RealColor(b.shadowColor, b.Style(), мКнст.ColorButtonShadow)
 	if b.disabled {
-		fg, bg = RealColor(fg, b.Style(), ColorButtonDisabledText), RealColor(bg, b.Style(), ColorButtonDisabledBack)
+		fg, bg = RealColor(fg, b.Style(), мКнст.ColorButtonDisabledText), RealColor(bg, b.Style(), мКнст.ColorButtonDisabledBack)
 	} else if b.Active() {
-		fg, bg = RealColor(b.fgActive, b.Style(), ColorButtonActiveText), RealColor(b.bgActive, b.Style(), ColorButtonActiveBack)
+		fg, bg = RealColor(b.fgActive, b.Style(), мКнст.ColorButtonActiveText), RealColor(b.bgActive, b.Style(), мКнст.ColorButtonActiveBack)
 	} else {
-		fg, bg = RealColor(fg, b.Style(), ColorButtonText), RealColor(bg, b.Style(), ColorButtonBack)
+		fg, bg = RealColor(fg, b.Style(), мКнст.ColorButtonText), RealColor(bg, b.Style(), мКнст.ColorButtonBack)
 	}
 
 	dy := int((h - 1) / 2)
@@ -125,7 +125,7 @@ func (b *Button) ProcessEvent(event мКнст.Event) bool {
 	if event.Type == мКнст.EventKey {
 		if event.Key == term.KeySpace && b.isPressed() == 0 {
 			b.setPressed(1)
-			ev := Event{Type: EventRedraw}
+			ev := мКнст.Event{Type: мКнст.EventRedraw}
 
 			go func() {
 				PutEvent(ev)
@@ -143,7 +143,7 @@ func (b *Button) ProcessEvent(event мКнст.Event) bool {
 			ReleaseEvents()
 			return true
 		}
-	} else if event.Type == EventMouse {
+	} else if event.Type == мКнст.EventMouse {
 		if event.Key == term.MouseLeft {
 			b.setPressed(1)
 			GrabEvents(b)

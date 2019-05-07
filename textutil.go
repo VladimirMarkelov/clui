@@ -87,7 +87,7 @@ func AlignText(str string, width int, align мКнст.Align) (shift int, out st
 // color tags to the line beginning.
 // Note: function is ineffective and a bit slow - do not use
 // it everywhere
-func AlignColorizedText(str string, width int, align Align) (int, string) {
+func AlignColorizedText(str string, width int, align мКнст.Align) (int, string) {
 	rawText := UnColorizeText(str)
 	length := xs.Len(rawText)
 

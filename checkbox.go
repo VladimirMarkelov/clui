@@ -32,7 +32,7 @@ func CreateCheckBox(parent Control, width int, title string, scale int) *CheckBo
 	c.BaseControl = NewBaseControl()
 	c.parent = parent
 
-	if width == AutoSize {
+	if width == мКнст.AutoSize {
 		width = xs.Len(title) + 4
 	}
 
@@ -67,14 +67,14 @@ func (c *CheckBox) Draw() {
 	x, y := c.Pos()
 	w, h := c.Size()
 
-	fg, bg := RealColor(c.fg, c.Style(), ColorControlText), RealColor(c.bg, c.Style(), ColorControlBack)
+	fg, bg := RealColor(c.fg, c.Style(), мКнст.ColorControlText), RealColor(c.bg, c.Style(), мКнст.ColorControlBack)
 	if !c.Enabled() {
-		fg, bg = RealColor(c.fg, c.Style(), ColorControlDisabledText), RealColor(c.bg, c.Style(), ColorControlDisabledBack)
+		fg, bg = RealColor(c.fg, c.Style(), мКнст.ColorControlDisabledText), RealColor(c.bg, c.Style(), мКнст.ColorControlDisabledBack)
 	} else if c.Active() {
-		fg, bg = RealColor(c.fg, c.Style(), ColorControlActiveText), RealColor(c.bg, c.Style(), ColorControlActiveBack)
+		fg, bg = RealColor(c.fg, c.Style(), мКнст.ColorControlActiveText), RealColor(c.bg, c.Style(), мКнст.ColorControlActiveBack)
 	}
 
-	parts := []rune(SysObject(ObjCheckBox))
+	parts := []rune(SysObject(мКнст.ObjCheckBox))
 
 	cOpen, cClose, cEmpty, cCheck, cUnknown := parts[0], parts[1], parts[2], parts[3], parts[4]
 	cState := []rune{cEmpty, cCheck, cUnknown}
@@ -103,11 +103,11 @@ func (c *CheckBox) Draw() {
 //   that the control do not want or cannot process the event and the caller sends
 //   the event to the control parent
 func (c *CheckBox) ProcessEvent(event мКнст.Event) bool {
-	if (!c.Active() && event.Type == EventKey) || !c.Enabled() {
+	if (!c.Active() && event.Type == мКнст.EventKey) || !c.Enabled() {
 		return false
 	}
 
-	if (event.Type == EventKey && event.Key == term.KeySpace) || (event.Type == EventClick) {
+	if (event.Type == мКнст.EventKey && event.Key == term.KeySpace) || (event.Type == мКнст.EventClick) {
 		if c.state == 0 {
 			c.SetState(1)
 		} else if c.state == 2 {
@@ -182,14 +182,14 @@ func (c *CheckBox) Allow3State() bool {
 // Method does nothing if new size is less than minimal size
 // CheckBox height cannot be changed - it equals 1 always
 func (c *CheckBox) SetSize(width, height int) {
-	if width != KeepValue && (width > 1000 || width < c.minW) {
+	if width != мКнст.KeepValue && (width > 1000 || width < c.minW) {
 		return
 	}
-	if height != KeepValue && (height > 200 || height < c.minH) {
+	if height != мКнст.KeepValue && (height > 200 || height < c.minH) {
 		return
 	}
 
-	if width != KeepValue {
+	if width != мКнст.KeepValue {
 		c.width = width
 	}
 

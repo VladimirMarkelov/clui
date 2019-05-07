@@ -91,7 +91,7 @@ func DeactivateControls(parent Control) {
 	for _, ctrl := range parent.Children() {
 		if ctrl.Active() {
 			ctrl.SetActive(false)
-			ctrl.ProcessEvent(Event{Type: EventActivate, X: 0})
+			ctrl.ProcessEvent(мКнст.Event{Type: мКнст.EventActivate, X: 0})
 		}
 
 		DeactivateControls(ctrl)
@@ -107,7 +107,7 @@ func ActivateControl(parent, control Control) bool {
 	if ctrl != nil {
 		res = true
 		if !ctrl.Active() {
-			ctrl.ProcessEvent(Event{Type: EventActivate, X: 1})
+			ctrl.ProcessEvent(мКнст.Event{Type: мКнст.EventActivate, X: 1})
 			ctrl.SetActive(true)
 		}
 	}
@@ -140,10 +140,10 @@ func FindChild(parent, control Control) Control {
 
 // IsMouseClickEvent returns if a user action can be treated as mouse click.
 func IsMouseClickEvent(ev мКнст.Event) bool {
-	if ev.Type == EventClick {
+	if ev.Type == мКнст.EventClick {
 		return true
 	}
-	if ev.Type == EventMouse && ev.Key == term.MouseLeft {
+	if ev.Type == мКнст.EventMouse && ev.Key == term.MouseLeft {
 		return true
 	}
 

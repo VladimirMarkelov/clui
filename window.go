@@ -22,15 +22,15 @@ type Window struct {
 	fixedSize  bool
 	border     мКнст.BorderStyle
 
-	onClose        func(Event) bool
-	onScreenResize func(Event)
+	onClose        func(мКнст.Event) bool
+	onScreenResize func(мКнст.Event)
 
 	onKeyDown *keyDownCb
 }
 
 type keyDownCb struct {
 	data interface{}
-	fn   func(evt Event, data interface{}) bool
+	fn   func(evt мКнст.Event, data interface{}) bool
 }
 
 func CreateWindow(x, y, w, h int, title string) *Window {
@@ -162,7 +162,7 @@ func (wnd *Window) Draw() {
 	wnd.drawButtons()
 }
 
-func (c *Window) HitTest(x, y int) HitResult {
+func (c *Window) HitTest(x, y int) мКнст.HitResult {
 	if x > c.x && x < c.x+c.width-1 &&
 		y > c.y && y < c.y+c.height-1 {
 		return HitInside
@@ -225,7 +225,7 @@ func (c *Window) HitTest(x, y int) HitResult {
 	return hResult
 }
 
-func (c *Window) ProcessEvent(ev Event) bool {
+func (c *Window) ProcessEvent(ev мКнст.Event) bool {
 	switch ev.Type {
 	case EventMove:
 		c.PlaceChildren()
@@ -296,13 +296,13 @@ func (c *Window) ProcessEvent(ev Event) bool {
 }
 
 // OnClose sets the callback that is called when the Window is about to destroy
-func (w *Window) OnClose(fn func(Event) bool) {
+func (w *Window) OnClose(fn func(мКнст.Event) bool) {
 	w.onClose = fn
 }
 
 // OnKeyDown sets the callback that is called when a user presses a key
 // while the Window is active
-func (w *Window) OnKeyDown(fn func(Event, interface{}) bool, data interface{}) {
+func (w *Window) OnKeyDown(fn func(мКнст.Event, interface{}) bool, data interface{}) {
 	if fn == nil {
 		w.onKeyDown = nil
 	} else {
@@ -311,7 +311,7 @@ func (w *Window) OnKeyDown(fn func(Event, interface{}) bool, data interface{}) {
 }
 
 // OnScreenResize sets the callback that is called when size of terminal changes
-func (w *Window) OnScreenResize(fn func(Event)) {
+func (w *Window) OnScreenResize(fn func(мКнст.Event)) {
 	w.onScreenResize = fn
 }
 

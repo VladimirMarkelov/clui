@@ -6,6 +6,7 @@ import (
 	term "github.com/nsf/termbox-go"
 	"os"
 	"strings"
+	мКнст "./пакКонстанты"
 )
 
 /*
@@ -253,7 +254,7 @@ func (l *TextView) moveRight() {
 	l.leftShift++
 }
 
-func (l *TextView) processMouseClick(ev Event) bool {
+func (l *TextView) processMouseClick(ev мКнст.Event) bool {
 	if ev.Key != term.MouseLeft {
 		return false
 	}
@@ -312,7 +313,7 @@ processes an event it should return true. If the method returns false it means
 that the control do not want or cannot process the event and the caller sends
 the event to the control parent
 */
-func (l *TextView) ProcessEvent(event Event) bool {
+func (l *TextView) ProcessEvent(event мКнст.Event) bool {
 	if !l.Active() || !l.Enabled() {
 		return false
 	}

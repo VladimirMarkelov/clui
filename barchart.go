@@ -5,6 +5,7 @@ import (
 	xs "github.com/huandu/xstrings"
 	term "github.com/nsf/termbox-go"
 	"sync/atomic"
+	мКнст "./пакКонстанты"
 )
 
 // BarData is info about one bar in the chart. Every
@@ -80,10 +81,10 @@ func CreateBarChart(parent Control, w, h int, scale int) *BarChart {
 	c := new(BarChart)
 	c.BaseControl = NewBaseControl()
 
-	if w == AutoSize {
+	if w == мКнст.AutoSize {
 		w = 10
 	}
-	if h == AutoSize {
+	if h == мКнст.AutoSize {
 		h = 5
 	}
 
@@ -116,7 +117,7 @@ func (b *BarChart) Draw() {
 	PushAttributes()
 	defer PopAttributes()
 
-	fg, bg := RealColor(b.fg, b.Style(), ColorBarChartText), RealColor(b.bg, b.Style(), ColorBarChartBack)
+	fg, bg := RealColor(b.fg, b.Style(), мКнст.ColorBarChartText), RealColor(b.bg, b.Style(), мКнст.ColorBarChartBack)
 	SetTextColor(fg)
 	SetBackColor(bg)
 
@@ -164,7 +165,7 @@ func (b *BarChart) drawBars() {
 
 	h := b.barHeight()
 	pos := start
-	parts := []rune(SysObject(ObjBarChart))
+	parts := []rune(SysObject(мКнст.ObjBarChart))
 	fg, bg := TextColor(), BackColor()
 
 	for idx, d := range b.data {
@@ -174,10 +175,10 @@ func (b *BarChart) drawBars() {
 
 		fColor, bColor := d.Fg, d.Bg
 		ch := d.Ch
-		if fColor == ColorDefault {
+		if fColor == мКнст.ColorDefault {
 			fColor = fg
 		}
-		if bColor == ColorDefault {
+		if bColor == мКнст.ColorDefault {
 			bColor = bg
 		}
 		if ch == 0 {
@@ -217,7 +218,7 @@ func (b *BarChart) drawBars() {
 			if xs.Len(d.Title) > barW {
 				s = CutText(d.Title, barW)
 			} else {
-				shift, s = AlignText(d.Title, barW, AlignCenter)
+				shift, s = AlignText(d.Title, barW, мКнст.AlignCenter)
 			}
 			DrawRawText(b.x+pos+shift, b.y+h+1, s)
 		}
@@ -234,9 +235,9 @@ func (b *BarChart) drawLegend() {
 
 	PushAttributes()
 	defer PopAttributes()
-	fg, bg := RealColor(b.fg, b.Style(), ColorBarChartText), RealColor(b.bg, b.Style(), ColorBarChartBack)
+	fg, bg := RealColor(b.fg, b.Style(), мКнст.ColorBarChartText), RealColor(b.bg, b.Style(), мКнст.ColorBarChartBack)
 
-	parts := []rune(SysObject(ObjBarChart))
+	parts := []rune(SysObject(мКнст.ObjBarChart))
 	defRune := parts[0]
 	for idx, d := range b.data {
 		if idx >= b.height {
@@ -293,7 +294,7 @@ func (b *BarChart) drawRulers() {
 
 	pos, vWidth := b.calculateBarArea()
 
-	parts := []rune(SysObject(ObjBarChart))
+	parts := []rune(SysObject(мКнст.ObjBarChart))
 	h := b.barHeight()
 
 	if pos > 0 {
