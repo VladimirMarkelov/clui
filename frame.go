@@ -22,7 +22,7 @@ type Frame struct {
 }
 
 /*
-NewFrame creates a new frame.
+CreateFrame creates a new frame.
 view - is a View that manages the control
 parent - is container that keeps the control. The same View can be a view and a parent at the same time.
 width and heigth - are minimal size of the control.
@@ -34,15 +34,15 @@ func CreateFrame(parent Control, width, height int, bs мКнст.BorderStyle, s
 	f := new(Frame)
 	f.BaseControl = NewBaseControl()
 
-	if width == AutoSize {
+	if width == мКнст.AutoSize {
 		width = 5
 	}
-	if height == AutoSize {
+	if height == мКнст.AutoSize {
 		height = 3
 	}
 
-	if bs == BorderAuto {
-		bs = BorderNone
+	if bs == мКнст.BorderAuto {
+		bs = мКнст.BorderNone
 	}
 
 	f.SetSize(width, height)
@@ -53,7 +53,7 @@ func CreateFrame(parent Control, width, height int, bs мКнст.BorderStyle, s
 	f.scale = scale
 
 	f.gapX, f.gapY = 0, 0
-	if bs == BorderNone {
+	if bs == мКнст.BorderNone {
 		f.padX, f.padY = 0, 0
 	} else {
 		f.padX, f.padY = 1, 1
@@ -65,19 +65,19 @@ func CreateFrame(parent Control, width, height int, bs мКнст.BorderStyle, s
 
 	return f
 }
-
+//SetScrollable --
 func (f *Frame) SetScrollable(scrollable bool) {
 	f.scrollable = scrollable
 
 	if scrollable {
 		px, py := f.Paddings()
 
-		if f.Pack() == Vertical {
-			px += 1
+		if f.Pack() == мКнст.Vertical {
+			px++
 		}
 
-		if f.Pack() == Horizontal {
-			py += 1
+		if f.Pack() == мКнст.Horizontal {
+			py++
 		}
 
 		f.SetPaddings(px, py)
@@ -85,12 +85,12 @@ func (f *Frame) SetScrollable(scrollable bool) {
 
 	f.SetClipped(scrollable)
 }
-
+//Scrollable --
 func (f *Frame) Scrollable() bool {
 	return f.scrollable
 }
 
-// Repaint draws the control on its View surface
+//Draw Repaint draws the control on its View surface
 func (f *Frame) Draw() {
 	if f.hidden {
 		return
@@ -132,10 +132,10 @@ func (f *Frame) Draw() {
 		DrawScrollBar(x+w, y, 1, h, f.lastScrollProp)
 	}
 
-	fg, bg := RealColor(f.fg, f.Style(), ColorViewText), RealColor(f.bg, f.Style(), ColorViewBack)
+	fg, bg := RealColor(f.fg, f.Style(), мКнст.ColorViewText), RealColor(f.bg, f.Style(), мКнст.ColorViewBack)
 
-	if f.border == BorderNone {
-		if bg != ColorDefault {
+	if f.border == мКнст.BorderNone {
+		if bg != мКнст.ColorDefault {
 			SetBackColor(bg)
 			FillRect(x, y, w, h, ' ')
 		}
@@ -173,9 +173,9 @@ func (f *Frame) ScrollTo(x int, y int) {
 	f.ResizeChildren()
 	f.PlaceChildren()
 }
-
+//ProcessEvent --
 func (f *Frame) ProcessEvent(ev мКнст.Event) bool {
-	if ev.Type != EventActivateChild || (!f.scrollable || ev.Target == nil) {
+	if ev.Type != мКнст.EventActivateChild || (!f.scrollable || ev.Target == nil) {
 		return false
 	}
 

@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	term "github.com/nsf/termbox-go"
+	мКнст "./пакКонстанты"
 )
 
 // FileSelectDialog is a dialog to select a file or directory.
@@ -215,34 +216,34 @@ func CreateFileSelectDialog(title, fileMasks, initPath string, selectDir, mustEx
 	defer WindowManager().EndUpdate()
 
 	dlg.View.SetModal(true)
-	dlg.View.SetPack(Vertical)
+	dlg.View.SetPack(мКнст.Vertical)
 
 	dlg.currPath = initPath
 	dlg.detectPath()
-	dlg.curDir = CreateLabel(dlg.View, AutoSize, AutoSize, "", Fixed)
-	dlg.curDir.SetTextDisplay(AlignRight)
+	dlg.curDir = CreateLabel(dlg.View, мКнст.AutoSize, мКнст.AutoSize, "", мКнст.Fixed)
+	dlg.curDir.SetTextDisplay(мКнст.AlignRight)
 
-	flist := CreateFrame(dlg.View, 1, 1, BorderNone, 1)
+	flist := CreateFrame(dlg.View, 1, 1, мКнст.BorderNone, 1)
 	flist.SetPaddings(1, 1)
-	flist.SetPack(Horizontal)
+	flist.SetPack(мКнст.Horizontal)
 	dlg.listBox = CreateListBox(flist, 16, ch-20, 1)
 
-	fselected := CreateFrame(dlg.View, 1, 1, BorderNone, Fixed)
+	fselected := CreateFrame(dlg.View, 1, 1, мКнст.BorderNone, мКнст.Fixed)
 	// text + edit field to enter name manually
-	fselected.SetPack(Vertical)
+	fselected.SetPack(мКнст.Vertical)
 	fselected.SetPaddings(1, 0)
-	CreateLabel(fselected, AutoSize, AutoSize, "Selected object:", 1)
+	CreateLabel(fselected, мКнст.AutoSize, мКнст.AutoSize, "Selected object:", 1)
 	dlg.edFile = CreateEditField(fselected, cw-22, "", 1)
 
 	// buttons at the right
-	blist := CreateFrame(flist, 1, 1, BorderNone, Fixed)
-	blist.SetPack(Vertical)
+	blist := CreateFrame(flist, 1, 1, мКнст.BorderNone, мКнст.Fixed)
+	blist.SetPack(мКнст.Vertical)
 	blist.SetPaddings(1, 1)
-	btnOpen := CreateButton(blist, AutoSize, AutoSize, "Open", Fixed)
-	btnSelect := CreateButton(blist, AutoSize, AutoSize, "Select", Fixed)
-	btnCancel := CreateButton(blist, AutoSize, AutoSize, "Cancel", Fixed)
+	btnOpen := CreateButton(blist, мКнст.AutoSize, мКнст.AutoSize, "Open", мКнст.Fixed)
+	btnSelect := CreateButton(blist, мКнст.AutoSize, мКнст.AutoSize, "Select", мКнст.Fixed)
+	btnCancel := CreateButton(blist, мКнст.AutoSize, мКнст.AutoSize, "Cancel", мКнст.Fixed)
 
-	btnCancel.OnClick(func(ev Event) {
+	btnCancel.OnClick(func(ev мКнст.Event) {
 		WindowManager().DestroyWindow(dlg.View)
 		WindowManager().BeginUpdate()
 		dlg.Selected = false
@@ -253,7 +254,7 @@ func CreateFileSelectDialog(title, fileMasks, initPath string, selectDir, mustEx
 		}
 	})
 
-	btnSelect.OnClick(func(ev Event) {
+	btnSelect.OnClick(func(ev мКнст.Event) {
 		WindowManager().DestroyWindow(dlg.View)
 		WindowManager().BeginUpdate()
 		dlg.Selected = true
@@ -272,9 +273,9 @@ func CreateFileSelectDialog(title, fileMasks, initPath string, selectDir, mustEx
 		}
 	})
 
-	dlg.View.OnClose(func(ev Event) bool {
-		if dlg.result == DialogAlive {
-			dlg.result = DialogClosed
+	dlg.View.OnClose(func(ev мКнст.Event) bool {
+		if dlg.result == мКнст.DialogAlive {
+			dlg.result = мКнст.DialogClosed
 			if ev.X != 1 {
 				WindowManager().DestroyWindow(dlg.View)
 			}
@@ -285,7 +286,7 @@ func CreateFileSelectDialog(title, fileMasks, initPath string, selectDir, mustEx
 		return true
 	})
 
-	dlg.listBox.OnSelectItem(func(ev Event) {
+	dlg.listBox.OnSelectItem(func(ev мКнст.Event) {
 		item := ev.Msg
 		if item == ".." {
 			btnSelect.SetEnabled(false)
@@ -312,7 +313,7 @@ func CreateFileSelectDialog(title, fileMasks, initPath string, selectDir, mustEx
 		}
 	})
 
-	btnOpen.OnClick(func(ev Event) {
+	btnOpen.OnClick(func(ev мКнст.Event) {
 		s := dlg.listBox.SelectedItemText()
 		if s != ".." && (s == "" || !strings.HasSuffix(s, string(os.PathSeparator))) {
 			return
@@ -325,7 +326,7 @@ func CreateFileSelectDialog(title, fileMasks, initPath string, selectDir, mustEx
 		}
 	})
 
-	dlg.edFile.OnChange(func(ev Event) {
+	dlg.edFile.OnChange(func(ev мКнст.Event) {
 		s := ""
 		lowCurrText := strings.ToLower(dlg.listBox.SelectedItemText())
 		lowEditText := strings.ToLower(dlg.edFile.Title())

@@ -191,8 +191,8 @@ func CreateSelectDialog(title string, items []string, selectedItem int, typ мК
 	dlg.View.SetModal(true)
 	dlg.View.SetPack(мКнст.Vertical)
 
-	if typ == SelectDialogList {
-		fList := CreateFrame(dlg.View, 1, 1, BorderNone, 1)
+	if typ == мКнст.SelectDialogList {
+		fList := CreateFrame(dlg.View, 1, 1, мКнст.BorderNone, 1)
 		fList.SetPaddings(1, 1)
 		fList.SetGaps(0, 0)
 		dlg.list = CreateListBox(fList, 15, 5, 1)
@@ -202,14 +202,14 @@ func CreateSelectDialog(title string, items []string, selectedItem int, typ мК
 		if selectedItem >= 0 && selectedItem < len(items) {
 			dlg.list.SelectItem(selectedItem)
 		}
-	} else if typ == SelectDialogEdit {
-		CreateFrame(dlg.View, 1, 1, BorderNone, Fixed)
+	} else if typ == мКнст.SelectDialogEdit {
+		CreateFrame(dlg.View, 1, 1, мКнст.BorderNone, мКнст.Fixed)
 		lb := CreateLabel(dlg.View, 10, 3, items[0], 1)
 		lb.SetMultiline(true)
 
 		fWidth, _ := dlg.View.Size()
-		dlg.edit = CreateEditField(dlg.View, fWidth-2, items[1], AutoSize)
-		CreateFrame(dlg.View, 1, 1, BorderNone, Fixed)
+		dlg.edit = CreateEditField(dlg.View, fWidth-2, items[1], мКнст.AutoSize)
+		CreateFrame(dlg.View, 1, 1, мКнст.BorderNone, мКнст.Fixed)
 
 		dlg.edit.OnKeyPress(func(key term.Key, r rune) bool {
 			var input string
@@ -217,7 +217,7 @@ func CreateSelectDialog(title string, items []string, selectedItem int, typ мК
 				input = dlg.edit.Title()
 				dlg.edtResult = input
 				dlg.value = -1
-				dlg.result = DialogButton1
+				dlg.result = мКнст.DialogButton1
 
 				WindowManager().DestroyWindow(dlg.View)
 				if dlg.onClose != nil {
@@ -228,13 +228,13 @@ func CreateSelectDialog(title string, items []string, selectedItem int, typ мК
 			return false
 		})
 	} else {
-		fRadio := CreateFrame(dlg.View, 1, 1, BorderNone, Fixed)
+		fRadio := CreateFrame(dlg.View, 1, 1, мКнст.BorderNone, мКнст.Fixed)
 		fRadio.SetPaddings(1, 1)
 		fRadio.SetGaps(0, 0)
-		fRadio.SetPack(Vertical)
+		fRadio.SetPack(мКнст.Vertical)
 		dlg.rg = CreateRadioGroup()
 		for _, item := range items {
-			r := CreateRadio(fRadio, AutoSize, item, Fixed)
+			r := CreateRadio(fRadio, мКнст.AutoSize, item, мКнст.Fixed)
 			dlg.rg.AddItem(r)
 		}
 		if selectedItem >= 0 && selectedItem < len(items) {
@@ -242,14 +242,14 @@ func CreateSelectDialog(title string, items []string, selectedItem int, typ мК
 		}
 	}
 
-	frm1 := CreateFrame(dlg.View, 16, 4, BorderNone, Fixed)
-	CreateFrame(frm1, 1, 1, BorderNone, 1)
-	btn1 := CreateButton(frm1, AutoSize, AutoSize, "OK", Fixed)
-	btn1.OnClick(func(ev Event) {
-		dlg.result = DialogButton1
-		if dlg.typ == SelectDialogList {
+	frm1 := CreateFrame(dlg.View, 16, 4, мКнст.BorderNone, мКнст.Fixed)
+	CreateFrame(frm1, 1, 1, мКнст.BorderNone, 1)
+	btn1 := CreateButton(frm1, мКнст.AutoSize, мКнст.AutoSize, "OK", мКнст.Fixed)
+	btn1.OnClick(func(ev мКнст.Event) {
+		dlg.result = мКнст.DialogButton1
+		if dlg.typ == мКнст.SelectDialogList {
 			dlg.value = dlg.list.SelectedItem()
-		} else if dlg.typ == SelectDialogEdit {
+		} else if dlg.typ == мКнст.SelectDialogEdit {
 			dlg.edtResult = dlg.edit.Title()
 			dlg.value = -1
 		} else {
@@ -261,10 +261,10 @@ func CreateSelectDialog(title string, items []string, selectedItem int, typ мК
 		}
 	})
 
-	CreateFrame(frm1, 1, 1, BorderNone, 1)
-	btn2 := CreateButton(frm1, AutoSize, AutoSize, "Cancel", Fixed)
-	btn2.OnClick(func(ev Event) {
-		dlg.result = DialogButton2
+	CreateFrame(frm1, 1, 1, мКнст.BorderNone, 1)
+	btn2 := CreateButton(frm1, мКнст.AutoSize, мКнст.AutoSize, "Cancel", мКнст.Fixed)
+	btn2.OnClick(func(ev мКнст.Event) {
+		dlg.result = мКнст.DialogButton2
 		dlg.edtResult = ""
 		dlg.value = -1
 		WindowManager().DestroyWindow(dlg.View)
@@ -273,16 +273,16 @@ func CreateSelectDialog(title string, items []string, selectedItem int, typ мК
 		}
 	})
 
-	if typ == SelectDialogEdit {
+	if typ == мКнст.SelectDialogEdit {
 		ActivateControl(dlg.View, dlg.edit)
 	} else {
 		ActivateControl(dlg.View, btn2)
 	}
-	CreateFrame(frm1, 1, 1, BorderNone, 1)
+	CreateFrame(frm1, 1, 1, мКнст.BorderNone, 1)
 
-	dlg.View.OnClose(func(ev Event) bool {
-		if dlg.result == DialogAlive {
-			dlg.result = DialogClosed
+	dlg.View.OnClose(func(ev мКнст.Event) bool {
+		if dlg.result == мКнст.DialogAlive {
+			dlg.result = мКнст.DialogClosed
 			if ev.X != 1 {
 				WindowManager().DestroyWindow(dlg.View)
 			}

@@ -46,7 +46,7 @@ func CreateEditField(parent Control, width int, text string, scale int) *EditFie
 	e.SetTitle(text)
 	e.SetEnabled(true)
 
-	if width == AutoSize {
+	if width == мКнст.AutoSize {
 		width = xs.Len(text) + 1
 	}
 
@@ -79,11 +79,11 @@ func (e *EditField) ProcessEvent(event мКнст.Event) bool {
 		return false
 	}
 
-	if event.Type == EventActivate && event.X == 0 {
+	if event.Type == мКнст.EventActivate && event.X == 0 {
 		term.HideCursor()
 	}
 
-	if event.Type == EventKey && event.Key != term.KeyTab {
+	if event.Type == мКнст.EventKey && event.Key != term.KeyTab {
 		if e.onKeyPress != nil {
 			res := e.onKeyPress(event.Key, event.Ch)
 			if res {

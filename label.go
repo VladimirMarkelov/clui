@@ -33,10 +33,10 @@ func CreateLabel(parent Control, w, h int, title string, scale int) *Label {
 	c := new(Label)
 	c.BaseControl = NewBaseControl()
 
-	if w == AutoSize {
+	if w == мКнст.AutoSize {
 		w = xs.Len(title)
 	}
-	if h == AutoSize {
+	if h == мКнст.AutoSize {
 		h = 1
 	}
 
@@ -47,7 +47,7 @@ func CreateLabel(parent Control, w, h int, title string, scale int) *Label {
 	c.SetConstraints(w, h)
 	c.SetScale(scale)
 	c.tabSkip = true
-	c.textDisplay = AlignLeft
+	c.textDisplay = мКнст.AlignLeft
 
 	if parent != nil {
 		parent.AddChild(c)
@@ -74,9 +74,9 @@ func (l *Label) Draw() {
 	PushAttributes()
 	defer PopAttributes()
 
-	fg, bg := RealColor(l.fg, l.Style(), ColorText), RealColor(l.bg, l.Style(), ColorBack)
+	fg, bg := RealColor(l.fg, l.Style(), мКнст.ColorText), RealColor(l.bg, l.Style(), мКнст.ColorBack)
 	if !l.Enabled() {
-		fg = RealColor(l.fg, l.Style(), ColorDisabledText)
+		fg = RealColor(l.fg, l.Style(), мКнст.ColorDisabledText)
 	}
 
 	SetTextColor(fg)
@@ -104,17 +104,17 @@ func (l *Label) Draw() {
 				SetBackColor(elem.Bg)
 				putCharUnsafe(xx, yy, elem.Ch)
 
-				if l.direction == Horizontal {
-					xx += 1
+				if l.direction == мКнст.Horizontal {
+					xx++
 					if xx >= l.x+l.width {
 						xx = l.x
-						yy += 1
+						yy++
 					}
 				} else {
-					yy += 1
+					yy++
 					if yy >= l.y+l.height {
 						yy = l.y
-						xx += 1
+						xx++
 					}
 				}
 			}
@@ -122,7 +122,7 @@ func (l *Label) Draw() {
 			elem = parser.NextElement()
 		}
 	} else {
-		if l.direction == Horizontal {
+		if l.direction == мКнст.Horizontal {
 			shift, str := AlignColorizedText(l.title, l.width, l.align)
 			if str != l.title && l.align != l.textDisplay {
 				shift, str = AlignColorizedText(l.title, l.width, l.textDisplay)
@@ -165,7 +165,7 @@ func (l *Label) TextDisplay() мКнст.Align {
 // for the property. Any other value does is skipped and does not affect
 // displaying the title
 func (l *Label) SetTextDisplay(align мКнст.Align) {
-	if align != AlignLeft && align != AlignRight {
+	if align != мКнст.AlignLeft && align != мКнст.AlignRight {
 		return
 	}
 

@@ -41,10 +41,10 @@ func CreateListBox(parent Control, width, height int, scale int) *ListBox {
 	l := new(ListBox)
 	l.BaseControl = NewBaseControl()
 
-	if height == AutoSize {
+	if height == мКнст.AutoSize {
 		height = 3
 	}
-	if width == AutoSize {
+	if width == мКнст.AutoSize {
 		width = 5
 	}
 
@@ -88,11 +88,11 @@ func (l *ListBox) drawItems() {
 	maxDy := l.height - 1
 	maxWidth := l.width - 1
 
-	fg, bg := RealColor(l.fg, l.Style(), ColorEditText), RealColor(l.bg, l.Style(), ColorEditBack)
+	fg, bg := RealColor(l.fg, l.Style(), мКнст.ColorEditText), RealColor(l.bg, l.Style(), мКнст.ColorEditBack)
 	if l.Active() {
-		fg, bg = RealColor(l.fg, l.Style(), ColorEditActiveText), RealColor(l.bg, l.Style(), ColorEditActiveBack)
+		fg, bg = RealColor(l.fg, l.Style(), мКнст.ColorEditActiveText), RealColor(l.bg, l.Style(), мКнст.ColorEditActiveBack)
 	}
-	fgSel, bgSel := RealColor(l.fgActive, l.Style(), ColorSelectionText), RealColor(l.bgActive, l.Style(), ColorSelectionBack)
+	fgSel, bgSel := RealColor(l.fgActive, l.Style(), мКнст.ColorSelectionText), RealColor(l.bgActive, l.Style(), мКнст.ColorSelectionBack)
 
 	for curr <= maxCurr && dy <= maxDy {
 		f, b := fg, bg
@@ -123,9 +123,9 @@ func (l *ListBox) Draw() {
 	x, y := l.Pos()
 	w, h := l.Size()
 
-	fg, bg := RealColor(l.fg, l.Style(), ColorEditText), RealColor(l.bg, l.Style(), ColorEditBack)
+	fg, bg := RealColor(l.fg, l.Style(), мКнст.ColorEditText), RealColor(l.bg, l.Style(), мКнст.ColorEditBack)
 	if l.Active() {
-		fg, bg = RealColor(l.fg, l.Style(), ColorEditActiveText), RealColor(l.bg, l.Style(), ColorEditActiveBack)
+		fg, bg = RealColor(l.fg, l.Style(), мКнст.ColorEditActiveText), RealColor(l.bg, l.Style(), мКнст.ColorEditActiveBack)
 	}
 	SetTextColor(fg)
 	SetBackColor(bg)
@@ -145,7 +145,7 @@ func (l *ListBox) home() {
 	l.topLine = 0
 
 	if l.onSelectItem != nil {
-		ev := Event{Y: l.currSelection, Msg: l.SelectedItemText()}
+		ev := мКнст.Event{Y: l.currSelection, Msg: l.SelectedItemText()}
 		l.onSelectItem(ev)
 	}
 }
@@ -163,7 +163,7 @@ func (l *ListBox) end() {
 	}
 
 	if l.onSelectItem != nil {
-		ev := Event{Y: l.currSelection, Msg: l.SelectedItemText()}
+		ev := мКнст.Event{Y: l.currSelection, Msg: l.SelectedItemText()}
 		l.onSelectItem(ev)
 	}
 }
@@ -189,7 +189,7 @@ func (l *ListBox) moveUp(dy int) {
 	l.EnsureVisible()
 
 	if l.onSelectItem != nil {
-		ev := Event{Y: l.currSelection, Msg: l.SelectedItemText()}
+		ev :=мКнст.Event{Y: l.currSelection, Msg: l.SelectedItemText()}
 		l.onSelectItem(ev)
 	}
 }
@@ -210,7 +210,7 @@ func (l *ListBox) moveDown(dy int) {
 	l.EnsureVisible()
 
 	if l.onSelectItem != nil {
-		ev := Event{Y: l.currSelection, Msg: l.SelectedItemText()}
+		ev := мКнст.Event{Y: l.currSelection, Msg: l.SelectedItemText()}
 		l.onSelectItem(ev)
 	}
 }
@@ -287,7 +287,7 @@ func (l *ListBox) processMouseClick(ev мКнст.Event) bool {
 	onSelFunc := l.onSelectItem
 	WindowManager().EndUpdate()
 	if onSelFunc != nil {
-		ev := Event{Y: l.topLine + dy, Msg: l.SelectedItemText()}
+		ev := мКнст.Event{Y: l.topLine + dy, Msg: l.SelectedItemText()}
 		onSelFunc(ev)
 	}
 
@@ -316,7 +316,7 @@ func (l *ListBox) ProcessEvent(event мКнст.Event) bool {
 	}
 
 	switch event.Type {
-	case EventKey:
+	case мКнст.EventKey:
 		if l.onKeyPress != nil {
 			res := l.onKeyPress(event.Key)
 			if res {
@@ -345,13 +345,13 @@ func (l *ListBox) ProcessEvent(event мКнст.Event) bool {
 			return true
 		case term.KeyCtrlM:
 			if l.currSelection != -1 && l.onSelectItem != nil {
-				ev := Event{Y: l.currSelection, Msg: l.SelectedItemText()}
+				ev := мКнст.Event{Y: l.currSelection, Msg: l.SelectedItemText()}
 				l.onSelectItem(ev)
 			}
 		default:
 			return false
 		}
-	case EventMouse:
+	case мКнст.EventMouse:
 		return l.processMouseClick(event)
 	}
 

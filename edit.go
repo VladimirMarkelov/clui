@@ -32,7 +32,7 @@ func (e *EditField) setTitleInternal(title string) {
 		e.title = title
 
 		if e.onChange != nil {
-			ev := Event{Msg: title}
+			ev := мКнст.Event{Msg: title}
 			e.onChange(ev)
 		}
 	}
@@ -54,7 +54,7 @@ func (e *EditField) Draw() {
 	x, y := e.Pos()
 	w, _ := e.Size()
 
-	parts := []rune(SysObject(ObjEdit))
+	parts := []rune(SysObject(мКнст.ObjEdit))
 	chLeft, chRight := string(parts[0]), string(parts[1])
 	chStar := "*"
 	if len(parts) > 3 {
@@ -100,11 +100,11 @@ func (e *EditField) Draw() {
 		}
 	}
 
-	fg, bg := RealColor(e.fg, e.Style(), ColorEditText), RealColor(e.bg, e.Style(), ColorEditBack)
+	fg, bg := RealColor(e.fg, e.Style(), мКнст.ColorEditText), RealColor(e.bg, e.Style(), мКнст.ColorEditBack)
 	if !e.Enabled() {
-		fg, bg = RealColor(e.fg, e.Style(), ColorDisabledText), RealColor(e.fg, e.Style(), ColorDisabledBack)
+		fg, bg = RealColor(e.fg, e.Style(), мКнст.ColorDisabledText), RealColor(e.fg, e.Style(), мКнст.ColorDisabledBack)
 	} else if e.Active() {
-		fg, bg = RealColor(e.fg, e.Style(), ColorEditActiveText), RealColor(e.bg, e.Style(), ColorEditActiveBack)
+		fg, bg = RealColor(e.fg, e.Style(), мКнст.ColorEditActiveText), RealColor(e.bg, e.Style(), мКнст.ColorEditActiveBack)
 	}
 
 	SetTextColor(fg)
@@ -253,14 +253,14 @@ func (e *EditField) MaxWidth() int {
 // Method does nothing if new size is less than minimal size
 // EditField height cannot be changed - it equals 1 always
 func (e *EditField) SetSize(width, height int) {
-	if width != KeepValue && (width > 1000 || width < e.minW) {
+	if width != мКнст.KeepValue && (width > 1000 || width < e.minW) {
 		return
 	}
-	if height != KeepValue && (height > 200 || height < e.minH) {
+	if height != мКнст.KeepValue && (height > 200 || height < e.minH) {
 		return
 	}
 
-	if width != KeepValue {
+	if width != мКнст.KeepValue {
 		e.width = width
 	}
 
