@@ -6,6 +6,7 @@ import (
 	"sync"
 	"sync/atomic"
 	мИнт "./пакИнтерфейсы"
+	мСоб "./пакСобытия"
 )
 
 // BaseControl is a base for all visible controls.
@@ -232,9 +233,9 @@ func (c *BaseControl) SetVisible(visible bool) {
 
 	go func() {
 		if FindFirstActiveControl(c) != nil && !c.inactive {
-			PutEvent(мКнст.Event{Type: мКнст.EventKey, Key: term.KeyTab})
+			PutEvent(мСоб.Event{Type: мКнст.EventKey, Key: term.KeyTab})
 		}
-		PutEvent(мКнст.Event{Type: мКнст.EventLayout, Target: p})
+		PutEvent(мСоб.Event{Type: мКнст.EventLayout, Target: p})
 	}()
 }
 
