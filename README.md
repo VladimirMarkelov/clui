@@ -1,27 +1,34 @@
 # goTV
-Command Line User Interface (Console UI inspired by TurboVision) with built-in theme support. Please see screenshots of working examples at the end of the README.
 
-## Installation
+Текстовый интерфейс пользователя для командной строки (реализация TurboVision на golang) с поддержкой встроенных тем. Смотрите скриншоты рабочих приложений в конце README.
+
+## Установка
 
     go get -u github.com/propspero78/goTV
 
 
-## Current version
-The current version is 1.1.0. Please see details in [changelog](./changelog).
+## Текущая сборка
 
-## Applications that uses the library
-* Terminal FB2 reader(termfb2): https://github.com/VladimirMarkelov/termfb2 (original idea)
+Сборки маркируются по номеру коммита в репозитории
 
-## Documentation
-* [Introduction](/docs/intro.md)
-* [Getting started](/docs/hello.md)
-* [Layout manager](/docs/layout.md)
-* [Basic standrd control methods and properties](/docs/widget.md)
-* [About Windows](/docs/window.md)
-* [Predefined hotkeys](/docs/hotkeys.md)
+## Приложения использующие эту библиотеку
 
-## The list of available controls
-* Window (Main control container - with maximize, window order and other window features)
+Ничего не использует. Оригинальное приложение Владимира Маркелова можно посмотреть по ссылке ниже
+
+* Терминальная читалка FB2 (termfb2): https://github.com/VladimirMarkelov/termfb2
+
+## Документация
+
+* [Введение](/docs/intro.md)
+* [Привет мир](/docs/hello.md)
+* [Менеджер компоновки](/docs/layout.md)
+* [Основные стандартные методы и свойства](/docs/widget.md)
+* [О ТОкно](/docs/window.md)
+* [Предопределённые хоткеи](/docs/hotkeys.md)
+
+## Список доступных контролов
+
+* ТОкно (Main control container - with maximize, window order and other window features)
 * Label (Horizontal and Vertical with basic color control tags)
 * Button (Simple push button control)
 * EditField (One line text edit control with basic clipboard control)
@@ -43,7 +50,8 @@ The current version is 1.1.0. Please see details in [changelog](./changelog).
 * LoginDialog - a simple authorization dialog with two fields: Username and Password
 * TextDisplay - a "virtual" text view control: it does not store any data, every time it needs to draw its line it requests the line from external source by line ID
 
-## Screenshots
+## Скриншоты
+
 The main demo (theme changing and radio group control)
 
 <img src="./demos/clui_demo_main.gif" alt="Main Demo">
