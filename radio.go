@@ -12,7 +12,7 @@ Radio button control. Unite a few radios in one radio group to
 make a user select one of available choices.
 */
 type Radio struct {
-	BaseControl
+	*BaseControl
 	group    *RadioGroup
 	selected bool
 
@@ -106,11 +106,11 @@ the event to the control parent.
 The control processes only space button and mouse clicks to make control selected. Deselecting control is not possible: one has to click another radio of the radio group to deselect this button
 */
 func (c *Radio) ProcessEvent(event мИнт.ИСобытие) bool {
-	if (!c.Active() && event.Type == мКнст.EventKey) || !c.Enabled() {
+	if (!c.Active() && event.Type() == мИнт.EventKey) || !c.Enabled() {
 		return false
 	}
 
-	if (event.Type == мКнст.EventKey && event.Key == term.KeySpace) || event.Type == мКнст.EventClick {
+	if (event.Type() == мИнт.EventKey && event.Key() == term.KeySpace) || event.Type() == мИнт.EventClick {
 		if c.group == nil {
 			c.SetSelected(true)
 		} else {

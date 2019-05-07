@@ -8,7 +8,7 @@ import (
 )
 //TextDisplay --
 type TextDisplay struct {
-	BaseControl
+	*BaseControl
 	colorized bool
 	topLine   int
 	lineCount int
@@ -160,11 +160,11 @@ func (l *TextDisplay) moveDown(count int) {
 }
 
 func (l *TextDisplay) processMouseClick(ev мИнт.ИСобытие) bool {
-	if ev.Key != term.MouseLeft {
+	if ev.Key() != term.MouseLeft {
 		return false
 	}
 
-	dy := ev.Y - l.y
+	dy := ev.Y() - l.y
 	ww := l.height
 
 	if dy < l.height/2 {
@@ -187,9 +187,9 @@ func (l *TextDisplay) ProcessEvent(event мИнт.ИСобытие) bool {
 		return false
 	}
 
-	switch event.Type {
-	case мКнст.EventKey:
-		switch event.Key {
+	switch event.Type() {
+	case мИнт.EventKey:
+		switch event.Key() {
 		case term.KeyHome:
 			l.home()
 			return true
@@ -210,7 +210,7 @@ func (l *TextDisplay) ProcessEvent(event мИнт.ИСобытие) bool {
 			return true
 		}
 
-		switch event.Ch {
+		switch event.Ch() {
 		case 'k', 'K':
 			l.moveUp(1)
 			return true
@@ -226,7 +226,7 @@ func (l *TextDisplay) ProcessEvent(event мИнт.ИСобытие) bool {
 		default:
 			return false
 		}
-	case мКнст.EventMouse:
+	case мИнт.EventMouse:
 		return l.processMouseClick(event)
 	}
 

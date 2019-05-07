@@ -8,7 +8,6 @@ import (
 	"strings"
 	мКнст "./пакКонстанты"
 	мИнт "./пакИнтерфейсы"
-	мСоб "./пакСобытия"
 )
 
 /*
@@ -23,7 +22,7 @@ and horizontal. The latter one is available only if WordWrap
 mode is off).
 */
 type TextView struct {
-	BaseControl
+	*BaseControl
 	// own listbox members
 	lines   []string
 	lengths []int
@@ -256,13 +255,13 @@ func (l *TextView) moveRight() {
 	l.leftShift++
 }
 
-func (l *TextView) processMouseClick(ev мСоб.Event) bool {
-	if ev.Key != term.MouseLeft {
+func (l *TextView) processMouseClick(ev мИнт.ИСобытие) bool {
+	if ev.Key() != term.MouseLeft {
 		return false
 	}
 
-	dx := ev.X - l.x
-	dy := ev.Y - l.y
+	dx := ev.X() - l.x
+	dy := ev.Y() - l.y
 	yy := l.outputHeight()
 
 	// cursor is not on any scrollbar
@@ -315,14 +314,14 @@ processes an event it should return true. If the method returns false it means
 that the control do not want or cannot process the event and the caller sends
 the event to the control parent
 */
-func (l *TextView) ProcessEvent(event мСоб.Event) bool {
+func (l *TextView) ProcessEvent(event мИнт.ИСобытие) bool {
 	if !l.Active() || !l.Enabled() {
 		return false
 	}
 
-	switch event.Type {
-	case мКнст.EventKey:
-		switch event.Key {
+	switch event.Type() {
+	case мИнт.EventKey:
+		switch event.Key() {
 		case term.KeyHome:
 			l.home()
 			return true
@@ -348,7 +347,7 @@ func (l *TextView) ProcessEvent(event мСоб.Event) bool {
 		default:
 			return false
 		}
-	case мКнст.EventMouse:
+	case мИнт.EventMouse:
 		return l.processMouseClick(event)
 	}
 

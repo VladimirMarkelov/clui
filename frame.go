@@ -14,7 +14,7 @@ All area inside a frame is transparent. Frame can be used as spacer element
 is required
 */
 type Frame struct {
-	BaseControl
+	*BaseControl
 	border         мКнст.BorderStyle
 	children       []мИнт.ИВиджет
 	pack           мИнт.PackType
@@ -176,7 +176,7 @@ func (f *Frame) ScrollTo(x int, y int) {
 }
 //ProcessEvent --
 func (f *Frame) ProcessEvent(ev мИнт.ИСобытие) bool {
-	if ev.Type != мКнст.EventActivateChild || (!f.scrollable || ev.Target == nil) {
+	if ev.Type() != мИнт.EventActivateChild || (!f.scrollable || ev.Target() == nil) {
 		return false
 	}
 
@@ -185,10 +185,10 @@ func (f *Frame) ProcessEvent(ev мИнт.ИСобытие) bool {
 
 	cx, cy, cw, ch := f.Clipper()
 
-	tw, th := ev.Target.Size()
-	tx, ty := ev.Target.Pos()
+	tw, th := ev.Target().Size()
+	tx, ty := ev.Target().Pos()
 
-	if ControlInRect(ev.Target, cx, cy, cw, ch) {
+	if ControlInRect(ev.Target(), cx, cy, cw, ch) {
 		return false
 	}
 

@@ -9,6 +9,7 @@ import (
 
 	term "github.com/nsf/termbox-go"
 	мКнст "./пакКонстанты"
+	мИнт "./пакИнтерфейсы"
 )
 
 // FileSelectDialog is a dialog to select a file or directory.
@@ -243,7 +244,7 @@ func CreateFileSelectDialog(title, fileMasks, initPath string, selectDir, mustEx
 	btnSelect := CreateButton(blist, мКнст.AutoSize, мКнст.AutoSize, "Select", мКнст.Fixed)
 	btnCancel := CreateButton(blist, мКнст.AutoSize, мКнст.AutoSize, "Cancel", мКнст.Fixed)
 
-	btnCancel.OnClick(func(ev мКнст.Event) {
+	btnCancel.OnClick(func(ev мИнт.ИСобытие) {
 		WindowManager().DestroyWindow(dlg.View)
 		WindowManager().BeginUpdate()
 		dlg.Selected = false
@@ -254,7 +255,7 @@ func CreateFileSelectDialog(title, fileMasks, initPath string, selectDir, mustEx
 		}
 	})
 
-	btnSelect.OnClick(func(ev мКнст.Event) {
+	btnSelect.OnClick(func(ev мИнт.ИСобытие) {
 		WindowManager().DestroyWindow(dlg.View)
 		WindowManager().BeginUpdate()
 		dlg.Selected = true
@@ -273,10 +274,10 @@ func CreateFileSelectDialog(title, fileMasks, initPath string, selectDir, mustEx
 		}
 	})
 
-	dlg.View.OnClose(func(ev мКнст.Event) bool {
+	dlg.View.OnClose(func(ev мИнт.ИСобытие) bool {
 		if dlg.result == мКнст.DialogAlive {
 			dlg.result = мКнст.DialogClosed
-			if ev.X != 1 {
+			if ev.X() != 1 {
 				WindowManager().DestroyWindow(dlg.View)
 			}
 			if dlg.onClose != nil {
@@ -286,8 +287,8 @@ func CreateFileSelectDialog(title, fileMasks, initPath string, selectDir, mustEx
 		return true
 	})
 
-	dlg.listBox.OnSelectItem(func(ev мКнст.Event) {
-		item := ev.Msg
+	dlg.listBox.OnSelectItem(func(ev мИнт.ИСобытие) {
+		item := ev.Msg()
 		if item == ".." {
 			btnSelect.SetEnabled(false)
 			btnOpen.SetEnabled(true)
@@ -313,7 +314,7 @@ func CreateFileSelectDialog(title, fileMasks, initPath string, selectDir, mustEx
 		}
 	})
 
-	btnOpen.OnClick(func(ev мКнст.Event) {
+	btnOpen.OnClick(func(ev мИнт.ИСобытие) {
 		s := dlg.listBox.SelectedItemText()
 		if s != ".." && (s == "" || !strings.HasSuffix(s, string(os.PathSeparator))) {
 			return
@@ -326,7 +327,7 @@ func CreateFileSelectDialog(title, fileMasks, initPath string, selectDir, mustEx
 		}
 	})
 
-	dlg.edFile.OnChange(func(ev мКнст.Event) {
+	dlg.edFile.OnChange(func(ev мИнт.ИСобытие) {
 		s := ""
 		lowCurrText := strings.ToLower(dlg.listBox.SelectedItemText())
 		lowEditText := strings.ToLower(dlg.edFile.Title())

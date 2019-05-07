@@ -3,6 +3,7 @@ package clui
 import (
 	"testing"
 	мКнст "./пакКонстанты"
+	мИнт "./пакИнтерфейсы"
 )
 
 func TestEllipsize(t *testing.T) {
@@ -47,7 +48,7 @@ func TestCutText(t *testing.T) {
 func TestAlignText(t *testing.T) {
 	cases := []struct {
 		in, want   string
-		align      мКнст.Align
+		align      мИнт.Align
 		max, shift int
 	}{
 		{"abcdefgh", "abcde", мКнст.AlignLeft, 5, 0},
@@ -70,7 +71,7 @@ func TestAlignText(t *testing.T) {
 func TestAlignColorizedText(t *testing.T) {
 	cases := []struct {
 		in, want   string
-		align      мКнст.Align
+		align      мИнт.Align
 		max, shift int
 	}{
 		// uncolored cases

@@ -28,7 +28,7 @@ AutoScale to false and Top value to 100.
 Note: negative and zero values are displayed as empty bar
 */
 type SparkChart struct {
-	BaseControl
+	*BaseControl
 	data         []float64
 	valueWidth   int
 	hiliteMax    bool

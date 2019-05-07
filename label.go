@@ -15,7 +15,7 @@ of alignment feature: if text is longer than Label width the text
 is always left aligned
 */
 type Label struct {
-	BaseControl
+	*BaseControl
 	direction   мКнст.Direction
 	multiline   bool
 	textDisplay мИнт.Align

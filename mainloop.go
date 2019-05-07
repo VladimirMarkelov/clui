@@ -2,7 +2,6 @@ package clui
 
 import (
 	term "github.com/nsf/termbox-go"
-	мКнст "./пакКонстанты"
 	мИнт "./пакИнтерфейсы"
 )
 
@@ -43,10 +42,10 @@ func MainLoop() {
 			case term.EventError:
 				panic(ev.Err)
 			default:
-				ProcessEvent(termboxEventToLocal(ev))
+				ProcessEvent(termboxEventToLocal(&ev))
 			}
 		case cmd := <-loop.channel:
-			if cmd.Type == мКнст.EventQuit {
+			if cmd.Type() == мИнт.EventQuit {
 				return
 			}
 			ProcessEvent(cmd)

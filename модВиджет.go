@@ -233,9 +233,15 @@ func (c *BaseControl) SetVisible(visible bool) {
 
 	go func() {
 		if FindFirstActiveControl(c) != nil && !c.inactive {
-			PutEvent(мСоб.Event{Type: мКнст.EventKey, Key: term.KeyTab})
+			соб:=&мСоб.Event{}
+			соб.TypeSet(мИнт.EventKey)
+			соб.KeySet(term.KeyTab)
+			PutEvent(соб)
 		}
-		PutEvent(мСоб.Event{Type: мКнст.EventLayout, Target: p})
+		соб:=&мСоб.Event{}
+		соб.TypeSet(мИнт.EventLayout)
+		соб.TargetSet(p)
+		PutEvent(соб)
 	}()
 }
 
@@ -578,7 +584,7 @@ func (c *BaseControl) DrawChildren() {
 	defer PopClip()
 
 	cp := ClippedParent(c)
-	var cTarget мВид.ИВиджет
+	var cTarget мИнт.ИВиджет
 
 	cTarget = c
 	if cp != nil {

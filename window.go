@@ -10,7 +10,7 @@ import (
 
 // Window is an implemetation of View managed by Composer.
 type Window struct {
-	BaseControl
+	*BaseControl
 
 	buttons   мКнст.ViewButton
 	maximized bool
@@ -52,7 +52,7 @@ func CreateWindow(x, y, w, h int, title string) *Window {
 	wnd.SetPos(x, y)
 	wnd.SetTitle(title)
 	wnd.buttons = мКнст.ButtonClose | мКнст.ButtonBottom | мКнст.ButtonMaximize
-	wnd.children = make([]Control, 0)
+	wnd.children = make([]мИнт.ИВиджет, 0)
 	wnd.SetPaddings(1, 1)
 	wnd.SetGaps(1, 0)
 	wnd.SetScale(1)
@@ -192,7 +192,7 @@ func (wnd *Window) HitTest(x, y int) мИнт.HitResult {
 		if x < wnd.x+wnd.width-1-btnCount {
 			hResult = мКнст.HitTop
 		} else {
-			hitRes := []мКнст.HitResult{мКнст.HitTop, мКнст.HitTop, мКнст.HitTop}
+			hitRes := []мИнт.HitResult{мКнст.HitTop, мКнст.HitTop, мКнст.HitTop}
 			pos := 0
 
 			if wnd.buttons&мКнст.ButtonBottom == мКнст.ButtonBottom {
@@ -232,29 +232,29 @@ func (wnd *Window) HitTest(x, y int) мИнт.HitResult {
 
 //ProcessEvent --
 func (wnd *Window) ProcessEvent(ev мИнт.ИСобытие) bool {
-	switch ev.Type {
-	case мКнст.EventMove:
+	switch ev.Type() {
+	case мИнт.EventMove:
 		wnd.PlaceChildren()
-	case мКнст.EventResize:
+	case мИнт.EventResize:
 		wnd.ResizeChildren()
 		wnd.PlaceChildren()
-	case мКнст.EventClose:
+	case мИнт.EventClose:
 		if wnd.onClose != nil {
 			if !wnd.onClose(ev) {
 				return false
 			}
 		}
 		return true
-	case мКнст.EventKey:
-		if ev.Key == term.KeyTab || ev.Key == term.KeyArrowUp || ev.Key == term.KeyArrowDown {
+	case мИнт.EventKey:
+		if ev.Key() == term.KeyTab || ev.Key() == term.KeyArrowUp || ev.Key() == term.KeyArrowDown {
 			if SendEventToChild(wnd, ev) {
 				return true
 			}
 
 			aC := ActiveControl(wnd)
-			nC := NextControl(wnd, aC, ev.Key != term.KeyArrowUp)
+			nC := NextControl(wnd, aC, ev.Key() != term.KeyArrowUp)
 
-			var clipped Control
+			var clipped мИнт.ИВиджет
 
 			if aC != nil && aC.Clipped() {
 				clipped = aC
@@ -264,21 +264,29 @@ func (wnd *Window) ProcessEvent(ev мИнт.ИСобытие) bool {
 
 			if clipped != nil {
 				dir := 1
-				if ev.Key != term.KeyArrowUp {
+				if ev.Key() != term.KeyArrowUp {
 					dir = -1
 				}
-
-				clipped.ProcessEvent(мКнст.Event{Type: мКнст.EventActivateChild, Target: nC, X: dir})
+				ev := &мСоб.Event{}
+				ev.TypeSet(мИнт.EventActivateChild)
+				ev.TargetSet(nC)
+				ev.SetX(dir)
+				clipped.ProcessEvent(ev)
 			}
 
 			if nC != aC {
 				if aC != nil {
 					aC.SetActive(false)
-					aC.ProcessEvent(мКнст.Event{Type: мКнст.EventActivate, X: 0})
+					ev := &мСоб.Event{}
+					ev.TypeSet(мИнт.EventActivate)
+					aC.ProcessEvent(ev)
 				}
 				if nC != nil {
 					aC.SetActive(true)
-					aC.ProcessEvent(мКнст.Event{Type: мКнст.EventActivate, X: 1})
+					ev := &мСоб.Event{}
+					ev.TypeSet(мИнт.EventActivate)
+					ev.SetX(1)
+					aC.ProcessEvent(ev)
 				}
 			}
 			return true
@@ -292,7 +300,7 @@ func (wnd *Window) ProcessEvent(ev мИнт.ИСобытие) bool {
 		return false
 
 	default:
-		if ev.Type == мКнст.EventMouse && ev.Key == term.MouseLeft {
+		if ev.Type() == мИнт.EventMouse && ev.Key() == term.MouseLeft {
 			DeactivateControls(wnd)
 		}
 		return SendEventToChild(wnd, ev)

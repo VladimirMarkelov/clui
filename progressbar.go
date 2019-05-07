@@ -17,7 +17,7 @@ one set: foreground and background colors): for filled part and for
 empty one. By default colors are the same.
 */
 type ProgressBar struct {
-	BaseControl
+	*BaseControl
 	direction        мКнст.Direction
 	min, max         int
 	value            int

@@ -2,6 +2,7 @@ package clui
 
 import(
 	мКнст "./пакКонстанты"
+	мИнт "./пакИнтерфейсы"
 )
 const (
 	//LoginOk --
@@ -83,7 +84,7 @@ func CreateLoginDialog(title, userName string) *LoginDialog {
 	btnOk := CreateButton(blist, 10, 4, "OK", мКнст.Fixed)
 	btnCancel := CreateButton(blist, 10, 4, "Cancel", мКнст.Fixed)
 
-	btnCancel.OnClick(func(ev мКнст.Event) {
+	btnCancel.OnClick(func(ev мИнт.ИСобытие) {
 		WindowManager().DestroyWindow(dlg.View)
 		WindowManager().BeginUpdate()
 		dlg.Action = LoginCanceled
@@ -94,7 +95,7 @@ func CreateLoginDialog(title, userName string) *LoginDialog {
 		}
 	})
 
-	btnOk.OnClick(func(ev мКнст.Event) {
+	btnOk.OnClick(func(ev мИнт.ИСобытие) {
 		if dlg.onCheck != nil && !dlg.onCheck(edUser.Title(), edPass.Title()) {
 			lbRes.SetTitle("Invalid username or password")
 			dlg.Action = LoginInvalid
@@ -117,10 +118,10 @@ func CreateLoginDialog(title, userName string) *LoginDialog {
 		}
 	})
 
-	dlg.View.OnClose(func(ev мКнст.Event) bool {
+	dlg.View.OnClose(func(ev мИнт.ИСобытие) bool {
 		if dlg.result == мКнст.DialogAlive {
 			dlg.result = мКнст.DialogClosed
-			if ev.X != 1 {
+			if ev.X() != 1 {
 				WindowManager().DestroyWindow(dlg.View)
 			}
 			if dlg.onClose != nil {
@@ -130,10 +131,10 @@ func CreateLoginDialog(title, userName string) *LoginDialog {
 		return true
 	})
 
-	edUser.OnChange(func(ev мКнст.Event) {
+	edUser.OnChange(func(ev мИнт.ИСобытие) {
 		lbRes.SetTitle("")
 	})
-	edPass.OnChange(func(ev мКнст.Event) {
+	edPass.OnChange(func(ev мИнт.ИСобытие) {
 		lbRes.SetTitle("")
 	})
 

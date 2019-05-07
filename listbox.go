@@ -1,10 +1,11 @@
 package clui
 
 import (
+	мИнт "./пакИнтерфейсы"
+	мКнст "./пакКонстанты"
+	мСоб "./пакСобытия"
 	term "github.com/nsf/termbox-go"
 	"strings"
-	мКнст "./пакКонстанты"
-	мИнт "./пакИнтерфейсы"
 )
 
 /*
@@ -19,7 +20,7 @@ from drop down list). Event structure has 2 fields filled: Y - selected
 item number in list(-1 if nothing is selected), Msg - text of the selected item.
 */
 type ListBox struct {
-	BaseControl
+	*BaseControl
 	// own listbox members
 	items         []string
 	currSelection int
@@ -146,7 +147,9 @@ func (l *ListBox) home() {
 	l.topLine = 0
 
 	if l.onSelectItem != nil {
-		ev := мКнст.Event{Y: l.currSelection, Msg: l.SelectedItemText()}
+		ev := &мСоб.Event{}
+		ev.MsgSet(l.SelectedItemText())
+		ev.SetY(l.currSelection)
 		l.onSelectItem(ev)
 	}
 }
@@ -164,7 +167,9 @@ func (l *ListBox) end() {
 	}
 
 	if l.onSelectItem != nil {
-		ev := мКнст.Event{Y: l.currSelection, Msg: l.SelectedItemText()}
+		ev := &мСоб.Event{}
+		ev.MsgSet(l.SelectedItemText())
+		ev.SetY(l.currSelection)
 		l.onSelectItem(ev)
 	}
 }
@@ -190,7 +195,9 @@ func (l *ListBox) moveUp(dy int) {
 	l.EnsureVisible()
 
 	if l.onSelectItem != nil {
-		ev :=мКнст.Event{Y: l.currSelection, Msg: l.SelectedItemText()}
+		ev := &мСоб.Event{}
+		ev.MsgSet(l.SelectedItemText())
+		ev.SetY(l.currSelection)
 		l.onSelectItem(ev)
 	}
 }
@@ -211,7 +218,9 @@ func (l *ListBox) moveDown(dy int) {
 	l.EnsureVisible()
 
 	if l.onSelectItem != nil {
-		ev := мКнст.Event{Y: l.currSelection, Msg: l.SelectedItemText()}
+		ev := &мСоб.Event{}
+		ev.MsgSet(l.SelectedItemText())
+		ev.SetY(l.currSelection)
 		l.onSelectItem(ev)
 	}
 }
@@ -249,12 +258,12 @@ func (l *ListBox) Clear() {
 }
 
 func (l *ListBox) processMouseClick(ev мИнт.ИСобытие) bool {
-	if ev.Key != term.MouseLeft {
+	if ev.Key() != term.MouseLeft {
 		return false
 	}
 
-	dx := ev.X - l.x
-	dy := ev.Y - l.y
+	dx := ev.X() - l.x
+	dy := ev.Y() - l.y
 
 	if dx == l.width-1 {
 		if dy < 0 || dy >= l.height || len(l.items) < 2 {
@@ -288,7 +297,9 @@ func (l *ListBox) processMouseClick(ev мИнт.ИСобытие) bool {
 	onSelFunc := l.onSelectItem
 	WindowManager().EndUpdate()
 	if onSelFunc != nil {
-		ev := мКнст.Event{Y: l.topLine + dy, Msg: l.SelectedItemText()}
+		ev := &мСоб.Event{}
+		ev.MsgSet(l.SelectedItemText())
+		ev.SetY(l.topLine + dy)
 		onSelFunc(ev)
 	}
 
@@ -316,16 +327,16 @@ func (l *ListBox) ProcessEvent(event мИнт.ИСобытие) bool {
 		return false
 	}
 
-	switch event.Type {
-	case мКнст.EventKey:
+	switch event.Type() {
+	case мИнт.EventKey:
 		if l.onKeyPress != nil {
-			res := l.onKeyPress(event.Key)
+			res := l.onKeyPress(event.Key())
 			if res {
 				return true
 			}
 		}
 
-		switch event.Key {
+		switch event.Key() {
 		case term.KeyHome:
 			l.home()
 			return true
@@ -346,13 +357,15 @@ func (l *ListBox) ProcessEvent(event мИнт.ИСобытие) bool {
 			return true
 		case term.KeyCtrlM:
 			if l.currSelection != -1 && l.onSelectItem != nil {
-				ev := мКнст.Event{Y: l.currSelection, Msg: l.SelectedItemText()}
+				ev := &мСоб.Event{}
+				ev.MsgSet(l.SelectedItemText())
+				ev.SetY(l.currSelection)
 				l.onSelectItem(ev)
 			}
 		default:
 			return false
 		}
-	case мКнст.EventMouse:
+	case мИнт.EventMouse:
 		return l.processMouseClick(event)
 	}
 

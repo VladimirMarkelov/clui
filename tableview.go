@@ -48,7 +48,7 @@ Events:
         number of visible columns, number of visible rows.
 */
 type TableView struct {
-	BaseControl
+	*BaseControl
 	// own TableView members
 	topRow        int
 	topCol        int
@@ -673,12 +673,12 @@ func (l *TableView) verticalScrollClick(dy int) {
 }
 
 func (l *TableView) processMouseClick(ev мИнт.ИСобытие) bool {
-	if ev.Key != term.MouseLeft {
+	if ev.Key() != term.MouseLeft {
 		return false
 	}
 
-	dx := ev.X - l.x
-	dy := ev.Y - l.y
+	dx := ev.X() - l.x
+	dy := ev.Y() - l.y
 
 	if l.topRow+dy-2 >= l.rowCount && dy != l.height-1 && dx != l.width-1 {
 		return false
@@ -764,18 +764,18 @@ func (l *TableView) ProcessEvent(event мИнт.ИСобытие) bool {
 		return false
 	}
 
-	switch event.Type {
-	case мКнст.EventKey:
+	switch event.Type() {
+	case мИнт.EventKey:
 		if l.onKeyPress != nil {
-			res := l.onKeyPress(event.Key)
+			res := l.onKeyPress(event.Key())
 			if res {
 				return true
 			}
 		}
 
-		switch event.Key {
+		switch event.Key() {
 		case term.KeyHome:
-			if event.Mod == term.ModAlt {
+			if event.Mod() == term.ModAlt {
 				l.selectedRow = 0
 				l.EnsureRowVisible()
 				l.emitSelectionChange()
@@ -784,7 +784,7 @@ func (l *TableView) ProcessEvent(event мИнт.ИСобытие) bool {
 			}
 			return true
 		case term.KeyEnd:
-			if event.Mod == term.ModAlt {
+			if event.Mod() == term.ModAlt {
 				l.selectedRow = l.rowCount - 1
 				l.EnsureRowVisible()
 				l.emitSelectionChange()
@@ -849,7 +849,7 @@ func (l *TableView) ProcessEvent(event мИнт.ИСобытие) bool {
 		default:
 			return false
 		}
-	case мКнст.EventMouse:
+	case мИнт.EventMouse:
 		return l.processMouseClick(event)
 	}
 
