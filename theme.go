@@ -138,7 +138,7 @@ func ThemeReset() {
 	defTheme.objects[ObjDoubleBorder] = "═║╔╗╚╝"
 	defTheme.objects[ObjEdit] = "←→V*"
 	defTheme.objects[ObjScrollBar] = "░■▲▼◄►"
-	defTheme.objects[ObjViewButtons] = "^↓○[]"
+	defTheme.objects[ObjViewButtons] = "^_■[]"
 	defTheme.objects[ObjCheckBox] = "[] X?"
 	defTheme.objects[ObjRadio] = "() *"
 	defTheme.objects[ObjProgressBar] = "░▒"

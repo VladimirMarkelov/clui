@@ -1,3 +1,6 @@
+2019-05-7 - version 1.2.0
+[*] Changed default window close icon from "O" to "■"
+
 2019-03-16 - version 1.1.0
 [!] TextReader renamed to TextDisplay to avoid confusion with io.Reader. In
     library version 1.x TextReader is deprecated but still available - it is
