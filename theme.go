@@ -23,7 +23,7 @@ defined theme must have is a theme name.
 Theme file is a simple text file that has similar to INI file format:
 1. Every line started with '#' or '/' is a comment line.
 2. Invalid lines - lines that do not contain symbol '=' - are skipped.
-3. Valid lines are splitted in two parts:
+3. Valid lines are split in two parts:
     key - the text before the first '=' in the line
     value - the text after the first '=' in the line (so, values can
         include '=')
@@ -32,7 +32,7 @@ Theme file is a simple text file that has similar to INI file format:
     these symbols are removed, too. It is done to be able to start
     or finish the object with a space rune
 4. There is no mandatory keys - all of them are optional
-5. Avaiable system keys that used to describe the theme:
+5. Available system keys that used to describe the theme:
     'title' - the theme title
     'author' - theme author
     'version' - theme version
@@ -61,7 +61,7 @@ Theme file is a simple text file that has similar to INI file format:
             Better way is:
                 Viewback=parent.ViewText
                 ViewText=parent.ViewBack
-        Converting text to real color fails and retuns black color if
+        Converting text to real color fails and returns black color if
             a) the string does not look like real color(e.g, typo as in
             'grean bold'), b) parent theme has not loaded yet, c) parent
             theme does not have the color
@@ -69,7 +69,7 @@ Theme file is a simple text file that has similar to INI file format:
     Other keys are considered as objects - see Obj* constants, just drop
         'Obj' at the beginning of the key name
     One is not limited with only predefined color and object names.
-    The theme can inroduce its own objects, e.g. to provide a runes or
+    The theme can introduce its own objects, e.g. to provide a runes or
         colors for new control that is not in standard library
 To see the real world example of full featured theme, please see
     included theme 'turbovision'
@@ -121,7 +121,7 @@ func initThemeManager() {
 	ThemeReset()
 }
 
-// Reset removes all loaded themes from cache and reinitialize
+// ThemeReset removes all loaded themes from cache and reinitialize
 // the default theme
 func ThemeReset() {
 	thememtx.Lock()

@@ -18,7 +18,7 @@ type Radio struct {
 }
 
 /*
-NewRadio creates a new radio button.
+CreateRadio creates a new radio button.
 view - is a View that manages the control
 parent - is container that keeps the control. The same View can be a view and a parent at the same time.
 width - is minimal width of the control.
@@ -51,7 +51,7 @@ func CreateRadio(parent Control, width int, title string, scale int) *Radio {
 	return c
 }
 
-// Repaint draws the control on its View surface
+// Draw repaints the control on its View surface
 func (c *Radio) Draw() {
 	if c.hidden {
 		return
@@ -96,13 +96,13 @@ func (c *Radio) Draw() {
 	DrawText(x+4+shift, y, text)
 }
 
-/*
-ProcessEvent processes all events come from the control parent. If a control
-processes an event it should return true. If the method returns false it means
-that the control do not want or cannot process the event and the caller sends
-the event to the control parent.
-The control processes only space button and mouse clicks to make control selected. Deselecting control is not possible: one has to click another radio of the radio group to deselect this button
-*/
+// ProcessEvent processes all events come from the control parent. If a control
+// processes an event it should return true. If the method returns false it means
+// that the control do not want or cannot process the event and the caller sends
+// the event to the control parent.
+// The control processes only space button and mouse clicks to make control selected.
+// Deselecting control is not possible: one has to click another radio of the radio
+// group to deselect this button
 func (c *Radio) ProcessEvent(event Event) bool {
 	if (!c.Active() && event.Type == EventKey) || !c.Enabled() {
 		return false

@@ -11,12 +11,12 @@ SparkChart is a chart that represents a live data that
 is continuously added to the chart. Or it can be static
 element that displays predefined set of data - in this
 case it looks like BarChart. At a moment SparkChart
-keeps only th enumber of last data that is enough to
+keeps only the number of last data that is enough to
 fill the control area. So, if you enlarge the control,
 it will show partially filled area until it gets new data.
 SparkChart displays vertical axis with values on the chart left
 if ValueWidth greater than 0, horizontal axis with bar titles.
-Maximum peaks(maximum of the the data that control keeps)
+Maximum peaks(maximum of the data that control keeps)
 can be hilited with different color.
 By default the data is autoscaled to make the highest bar
 fit the full height of the control. But it maybe useful
@@ -36,7 +36,7 @@ type SparkChart struct {
 }
 
 /*
-NewSparkChart creates a new spark chart.
+CreateSparkChart creates a new spark chart.
 view - is a View that manages the control
 parent - is container that keeps the control. The same View can be a view and a parent at the same time.
 w and h - are minimal size of the control.
@@ -71,7 +71,7 @@ func CreateSparkChart(parent Control, w, h int, scale int) *SparkChart {
 	return c
 }
 
-// Repaint draws the control on its View surface
+// Draw repaints the control on its View surface
 func (b *SparkChart) Draw() {
 	if b.hidden {
 		return
@@ -239,7 +239,7 @@ func (b *SparkChart) ClearData() {
 	b.data = make([]float64, 0)
 }
 
-// SetData assign a new bar list to a chart
+// SetData assigns a new bar list to a chart
 func (b *SparkChart) SetData(data []float64) {
 	b.mtx.Lock()
 	defer b.mtx.Unlock()

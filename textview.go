@@ -15,7 +15,7 @@ added on the fly and if the autoscroll is enabled the control
 scroll down to the end - it may be useful to create a log
 viewer.
 Content is scrollable with arrow keys or by clicking buttons
-on the scrolls(a control can have upto 2 scrollbars: vertical
+on the scrolls(a control can have up to 2 scrollbars: vertical
 and horizontal. The latter one is available only if WordWrap
 mode is off).
 */
@@ -37,10 +37,10 @@ type TextView struct {
 }
 
 /*
-NewTextView creates a new frame.
+CreateTextView creates a new frame.
 view - is a View that manages the control
 parent - is container that keeps the control. The same View can be a view and a parent at the same time.
-width and heigth - are minimal size of the control.
+width and height - are minimal size of the control.
 scale - the way of scaling the control when the parent is resized. Use DoNotScale constant if the
 control should keep its original size.
 */

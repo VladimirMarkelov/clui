@@ -11,10 +11,9 @@ Content is scrollable with arrow keys or by clicking up and bottom buttons
 on the scroll(now content is scrollable with mouse dragging only on Windows).
 
 ListBox calls onSelectItem item function after a user changes currently
-selected item with mouse or using keyboard (extra case: the event is emitted
-when a user presses Enter - the case is used in ComboBox to select an item
-from drop down list). Event structure has 2 fields filled: Y - selected
-item number in list(-1 if nothing is selected), Msg - text of the selected item.
+selected item with mouse or using keyboard. Event structure has 2 fields filled:
+Y - selected item number in list(-1 if nothing is selected),
+Msg - text of the selected item.
 */
 type ListBox struct {
 	BaseControl
@@ -29,10 +28,10 @@ type ListBox struct {
 }
 
 /*
-NewListBox creates a new frame.
+CreateListBox creates a new frame.
 view - is a View that manages the control
 parent - is container that keeps the control. The same View can be a view and a parent at the same time.
-width and heigth - are minimal size of the control.
+width and height - are minimal size of the control.
 scale - the way of scaling the control when the parent is resized. Use DoNotScale constant if the
 control should keep its original size.
 */
@@ -110,7 +109,7 @@ func (l *ListBox) drawItems() {
 	}
 }
 
-// Repaint draws the control on its View surface
+// Draw repaints the control on its View surface
 func (l *ListBox) Draw() {
 	if l.hidden {
 		return

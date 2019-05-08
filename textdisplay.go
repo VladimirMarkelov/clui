@@ -87,7 +87,7 @@ func (l *TextDisplay) drawText() {
 	}
 }
 
-// Repaint draws the control on its View surface
+// Draw repaints the control on its View surface
 func (l *TextDisplay) Draw() {
 	if l.hidden {
 		return

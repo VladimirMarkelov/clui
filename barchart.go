@@ -70,7 +70,7 @@ type BarChart struct {
 }
 
 /*
-NewBarChart creates a new bar chart.
+CreateBarChart creates a new bar chart.
 view - is a View that manages the control
 parent - is container that keeps the control. The same View can be a view and a parent at the same time.
 w and h - are minimal size of the control.
@@ -105,7 +105,7 @@ func CreateBarChart(parent Control, w, h int, scale int) *BarChart {
 	return c
 }
 
-// Repaint draws the control on its View surface
+// Draw repaints the control on its View surface
 func (b *BarChart) Draw() {
 	if b.hidden {
 		return
@@ -441,12 +441,12 @@ func (b *BarChart) SetAutoSize(auto bool) {
 	b.autosize = auto
 }
 
-// Gap returns width of visual gap between two adjacent bars
+// BarGap returns width of visual gap between two adjacent bars
 func (b *BarChart) BarGap() int32 {
 	return atomic.LoadInt32(&b.gap)
 }
 
-// SetGap sets the space width between two adjacent bars
+// SetBarGap sets the space width between two adjacent bars
 func (b *BarChart) SetBarGap(gap int32) {
 	atomic.StoreInt32(&b.gap, gap)
 }

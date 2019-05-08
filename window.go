@@ -5,7 +5,7 @@ import (
 	term "github.com/nsf/termbox-go"
 )
 
-// Window is an implemetation of View managed by Composer.
+// Window is an implementation of View managed by Composer.
 type Window struct {
 	BaseControl
 
@@ -140,6 +140,7 @@ func (wnd *Window) drawButtons() {
 	putCharUnsafe(pos, wnd.y, cCloseB)
 }
 
+// Draw repaints the control on the screen
 func (wnd *Window) Draw() {
 	WindowManager().BeginUpdate()
 	defer WindowManager().EndUpdate()
@@ -161,6 +162,9 @@ func (wnd *Window) Draw() {
 	wnd.drawButtons()
 }
 
+// HitTest returns type of a Window region at a given screen coordinates. The
+// method is used to detect if a mouse cursor on a window border or outside,
+// which window icon is under cursor etc
 func (c *Window) HitTest(x, y int) HitResult {
 	if x > c.x && x < c.x+c.width-1 &&
 		y > c.y && y < c.y+c.height-1 {
@@ -275,15 +279,14 @@ func (c *Window) ProcessEvent(ev Event) bool {
 				}
 			}
 			return true
-		} else {
-			if SendEventToChild(c, ev) {
-				return true
-			}
-			if c.onKeyDown != nil {
-				return c.onKeyDown.fn(ev, c.onKeyDown.data)
-			}
-			return false
 		}
+		if SendEventToChild(c, ev) {
+			return true
+		}
+		if c.onKeyDown != nil {
+			return c.onKeyDown.fn(ev, c.onKeyDown.data)
+		}
+		return false
 	default:
 		if ev.Type == EventMouse && ev.Key == term.MouseLeft {
 			DeactivateControls(c)
@@ -360,16 +363,18 @@ func (w *Window) Visible() bool {
 // SetVisible allows to temporarily remove the window from screen
 // and show it later without reconstruction
 func (w *Window) SetVisible(visible bool) {
-	if w.hidden == visible {
-		w.hidden = !visible
-		if w.hidden {
-			w.SetModal(false)
-			if WindowManager().topWindow() == w {
-				WindowManager().moveActiveWindowToBottom()
-			}
-		} else {
-			WindowManager().activateWindow(w)
+	if w.hidden != visible {
+		return
+	}
+
+	w.hidden = !visible
+	if w.hidden {
+		w.SetModal(false)
+		if WindowManager().topWindow() == w {
+			WindowManager().moveActiveWindowToBottom()
 		}
+	} else {
+		WindowManager().activateWindow(w)
 	}
 }
 

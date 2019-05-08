@@ -124,7 +124,7 @@ type TableEvent struct {
 }
 
 /*
-NewTableView creates a new frame.
+CreateTableView creates a new frame.
 view - is a View that manages the control
 parent - is container that keeps the control. The same View can be a view and a parent at the same time.
 width and height - are minimal size of the control.
@@ -353,7 +353,7 @@ func (l *TableView) drawCells() {
 	}
 }
 
-// Repaint draws the control on its View surface
+// Draw repaints the control on its View surface
 func (l *TableView) Draw() {
 	if l.hidden {
 		return

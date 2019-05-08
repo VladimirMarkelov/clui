@@ -601,7 +601,7 @@ func (c *BaseControl) PlaceChildren() {
 	}
 }
 
-// ActiveColors return the attrubutes for the controls when it
+// ActiveColors return the attributes for the controls when it
 // is active: text and background colors
 func (c *BaseControl) ActiveColors() (term.Attribute, term.Attribute) {
 	return c.fgActive, c.bgActive
