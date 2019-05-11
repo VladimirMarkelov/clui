@@ -1,3 +1,13 @@
+2019-05-10 - version 1.2.0
+[*] Dual license: MIT or BSD-2-Clause
+[*] Window icons minimize and maximize are swapped
+[*] UX improvement: minimize and maximize buttons moved to left side of
+    a window to avoid closing window accidentally after misclicking.
+    Old window title view:
+    ╔Demo═══════[^_X]╗
+    New one:
+    ╔[_^]═Demo════[X]╗
+
 2019-05-7 - version 1.2.0
 [*] Changed default window close icon from "O" to "■"
 [*] Doc comments clean up
