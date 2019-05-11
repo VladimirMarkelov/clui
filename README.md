@@ -55,3 +55,7 @@ The screencast of demo:
 The library is in the very beginning but it can be used to create working utilities: below is the example of my Dilbert comix downloader:
 
 <img src="./demos/dilbert_demo.gif" alt="Dilbert Downloader">
+
+## License
+
+CLUI is dual-licensed under MIT OR BSD-2-Clause
