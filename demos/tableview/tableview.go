@@ -14,6 +14,8 @@ func createView() *ui.TableView {
 	return bch
 }
 
+const rowCount = 15
+
 func mainLoop() {
 	// Every application must create a single Composer and
 	// call its intialize method
@@ -23,7 +25,7 @@ func mainLoop() {
 	b := createView()
 	b.SetShowLines(true)
 	b.SetShowRowNumber(true)
-	b.SetRowCount(15)
+	b.SetRowCount(rowCount)
 	cols := []ui.Column{
 		ui.Column{Title: "Text", Width: 5, Alignment: ui.AlignLeft},
 		ui.Column{Title: "Number", Width: 10, Alignment: ui.AlignRight},
@@ -32,8 +34,17 @@ func mainLoop() {
 		ui.Column{Title: "Last", Width: 8, Alignment: ui.AlignLeft},
 	}
 	b.SetColumns(cols)
+	colCount := len(cols)
+
+	values := make([]string, rowCount*colCount)
+	for r := 0; r < rowCount; r++ {
+		for c := 0; c < colCount; c++ {
+			values[r*colCount+c] = fmt.Sprintf("%v:%v", r, c)
+		}
+	}
+
 	b.OnDrawCell(func(info *ui.ColumnDrawInfo) {
-		info.Text = fmt.Sprintf("%v:%v", info.Row, info.Col)
+		info.Text = values[info.Row*colCount+info.Col]
 	})
 
 	b.OnAction(func(ev ui.TableEvent) {
@@ -43,7 +54,21 @@ func mainLoop() {
 		case ui.TableActionSort:
 			action = "Sort table"
 		case ui.TableActionEdit:
-			action = "Edit row/cell"
+			c := ev.Col
+			r := ev.Row
+			oldVal := values[r*colCount+c]
+			dlg := ui.CreateEditDialog(
+				fmt.Sprintf("Editing value: %s", oldVal), "New value", oldVal,
+			)
+			dlg.OnClose(func() {
+				switch dlg.Result() {
+				case ui.DialogButton1:
+					newText := dlg.EditResult()
+					values[r*colCount+c] = newText
+					ui.PutEvent(ui.Event{Type: ui.EventRedraw})
+				}
+			})
+			return
 		case ui.TableActionNew:
 			action = "Add new row"
 		case ui.TableActionDelete:
@@ -54,9 +79,9 @@ func mainLoop() {
 
 		dlg := ui.CreateConfirmationDialog(
 			"<c:blue>"+action,
-            "Click any button or press <c:yellow>SPACE<c:> to close the dialog",
+			"Click any button or press <c:yellow>SPACE<c:> to close the dialog",
 			btns, ui.DialogButton1)
-        dlg.OnClose(func() {})
+		dlg.OnClose(func() {})
 	})
 
 	// start event processing loop - the main core of the library
