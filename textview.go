@@ -476,7 +476,7 @@ func (l *TextView) LoadFile(filename string) bool {
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		line := scanner.Text()
-		line = strings.TrimSpace(line)
+		line = strings.TrimRight(line, " ")
 		l.lines = append(l.lines, line)
 	}
 
