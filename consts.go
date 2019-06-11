@@ -47,6 +47,8 @@ type (
 	// SortOrder is a way of sorting rows in TableView
 	SortOrder int
 	DragType  int
+	// ButtonShadow is a type of shadow that a Button drops
+	ButtonShadow int
 )
 
 const (
@@ -175,6 +177,7 @@ const (
 	ObjBarChart     = "BarChart"
 	ObjSparkChart   = "SparkChart"
 	ObjTableView    = "TableView"
+	ObjButton       = "Button"
 )
 
 // Available color identifiers that can be used in themes
@@ -348,4 +351,14 @@ const (
 	SortAsc
 	// Sort descending
 	SortDesc
+)
+
+// ButtonShadow constants
+const (
+	// Basic button shadow
+	ShadowFull ButtonShadow = iota
+	// Half-symbols are used to draw a shadow that makes it slimmer
+	ShadowHalf
+	// No shadow and button turns a flat one
+	ShadowNone
 )

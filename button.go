@@ -17,6 +17,7 @@ type Button struct {
 	shadowColor term.Attribute
 	bgActive    term.Attribute
 	pressed     int32
+	shadowType  ButtonShadow
 	onClick     func(Event)
 }
 
@@ -90,8 +91,24 @@ func (b *Button) Draw() {
 	SetTextColor(fg)
 	shift, text := AlignColorizedText(b.title, w-1, b.align)
 	if b.isPressed() == 0 {
-		SetBackColor(shadow)
-		FillRect(x+1, y+1, w-1, h-1, ' ')
+		switch b.shadowType {
+		case ShadowFull:
+			SetBackColor(shadow)
+			FillRect(x+1, y+h-1, w-1, 1, ' ')
+			FillRect(x+w-1, y+1, 1, h-1, ' ')
+		case ShadowHalf:
+			parts := []rune(SysObject(ObjButton))
+			var bottomCh, rightCh rune
+			if len(parts) < 2 {
+				bottomCh, rightCh = '▀', '█'
+			} else {
+				bottomCh, rightCh = parts[0], parts[1]
+			}
+			SetTextColor(shadow)
+			FillRect(x+1, y+h-1, w-1, 1, bottomCh)
+			FillRect(x+w-1, y+1, 1, h-2, rightCh)
+		}
+		SetTextColor(fg)
 		SetBackColor(bg)
 		FillRect(x, y, w-1, h-1, ' ')
 		DrawText(x+shift, y+dy, text)
@@ -166,4 +183,16 @@ func (b *Button) ProcessEvent(event Event) bool {
 // with mouse or pressing space on keyboard while the button is active
 func (b *Button) OnClick(fn func(Event)) {
 	b.onClick = fn
+}
+
+// ShadowType returns type of a show the button drops
+func (b *Button) ShadowType() ButtonShadow {
+	return b.shadowType
+}
+
+// SetShadowType changes the shadow the button drops
+func (b *Button) SetShadowType(sh ButtonShadow) {
+	b.mtx.Lock()
+	b.shadowType = sh
+	b.mtx.Unlock()
 }

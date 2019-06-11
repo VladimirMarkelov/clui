@@ -145,6 +145,7 @@ func ThemeReset() {
 	defTheme.objects[ObjBarChart] = "█─│┌┐└┘┬┴├┤┼"
 	defTheme.objects[ObjSparkChart] = "█"
 	defTheme.objects[ObjTableView] = "─│┼▼▲"
+	defTheme.objects[ObjButton] = "▀█"
 
 	defTheme.colors[ColorDisabledText] = ColorBlackBold
 	defTheme.colors[ColorDisabledBack] = ColorWhite
