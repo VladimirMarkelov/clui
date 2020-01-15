@@ -98,7 +98,10 @@ func (l *TextView) drawText() {
 	maxWidth := l.width - 1
 	maxHeight := l.outputHeight()
 
-	fg, bg := l.TextColor(), l.BackColor()
+	bg, fg := RealColor(l.bg, l.Style(), ColorEditBack), RealColor(l.fg, l.Style(), ColorEditText)
+	if l.Active() {
+		bg, fg = RealColor(l.bg, l.Style(), ColorEditActiveBack), RealColor(l.fg, l.Style(), ColorEditActiveText)
+	}
 
 	SetTextColor(fg)
 	SetBackColor(bg)
