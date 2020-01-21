@@ -15,7 +15,6 @@ Button can be clicked with mouse or using space on keyboard while the Button is 
 type Button struct {
 	BaseControl
 	shadowColor term.Attribute
-	bgActive    term.Attribute
 	pressed     int32
 	shadowType  ButtonShadow
 	onClick     func(Event)
