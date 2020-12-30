@@ -978,6 +978,8 @@ func (l *TableView) SetSelectedRow(row int) {
 		l.selectedRow = l.rowCount - 1
 	} else if row < -1 {
 		l.selectedRow = -1
+	} else {
+		l.selectedRow = row
 	}
 
 	if l.selectedRow != oldSelection {
@@ -996,6 +998,8 @@ func (l *TableView) SetSelectedCol(col int) {
 		l.selectedCol = len(l.columns) - 1
 	} else if col < -1 {
 		l.selectedCol = -1
+	} else {
+		l.selectedCol = col
 	}
 
 	if l.selectedCol != oldSelection {
