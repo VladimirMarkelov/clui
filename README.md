@@ -11,6 +11,7 @@ The current version is 1.2.1. Please see details in [changelog](./changelog).
 
 ## Applications that uses the library
 * Terminal FB2 reader(termfb2): https://github.com/VladimirMarkelov/termfb2
+* NMCLUI: A tool to connect to wifi networks from console, similar to nmtui. https://github.com/jairochavesb/nmclui.
 
 ## Documentation
 * [Introduction](/docs/intro.md)
