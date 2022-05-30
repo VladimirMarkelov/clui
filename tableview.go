@@ -2,6 +2,8 @@ package clui
 
 import (
 	"fmt"
+	"strings"
+
 	term "github.com/nsf/termbox-go"
 )
 
@@ -57,6 +59,9 @@ type TableView struct {
 	fullRowSelect bool
 	showRowNo     bool
 	showVLines    bool
+
+	titleRows  int
+	titleParts [][]string
 
 	onDrawCell   func(*ColumnDrawInfo)
 	onAction     func(TableEvent)
@@ -148,6 +153,7 @@ func CreateTableView(parent Control, width, height int, scale int) *TableView {
 	l.selectedRow = 0
 	l.parent = parent
 	l.columns = make([]Column, 0)
+	l.titleRows = 1
 	l.SetScale(scale)
 
 	l.SetTabStop(true)
@@ -176,11 +182,11 @@ func (l *TableView) drawHeader() {
 	w, _ := l.Size()
 	SetTextColor(fg)
 	SetBackColor(bg)
-	FillRect(x, y, w, 1, ' ')
+	FillRect(x, y, w, l.titleRows, ' ')
 	parts := []rune(SysObject(ObjTableView))
 
 	for i := 0; i < w; i++ {
-		PutChar(x+i, y+1, parts[0])
+		PutChar(x+i, y+l.titleRows, parts[0])
 	}
 	w-- // scrollbar
 
@@ -205,41 +211,89 @@ func (l *TableView) drawHeader() {
 		pos = cW + dx
 	}
 
-	idx := l.topCol
-	for pos < w && idx < len(l.columns) {
-		w := l.columns[idx].Width
-		if l.width-1-pos < w {
-			w = l.width - 1 - pos
-		}
-		if w <= 0 {
-			break
-		}
-
-		dw := 0
-		if l.columns[idx].Sort != SortNone {
-			dw = -1
-			ch := parts[3]
-			if l.columns[idx].Sort == SortDesc {
-				ch = parts[4]
+	origPos := pos
+	for rc := 0; rc < l.titleRows; rc++ {
+		idx := l.topCol
+		for pos < w && idx < len(l.columns) {
+			count, w := l.combinedTitleWidth(idx, rc)
+			if l.width-1-pos < w {
+				w = l.width - 1 - pos
 			}
+			if w <= 0 {
+				break
+			}
+
+			dw := 0
+			title := l.colTitle(idx, rc)
+			if (rc == l.titleRows-1) && l.columns[idx].Sort != SortNone {
+				dw = -1
+				ch := parts[3]
+				if l.columns[idx].Sort == SortDesc {
+					ch = parts[4]
+				}
+				SetTextColor(fg)
+				PutChar(x+pos+w-1, y, ch)
+			}
+
+			shift, str := AlignColorizedText(title, w+dw, l.columns[idx].Alignment)
 			SetTextColor(fg)
-			PutChar(x+pos+w-1, y, ch)
+			DrawText(x+pos+shift, y, str)
+			pos += w
+
+			if l.showVLines && idx < len(l.columns)-1 && idx+count != len(l.columns) {
+				SetTextColor(fgLine)
+				PutChar(x+pos, y, parts[1])
+				if rc == l.titleRows-1 {
+					PutChar(x+pos, y+1, parts[2])
+				}
+				pos++
+			}
+
+			idx += count
 		}
 
-		shift, str := AlignColorizedText(l.columns[idx].Title, w+dw, l.columns[idx].Alignment)
-		SetTextColor(fg)
-		DrawText(x+pos+shift, y, str)
-		pos += w
-
-		if l.showVLines && idx < len(l.columns)-1 {
-			SetTextColor(fgLine)
-			PutChar(x+pos, y, parts[1])
-			PutChar(x+pos, y+1, parts[2])
-			pos++
-		}
-
-		idx++
+		y++
+		pos = origPos
 	}
+}
+
+// returns the title of the requested column and row.
+// If the arguments are invalid, it returns empty.
+func (l *TableView) colTitle(col, row int) string {
+	if col < 0 || col >= len(l.titleParts) {
+		return ""
+	}
+
+	if len(l.titleParts[col]) > row {
+		return l.titleParts[col][row]
+	}
+
+	return ""
+}
+
+func (l *TableView) combinedTitleWidth(col, row int) (count, width int) {
+	title := ""
+	if len(l.titleParts[col]) > row {
+		title = l.titleParts[col][row]
+	}
+
+	// check next and prev column titles
+	if title == l.colTitle(col-1, row) || title != l.colTitle(col+1, row) {
+		return 1, l.columns[col].Width
+	}
+
+	count = 1
+	width = l.columns[col].Width
+	for title == l.colTitle(col+1, row) && col < len(l.columns)-1 {
+		col++
+		count++
+		width += l.columns[col].Width
+		if l.showVLines {
+			width++
+		}
+	}
+
+	return count, width
 }
 
 func (l *TableView) counterWidth() int {
@@ -272,7 +326,7 @@ func (l *TableView) drawCells() {
 
 	maxRow := l.rowCount - 1
 	rowNo := l.topRow
-	dy := 2
+	dy := 2 + (l.titleRows - 1)
 	maxDy := l.height - 2
 
 	fg, bg := RealColor(l.fg, l.Style(), ColorTableText), RealColor(l.bg, l.Style(), ColorTableBack)
@@ -678,7 +732,7 @@ func (l *TableView) processMouseClick(ev Event) bool {
 	dx := ev.X - l.x
 	dy := ev.Y - l.y
 
-	if l.topRow+dy-2 >= l.rowCount && dy != l.height-1 && dx != l.width-1 {
+	if l.topRow+dy-l.titleRows-1 >= l.rowCount && dy != l.height-1 && dx != l.width-1 {
 		return false
 	}
 
@@ -698,12 +752,12 @@ func (l *TableView) processMouseClick(ev Event) bool {
 		return true
 	}
 
-	if dy < 2 {
+	if dy <= l.titleRows {
 		l.headerClicked(dx)
 		return true
 	}
 
-	dy -= 2
+	dy -= l.titleRows + 1
 	newRow := l.topRow + dy
 
 	newCol := l.mouseToCol(dx)
@@ -894,6 +948,18 @@ func (l *TableView) Columns() []Column {
 // Title and Width, all other column properties may
 // be undefined
 func (l *TableView) SetColumns(cols []Column) {
+	l.titleRows = 1
+	l.titleParts = make([][]string, len(cols))
+	// preprocess the column titles
+	for i := range cols {
+		parts := strings.Split(cols[i].Title, "\n")
+		// find maximum number of rows
+		if c := len(parts); c > l.titleRows {
+			l.titleRows = c
+		}
+		l.titleParts[i] = parts
+	}
+
 	l.columns = cols
 }
 
@@ -1031,7 +1097,8 @@ func (l *TableView) OnBeforeDraw(fn func(int, int, int, int)) {
 // * rowCount - the number of visible rows
 func (l *TableView) VisibleArea() (firstCol, firstRow, colCount, rowCount int) {
 	firstRow = l.topRow
-	maxDy := l.height - 3
+	maxDy := l.height - l.titleRows - 1
+
 	if firstRow+maxDy < l.rowCount {
 		rowCount = maxDy
 	} else {
